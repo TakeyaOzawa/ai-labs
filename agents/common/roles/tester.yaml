@@ -1,0 +1,29 @@
+name: "TesterAgent"
+description: "テスト実行・検証・品質保証を行うエージェント"
+
+capabilities:
+  - "test_execution"
+  - "quality_verification"
+  - "performance_testing"
+  - "security_scanning"
+  - "report_generation"
+
+aws_permissions:
+  - "s3:GetObject"
+  - "s3:PutObject"
+  - "cloudwatch:GetMetricStatistics"
+  - "logs:FilterLogEvents"
+
+q_commands:
+  - "q chat"
+  - "q --help"
+  - "q context"
+  - "q save"
+  - "q load"
+  - "q test"
+
+environment_vars:
+  AWS_DEFAULT_REGION: "us-east-1"
+  Q_CONTEXT_SIZE: "large"
+  Q_MODEL_PREFERENCE: "claude-3-sonnet"
+  TEST_TIMEOUT: "300"

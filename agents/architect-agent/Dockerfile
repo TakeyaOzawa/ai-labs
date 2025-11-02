@@ -1,21 +1,19 @@
-FROM node:22-slim
-
-# OSパッケージのインストール: Python, pip, Git
-RUN apt-get update && apt-get install -y \
-    python3 python3-pip git \
-    && rm -rf /var/lib/apt/lists/*
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Python依存関係のインストール
-COPY requirements.txt .
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY agents/architect-agent/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 共通モジュールをコピー
-COPY ./agents/common /app/common
+COPY agents/architect-agent/ .
+COPY agents/common/ ./common/
 
-# エージェントのロジックをコピー
-COPY ./agents/architect-agent/logic.py /app/agent_logic/architect.py
+RUN mkdir -p /workspace
 
-# 起動コマンド
-CMD ["uvicorn", "agent_logic.architect:app", "--host", "0.0.0.0", "--port", "8081"]
+EXPOSE 8081
+
+CMD ["python", "logic.py"]

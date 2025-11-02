@@ -5,10 +5,15 @@
 ## 🏗️ システム構成
 
 ### AIエージェント
-- **PlannerAgent** (Port: 8080) - タスク計画・指示
+- **PlannerAgent** (Port: 8080) - タスク計画・指示・再帰的開発サイクル管理
 - **ArchitectAgent** (Port: 8081) - システム設計
 - **CoderAgent** (Port: 8082) - コード生成・修正
 - **TesterAgent** (Port: 8083) - テスト実行・検証
+
+### 状態管理・監視
+- **Redis State Manager** (Port: 6380) - 開発サイクル状態管理
+- **PostgreSQL History** (Port: 5433) - 開発履歴・品質メトリクス
+- **Prometheus** (Port: 9090) - メトリクス収集・監視
 
 ### 外部開発環境
 - **MySQL** (Port: 3306) - データベース
@@ -16,13 +21,53 @@
 - **PHP-FPM** (Port: 9000) - アプリケーション実行
 - **Nginx** (Port: 8080) - Webサーバー
 
+### 外部連携
+- **Amazon Q Developer** - AI開発支援
+- **Slack** - 通知・進捗報告
+- **Notion** - ドキュメント管理・開発履歴
+
 ## 🚀 クイックスタート
+
+### 環境設定
+
+1. 環境変数ファイルを作成：
+```bash
+cp .env.example .env
+# .envファイルを編集して各種設定を行う
+```
+
+2. 主要な環境変数：
+
+#### 基本設定
+- `WORKSPACE_HOST_PATH`: ホストのワークスペースディレクトリパス
+- `PLANNER_AGENT_PORT`: PlannerAgentのポート（デフォルト: 8080）
+- `ARCHITECT_AGENT_PORT`: ArchitectAgentのポート（デフォルト: 8081）
+- `CODER_AGENT_PORT`: CoderAgentのポート（デフォルト: 8082）
+- `TESTER_AGENT_PORT`: TesterAgentのポート（デフォルト: 8083）
+
+#### Amazon Q設定
+- `AMAZON_Q_START_URL`: Amazon Q DeveloperのスタートURL
+- `AMAZON_Q_REGION`: Amazon Qのリージョン（デフォルト: us-east-1）
+
+#### Slack設定
+- `AMAZON_Q_SLACK_OAUTH_TOKEN`: Slack Bot OAuth Token
+- `AMAZON_Q_SLACK_USER_ID`: Slack User ID
+
+#### Notion設定
+- `NOTION_API_TOKEN`: Notion Integration Token
+- `NOTION_DATABASE_ID`: Notion Database ID
+- `NOTION_WORKSPACE_URL`: Notion Workspace URL
+
+#### データベース設定
+- `MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
 
 ### Docker Composeを使用した起動
 
 ```bash
-# 1. Dockerイメージをビルド
-./manage-k8s.sh build
+# 1. 環境変数を設定
+cp .env.example .env
+# .envファイルを編集
 
 # 2. 全サービスを起動
 docker-compose up -d
@@ -37,8 +82,9 @@ docker-compose logs -f planner-agent
 ### Kubernetesを使用した起動
 
 ```bash
-# 1. Dockerイメージをビルド
-./manage-k8s.sh build
+# 1. 環境変数を設定
+cp .env.example .env
+# .envファイルを編集
 
 # 2. 全環境を起動
 ./manage-k8s.sh start-all
@@ -87,7 +133,14 @@ curl http://localhost:8082/health
 curl http://localhost:8083/health
 ```
 
-### 3. 外部環境の確認
+### 3. Amazon Q Developerの起動
+
+```bash
+# Amazon Q Developerを起動
+./scripts/start-amazon-q.sh
+```
+
+### 4. 外部環境の確認
 
 ```bash
 # Nginx (Webサーバー)
@@ -99,6 +152,22 @@ mysql -h localhost -P 3306 -u testuser -ptestpass testdb -e "SELECT 1;"
 # Redis接続テスト
 redis-cli -h localhost -p 6379 ping
 ```
+
+## 🔄 再帰的開発サイクル
+
+PlannerAgentは開発完了報告を受けて自動的に次の開発タスクを計画・実行します：
+
+### サイクルフロー
+1. **完了報告受信** - TesterAgentからの開発完了報告
+2. **次期開発検討** - 品質・セキュリティ・機能の優先度評価
+3. **開発計画策定** - リソース制約を考慮した計画作成
+4. **開発指示発行** - ArchitectAgentへの次期開発指示
+
+### 優先度
+1. セキュリティ脆弱性の修正
+2. 重大なバグの修正
+3. 品質改善（テストカバレッジ、リファクタリング）
+4. 機能拡張・改善
 
 ## 🔧 管理コマンド
 
@@ -113,6 +182,9 @@ redis-cli -h localhost -p 6379 ping
 
 # 外部開発環境のみ起動
 ./manage-k8s.sh start-external
+
+# 監視スタック起動
+./manage-k8s.sh start-monitoring
 
 # 状態確認
 ./manage-k8s.sh status
@@ -152,18 +224,23 @@ docker-compose ps
 ai-dev-project/
 ├── agents/                    # AIエージェント実装
 │   ├── common/               # 共通モジュール
-│   ├── planner-agent/        # PlannerAgent
+│   ├── planner-agent/        # PlannerAgent + 再帰的サイクル
 │   ├── architect-agent/      # ArchitectAgent
 │   ├── coder-agent/          # CoderAgent
 │   └── tester-agent/         # TesterAgent
 ├── k8s/                      # Kubernetesマニフェスト
 │   ├── ai-agents/           # AIエージェント用
-│   └── external-env/        # 外部開発環境用
+│   ├── external-env/        # 外部開発環境用
+│   └── monitoring/          # 監視スタック用
+├── scripts/                 # 管理スクリプト
+│   ├── start-amazon-q.sh   # Amazon Q起動
+│   └── setup-k8s-env.sh    # Kubernetes環境設定
+├── docs/                    # ドキュメント
 ├── project_root/            # 開発対象コードベース
-├── cdk/                     # AWS CDK (未実装)
-├── docker-compose.yml       # Docker Compose設定
-├── manage-k8s.sh           # 管理スクリプト
-└── README.md               # このファイル
+├── .env.example            # 環境変数テンプレート
+├── docker-compose.yml      # Docker Compose設定
+├── manage-k8s.sh          # Kubernetes管理スクリプト
+└── README.md              # このファイル
 ```
 
 ## 🔄 ワークフロー
@@ -174,7 +251,26 @@ ai-dev-project/
 4. **CoderAgent** → **TesterAgent**: テスト実行を依頼
 5. **TesterAgent** → **CoderAgent**: テスト結果を報告
 6. **CoderAgent** → **PlannerAgent**: 完了報告
-7. **PlannerAgent** → **ユーザー**: 最終結果を報告
+7. **PlannerAgent**: 次期開発サイクルを自動計画・実行
+
+## 🔗 外部連携設定
+
+### Amazon Q Developer設定
+1. Amazon Q Developerのインスタンスを作成
+2. `.env`ファイルに`AMAZON_Q_START_URL`を設定
+3. `./scripts/start-amazon-q.sh`で起動
+4. コンテナ起動時に`.amazonq`設定が自動生成される
+
+### Slack設定
+1. Slack Appを作成してBot Tokenを取得
+2. `.env`ファイルに`AMAZON_Q_SLACK_OAUTH_TOKEN`と`AMAZON_Q_SLACK_USER_ID`を設定
+3. 開発進捗が自動的にSlackに通知される
+
+### Notion設定
+1. Notion Integrationを作成してAPI Tokenを取得
+2. データベースを作成してDatabase IDを取得
+3. `.env`ファイルに設定
+4. 開発サイクルの履歴がNotionに自動記録される
 
 ## 🐛 トラブルシューティング
 
@@ -192,11 +288,12 @@ ai-dev-project/
    kubectl exec -n ai-agents deployment/coder-agent -- mysql -h mysql.external-env.svc.cluster.local -u testuser -ptestpass -e "SELECT 1;"
    ```
 
-3. **PVC マウントエラー**
+3. **環境変数設定エラー**
    ```bash
-   # PVC状態確認
-   kubectl get pvc -n ai-agents
-   kubectl get pvc -n external-env
+   # .envファイルの確認
+   cat .env
+   # 環境変数の読み込み確認
+   docker-compose config
    ```
 
 ### ログ確認
@@ -213,7 +310,23 @@ kubectl logs -n external-env -l app=mysql
 kubectl logs -n external-env -l app=redis
 kubectl logs -n external-env -l app=php-app
 kubectl logs -n external-env -l app=nginx
+
+# 監視スタックのログ
+kubectl logs -n monitoring -l app=prometheus
 ```
+
+## 📊 監視・メトリクス
+
+### Prometheus監視
+- エージェント間通信の監視
+- リソース使用率の追跡
+- 開発サイクルのパフォーマンス測定
+
+### 品質メトリクス
+- テストカバレッジ
+- 技術的負債スコア
+- セキュリティスコア
+- パフォーマンススコア
 
 ## 📝 開発者向け情報
 
@@ -235,6 +348,7 @@ kubectl logs -n external-env -l app=nginx
 - エージェント間通信はKubernetes内部ネットワークで実行
 - 外部環境は専用ネームスペースで分離
 - 機密情報は環境変数またはKubernetes Secretsで管理
+- Slack Token、Notion API Tokenは暗号化保存
 
 ## 📄 ライセンス
 

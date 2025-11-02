@@ -1,0 +1,26 @@
+name: "ArchitectAgent"
+description: "システム設計とアーキテクチャ決定を行うエージェント"
+
+capabilities:
+  - "system_design"
+  - "architecture_planning"
+  - "technology_selection"
+  - "design_documentation"
+
+aws_permissions:
+  - "s3:GetObject"
+  - "s3:PutObject"
+  - "cloudformation:DescribeStacks"
+  - "cloudformation:ValidateTemplate"
+
+q_commands:
+  - "q chat"
+  - "q --help"
+  - "q context"
+  - "q save"
+  - "q load"
+
+environment_vars:
+  AWS_DEFAULT_REGION: "us-east-1"
+  Q_CONTEXT_SIZE: "large"
+  Q_MODEL_PREFERENCE: "claude-3-sonnet"

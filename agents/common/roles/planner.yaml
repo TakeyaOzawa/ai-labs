@@ -1,0 +1,29 @@
+name: "PlannerAgent"
+description: "タスク計画・指示・再帰的開発サイクル管理を行うエージェント"
+
+capabilities:
+  - "task_planning"
+  - "cycle_management" 
+  - "agent_coordination"
+  - "quality_analysis"
+  - "resource_management"
+
+aws_permissions:
+  - "s3:GetObject"
+  - "s3:PutObject"
+  - "cloudwatch:PutMetricData"
+  - "logs:CreateLogGroup"
+  - "logs:CreateLogStream"
+  - "logs:PutLogEvents"
+
+q_commands:
+  - "q chat"
+  - "q --help"
+  - "q context"
+  - "q save"
+  - "q load"
+
+environment_vars:
+  AWS_DEFAULT_REGION: "us-east-1"
+  Q_CONTEXT_SIZE: "large"
+  Q_MODEL_PREFERENCE: "claude-3-sonnet"

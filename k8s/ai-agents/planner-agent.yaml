@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: planner-agent
   namespace: ai-agents
+  labels:
+    app: planner-agent
 spec:
   replicas: 1
   selector:
@@ -18,16 +20,82 @@ spec:
         image: planner-agent:latest
         ports:
         - containerPort: 8080
-        env:
-        - name: AGENT_NAME
-          value: "PlannerAgent"
+        workingDir: /workspace
         volumeMounts:
-        - name: project-storage
-          mountPath: /app/project_root
+        - name: shared-workspace
+          mountPath: /workspace
+        - name: agent-config
+          mountPath: /app/config
+        - name: amazonq-config
+          mountPath: /workspace/.amazonq
+        env:
+        - name: AGENT_TYPE
+          value: "planner"
+        - name: AGENT_PORT
+          value: "8080"
+        - name: REDIS_HOST
+          value: "redis-state-manager.ai-agents.svc.cluster.local"
+        - name: POSTGRES_HOST
+          value: "postgres-history.ai-agents.svc.cluster.local"
+        - name: POSTGRES_USER
+          value: "planner"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        - name: AMAZON_Q_START_URL
+          valueFrom:
+            configMapKeyRef:
+              name: amazon-q-config
+              key: start_url
+        - name: AMAZON_Q_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: amazon-q-config
+              key: region
+        - name: AMAZON_Q_SLACK_OAUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: slack-secret
+              key: oauth_token
+        - name: AMAZON_Q_SLACK_USER_ID
+          valueFrom:
+            secretKeyRef:
+              name: slack-secret
+              key: user_id
+        - name: NOTION_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: notion-secret
+              key: api_token
+        - name: NOTION_DATABASE_ID
+          valueFrom:
+            configMapKeyRef:
+              name: notion-config
+              key: database_id
+        - name: NOTION_WORKSPACE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: notion-config
+              key: workspace_url
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
       volumes:
-      - name: project-storage
+      - name: shared-workspace
         persistentVolumeClaim:
-          claimName: project-pvc
+          claimName: shared-workspace-pvc
+      - name: agent-config
+        configMap:
+          name: planner-config
+      - name: amazonq-config
+        persistentVolumeClaim:
+          claimName: amazonq-config-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -40,3 +108,28 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: planner-config
+  namespace: ai-agents
+data:
+  planner_config.yaml: |
+    recursive_cycle:
+      enabled: true
+      max_cycles: 100
+      cycle_interval_minutes: 30
+      auto_start: true
+    quality_thresholds:
+      min_test_coverage: 90.0
+      max_technical_debt_score: 6.0
+      min_security_score: 7.0
+      min_performance_score: 8.0
+    priority_weights:
+      security: 1.0
+      bugs: 0.8
+      quality: 0.6
+      features: 0.4
+      technical: 0.3

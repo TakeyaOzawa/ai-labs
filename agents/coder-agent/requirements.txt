@@ -1,0 +1,9 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+httpx==0.25.2
+pyyaml==6.0.1
+structlog==23.2.0
+gitpython==3.1.40
+pymysql==1.1.0
+redis==5.0.1

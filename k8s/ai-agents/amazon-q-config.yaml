@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: amazon-q-config
+  namespace: ai-agents
+data:
+  start_url: "https://your-amazon-q-instance.awsapps.com/start"
+  region: "us-east-1"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: slack-secret
+  namespace: ai-agents
+type: Opaque
+data:
+  # Base64 encoded values - replace with your actual values
+  # echo -n "xoxb-your-token" | base64
+  oauth_token: eG94Yi15b3VyLXRva2Vu  # xoxb-your-token
+  # echo -n "U1234567890" | base64  
+  user_id: VTEyMzQ1Njc4OTA=  # U1234567890

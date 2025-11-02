@@ -1,113 +1,185 @@
 version: '3.8'
 
 services:
+  # AI Agents
   planner-agent:
     build:
       context: .
       dockerfile: agents/planner-agent/Dockerfile
     ports:
-      - "8080:8080"
+      - "${PLANNER_AGENT_PORT:-8080}:8080"
+    working_dir: /workspace
     volumes:
-      - project_data:/app/project_root
+      - ${WORKSPACE_HOST_PATH:-./}:/workspace
+      - ./agents/planner-agent/planner_config.yaml:/app/config/planner_config.yaml
+      - ./.amazonq:/workspace/.amazonq
+    environment:
+      - AGENT_TYPE=planner
+      - AGENT_PORT=8080
+      - REDIS_HOST=redis-state
+      - POSTGRES_HOST=postgres-history
+      - POSTGRES_USER=${POSTGRES_USER:-planner}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-planner123}
+      - AMAZON_Q_START_URL=${AMAZON_Q_START_URL}
+      - AMAZON_Q_REGION=${AMAZON_Q_REGION:-us-east-1}
+      - AMAZON_Q_SLACK_OAUTH_TOKEN=${AMAZON_Q_SLACK_OAUTH_TOKEN}
+      - AMAZON_Q_SLACK_USER_ID=${AMAZON_Q_SLACK_USER_ID}
+      - NOTION_API_TOKEN=${NOTION_API_TOKEN}
+      - NOTION_DATABASE_ID=${NOTION_DATABASE_ID}
+      - NOTION_WORKSPACE_URL=${NOTION_WORKSPACE_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+    depends_on:
+      - redis-state
+      - postgres-history
     networks:
-      - ai-agents-net
+      - ai-network
 
   architect-agent:
     build:
       context: .
       dockerfile: agents/architect-agent/Dockerfile
     ports:
-      - "8081:8081"
+      - "${ARCHITECT_AGENT_PORT:-8081}:8081"
+    working_dir: /workspace
     volumes:
-      - project_data:/app/project_root
+      - ${WORKSPACE_HOST_PATH:-./}:/workspace
+      - ./.amazonq:/workspace/.amazonq
+    environment:
+      - AGENT_TYPE=architect
+      - AGENT_PORT=8081
+      - PLANNER_AGENT_URL=http://planner-agent:8080
+      - CODER_AGENT_URL=http://coder-agent:8082
+    depends_on:
+      - planner-agent
     networks:
-      - ai-agents-net
+      - ai-network
 
   coder-agent:
     build:
       context: .
       dockerfile: agents/coder-agent/Dockerfile
     ports:
-      - "8082:8082"
-    environment:
-      - EXTERNAL_PHP_URL=nginx:80
-      - EXTERNAL_MYSQL_URL=mysql:3306
-      - EXTERNAL_REDIS_URL=redis:6379
+      - "${CODER_AGENT_PORT:-8082}:8082"
+    working_dir: /workspace
     volumes:
-      - project_data:/app/project_root
+      - ${WORKSPACE_HOST_PATH:-./}:/workspace
+      - ./.amazonq:/workspace/.amazonq
+    environment:
+      - AGENT_TYPE=coder
+      - AGENT_PORT=8082
+      - ARCHITECT_AGENT_URL=http://architect-agent:8081
+      - TESTER_AGENT_URL=http://tester-agent:8083
+      - MYSQL_HOST=mysql
+      - REDIS_HOST=redis
+      - PHP_FPM_HOST=php-app
+    depends_on:
+      - architect-agent
+      - mysql
+      - redis
+      - php-app
     networks:
-      - ai-agents-net
-      - external-env-net
+      - ai-network
 
   tester-agent:
     build:
       context: .
       dockerfile: agents/tester-agent/Dockerfile
     ports:
-      - "8083:8083"
-    environment:
-      - EXTERNAL_PHP_URL=nginx:80
-      - EXTERNAL_MYSQL_URL=mysql:3306
-      - EXTERNAL_REDIS_URL=redis:6379
+      - "${TESTER_AGENT_PORT:-8083}:8083"
+    working_dir: /workspace
     volumes:
-      - project_data:/app/project_root
+      - ${WORKSPACE_HOST_PATH:-./}:/workspace
+      - ./.amazonq:/workspace/.amazonq
+    environment:
+      - AGENT_TYPE=tester
+      - AGENT_PORT=8083
+      - CODER_AGENT_URL=http://coder-agent:8082
+      - PLANNER_AGENT_URL=http://planner-agent:8080
+      - MYSQL_HOST=mysql
+      - REDIS_HOST=redis
+      - NGINX_HOST=nginx
+    depends_on:
+      - coder-agent
     networks:
-      - ai-agents-net
-      - external-env-net
+      - ai-network
 
-  # 外部開発環境
+  # State Management
+  redis-state:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-state-data:/data
+    networks:
+      - ai-network
+
+  postgres-history:
+    image: postgres:15-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=dev_history
+      - POSTGRES_USER=planner
+      - POSTGRES_PASSWORD=planner123
+    volumes:
+      - postgres-history-data:/var/lib/postgresql/data
+      - ./agents/planner-agent/database_schema.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ai-network
+
+  # External Development Environment
   mysql:
     image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: testdb
-      MYSQL_USER: testuser
-      MYSQL_PASSWORD: testpass
     ports:
       - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_DATABASE=testdb
+      - MYSQL_USER=testuser
+      - MYSQL_PASSWORD=testpass
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
     networks:
-      - external-env-net
+      - ai-network
 
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - redis-data:/data
     networks:
-      - external-env-net
+      - ai-network
 
   php-app:
-    image: php:8.2-fpm-alpine
+    image: php:8.2-fpm
+    working_dir: /workspace
     volumes:
-      - project_data:/var/www/html
-    environment:
-      - MYSQL_HOST=mysql
-      - REDIS_HOST=redis
+      - ${WORKSPACE_HOST_PATH:-./}:/workspace
     networks:
-      - external-env-net
+      - ai-network
 
   nginx:
     image: nginx:alpine
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
-      - project_data:/var/www/html
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - ${WORKSPACE_HOST_PATH:-./}:/workspace
     depends_on:
       - php-app
     networks:
-      - external-env-net
+      - ai-network
 
 volumes:
-  project_data:
-  mysql_data:
-  redis_data:
+  mysql-data:
+  redis-data:
+  redis-state-data:
+  postgres-history-data:
 
 networks:
-  ai-agents-net:
-    driver: bridge
-  external-env-net:
+  ai-network:
     driver: bridge

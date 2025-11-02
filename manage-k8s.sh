@@ -1,8 +1,22 @@
 #!/bin/bash
 
+# Load environment variables
+if [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+fi
+
+# Setup Kubernetes environment with current variables
+setup_k8s_env() {
+    echo "Setting up Kubernetes environment..."
+    WORKSPACE_HOST_PATH=${WORKSPACE_HOST_PATH:-/home/developer/workspace}
+    envsubst < k8s/ai-agents/shared-workspace-pv.yaml.template > k8s/ai-agents/shared-workspace-pv.yaml
+    echo "  WORKSPACE_HOST_PATH: $WORKSPACE_HOST_PATH"
+}
+
 case $1 in
   "start-agents")
     echo "AIエージェントを起動中..."
+    setup_k8s_env
     kubectl apply -f k8s/ai-agents/
     echo "AIエージェントを起動しました"
     ;;
@@ -59,14 +73,20 @@ case $1 in
     ;;
   "build")
     echo "Dockerイメージをビルド中..."
+    ./scripts/build-multiarch.sh
+    echo "マルチアーキテクチャDockerイメージのビルドが完了しました"
+    ;;
+  "build-single")
+    echo "シングルアーキテクチャDockerイメージをビルド中..."
+    docker build -t agents/common:base -f agents/common/Dockerfile.base .
     docker build -t planner-agent:latest -f agents/planner-agent/Dockerfile .
     docker build -t architect-agent:latest -f agents/architect-agent/Dockerfile .
     docker build -t coder-agent:latest -f agents/coder-agent/Dockerfile .
     docker build -t tester-agent:latest -f agents/tester-agent/Dockerfile .
-    echo "Dockerイメージのビルドが完了しました"
+    echo "シングルアーキテクチャDockerイメージのビルドが完了しました"
     ;;
   *)
-    echo "使用方法: $0 {start-agents|start-external|start-monitoring|start-all|stop-agents|stop-external|stop-monitoring|stop-all|status|logs <namespace> <app>|build}"
+    echo "使用方法: $0 {start-agents|start-external|start-monitoring|start-all|stop-agents|stop-external|stop-monitoring|stop-all|status|logs <namespace> <app>|build|build-single}"
     echo ""
     echo "コマンド説明:"
     echo "  start-agents    - AIエージェントを起動"

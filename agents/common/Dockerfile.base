@@ -1,0 +1,63 @@
+FROM python:3.11-slim
+
+# マルチアーキテクチャ対応のためのARG
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+WORKDIR /app
+
+# システム依存関係をインストール
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    curl \
+    unzip \
+    git \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# AWS CLI v2をマルチアーキテクチャ対応でインストール
+RUN case ${TARGETPLATFORM} in \
+    "linux/amd64") ARCH="x86_64" ;; \
+    "linux/arm64") ARCH="aarch64" ;; \
+    *) echo "Unsupported platform: ${TARGETPLATFORM}" && exit 1 ;; \
+    esac && \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    rm -rf awscliv2.zip aws
+
+# Amazon Q CLI をインストール
+RUN case ${TARGETPLATFORM} in \
+    "linux/amd64") ARCH="linux_amd64" ;; \
+    "linux/arm64") ARCH="linux_arm64" ;; \
+    *) echo "Unsupported platform: ${TARGETPLATFORM}" && exit 1 ;; \
+    esac && \
+    curl -L "https://github.com/aws/amazon-q-developer-cli/releases/latest/download/q-${ARCH}.tar.gz" -o "q.tar.gz" && \
+    tar -xzf q.tar.gz && \
+    mv q /usr/local/bin/ && \
+    chmod +x /usr/local/bin/q && \
+    rm q.tar.gz
+
+# Node.js (Amazon Q CLIの依存関係)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+
+# ワークスペースディレクトリを作成
+RUN mkdir -p /workspace
+
+# 共通Python依存関係をインストール
+COPY agents/common/requirements.txt /tmp/common-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/common-requirements.txt
+
+# エージェント設定ディレクトリを作成
+RUN mkdir -p /app/config /app/roles
+
+# Amazon Q設定テンプレートをコピー
+COPY .amazonq-template/ /app/.amazonq-template/
+
+# エントリーポイントスクリプトをコピー
+COPY agents/common/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]

@@ -1,0 +1,19 @@
+{
+  "startUrl": "${AMAZON_Q_START_URL}",
+  "region": "${AMAZON_Q_REGION}",
+  "profiles": {
+    "default": {
+      "startUrl": "${AMAZON_Q_START_URL}",
+      "region": "${AMAZON_Q_REGION}",
+      "scopes": ["sso:account:access"]
+    }
+  },
+  "defaultProfile": "default",
+  "telemetry": {
+    "enabled": false
+  },
+  "logging": {
+    "level": "info",
+    "file": "/workspace/.amazonq/logs/q.log"
+  }
+}

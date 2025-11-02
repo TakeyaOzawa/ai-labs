@@ -1,0 +1,31 @@
+name: "CoderAgent"
+description: "コード生成・修正・実装を行うエージェント"
+
+capabilities:
+  - "code_generation"
+  - "code_modification"
+  - "file_operations"
+  - "git_operations"
+  - "database_operations"
+
+aws_permissions:
+  - "s3:GetObject"
+  - "s3:PutObject"
+  - "codecommit:GitPull"
+  - "codecommit:GitPush"
+  - "rds:DescribeDBInstances"
+
+q_commands:
+  - "q chat"
+  - "q --help"
+  - "q context"
+  - "q save"
+  - "q load"
+  - "q review"
+
+environment_vars:
+  AWS_DEFAULT_REGION: "us-east-1"
+  Q_CONTEXT_SIZE: "xlarge"
+  Q_MODEL_PREFERENCE: "claude-3-sonnet"
+  GIT_AUTHOR_NAME: "CoderAgent"
+  GIT_AUTHOR_EMAIL: "coder@ai-dev-system.local"

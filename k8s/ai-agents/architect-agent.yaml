@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: architect-agent
   namespace: ai-agents
+  labels:
+    app: architect-agent
 spec:
   replicas: 1
   selector:
@@ -18,16 +20,30 @@ spec:
         image: architect-agent:latest
         ports:
         - containerPort: 8081
-        env:
-        - name: AGENT_NAME
-          value: "ArchitectAgent"
+        workingDir: /workspace
         volumeMounts:
-        - name: project-storage
-          mountPath: /app/project_root
+        - name: shared-workspace
+          mountPath: /workspace
+        env:
+        - name: AGENT_TYPE
+          value: "architect"
+        - name: AGENT_PORT
+          value: "8081"
+        - name: PLANNER_AGENT_URL
+          value: "http://planner-agent.ai-agents.svc.cluster.local:8080"
+        - name: CODER_AGENT_URL
+          value: "http://coder-agent.ai-agents.svc.cluster.local:8082"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
       volumes:
-      - name: project-storage
+      - name: shared-workspace
         persistentVolumeClaim:
-          claimName: project-pvc
+          claimName: shared-workspace-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -40,3 +56,4 @@ spec:
   ports:
   - port: 8081
     targetPort: 8081
+  type: ClusterIP

@@ -1,21 +1,23 @@
-FROM node:22-slim
+FROM agents/common:base
 
-# OSパッケージのインストール: Python, pip, Git
-RUN apt-get update && apt-get install -y \
-    python3 python3-pip git \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-# Python依存関係のインストール
-COPY requirements.txt .
+# エージェント固有の依存関係をインストール
+COPY agents/planner-agent/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 共通モジュールをコピー
-COPY ./agents/common /app/common
+# エージェント固有のコードをコピー
+COPY agents/planner-agent/ .
+COPY agents/common/ ./common/
 
-# エージェントのロジックをコピー
-COPY ./agents/planner-agent/logic.py /app/agent_logic/planner.py
+# 役割設定をコピー
+COPY agents/common/roles/ /app/roles/
 
-# 起動コマンド
-CMD ["uvicorn", "agent_logic.planner:app", "--host", "0.0.0.0", "--port", "8080"]
+# エージェント固有の初期化スクリプト
+COPY agents/planner-agent/init-planner.sh /app/init-planner.sh
+RUN chmod +x /app/init-planner.sh
+
+# 設定ファイルをコピー
+COPY agents/planner-agent/planner_config.yaml /app/config/
+
+EXPOSE 8080
+
+CMD ["python", "logic.py"]

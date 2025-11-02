@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notion-config
+  namespace: ai-agents
+data:
+  database_id: "your-database-id-here"
+  workspace_url: "https://www.notion.so/your-workspace"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: notion-secret
+  namespace: ai-agents
+type: Opaque
+data:
+  # Base64 encoded values - replace with your actual values
+  # echo -n "secret_your-notion-integration-token" | base64
+  api_token: c2VjcmV0X3lvdXItbm90aW9uLWludGVncmF0aW9uLXRva2Vu  # secret_your-notion-integration-token

@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: coder-agent
   namespace: ai-agents
+  labels:
+    app: coder-agent
 spec:
   replicas: 1
   selector:
@@ -18,22 +20,36 @@ spec:
         image: coder-agent:latest
         ports:
         - containerPort: 8082
-        env:
-        - name: AGENT_NAME
-          value: "CoderAgent"
-        - name: EXTERNAL_PHP_URL
-          value: "http://php-app.external-env.svc.cluster.local:9000"
-        - name: EXTERNAL_MYSQL_URL
-          value: "mysql.external-env.svc.cluster.local:3306"
-        - name: EXTERNAL_REDIS_URL
-          value: "redis.external-env.svc.cluster.local:6379"
+        workingDir: /workspace
         volumeMounts:
-        - name: project-storage
-          mountPath: /app/project_root
+        - name: shared-workspace
+          mountPath: /workspace
+        env:
+        - name: AGENT_TYPE
+          value: "coder"
+        - name: AGENT_PORT
+          value: "8082"
+        - name: ARCHITECT_AGENT_URL
+          value: "http://architect-agent.ai-agents.svc.cluster.local:8081"
+        - name: TESTER_AGENT_URL
+          value: "http://tester-agent.ai-agents.svc.cluster.local:8083"
+        - name: MYSQL_HOST
+          value: "mysql.external-env.svc.cluster.local"
+        - name: REDIS_HOST
+          value: "redis.external-env.svc.cluster.local"
+        - name: PHP_FPM_HOST
+          value: "php-app.external-env.svc.cluster.local"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
       volumes:
-      - name: project-storage
+      - name: shared-workspace
         persistentVolumeClaim:
-          claimName: project-pvc
+          claimName: shared-workspace-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -46,3 +62,4 @@ spec:
   ports:
   - port: 8082
     targetPort: 8082
+  type: ClusterIP
