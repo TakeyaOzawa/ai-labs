@@ -65,4 +65,17 @@ data:
   api_token: $(echo -n "$NOTION_API_TOKEN" | base64 -w 0)
 EOF
 
+# Update AWS Secret
+cat > k8s/ai-agents/aws-secret.yaml << EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-secret
+  namespace: ai-agents
+type: Opaque
+data:
+  access_key_id: $(echo -n "$AWS_ACCESS_KEY_ID" | base64 -w 0)
+  secret_access_key: $(echo -n "$AWS_SECRET_ACCESS_KEY" | base64 -w 0)
+EOF
+
 echo "Kubernetes configuration updated successfully!"

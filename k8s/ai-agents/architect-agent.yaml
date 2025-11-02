@@ -33,6 +33,31 @@ spec:
           value: "http://planner-agent.ai-agents.svc.cluster.local:8080"
         - name: CODER_AGENT_URL
           value: "http://coder-agent.ai-agents.svc.cluster.local:8082"
+        - name: AMAZON_Q_START_URL
+          valueFrom:
+            configMapKeyRef:
+              name: amazon-q-config
+              key: start_url
+        - name: AMAZON_Q_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: amazon-q-config
+              key: region
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret
+              key: access_key_id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret
+              key: secret_access_key
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: amazon-q-config
+              key: region
         resources:
           requests:
             memory: "512Mi"

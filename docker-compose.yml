@@ -51,6 +51,11 @@ services:
       - AGENT_PORT=8081
       - PLANNER_AGENT_URL=http://planner-agent:8080
       - CODER_AGENT_URL=http://coder-agent:8082
+      - AMAZON_Q_START_URL=${AMAZON_Q_START_URL}
+      - AMAZON_Q_REGION=${AMAZON_Q_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
     depends_on:
       - planner-agent
     networks:
@@ -74,6 +79,11 @@ services:
       - MYSQL_HOST=mysql
       - REDIS_HOST=redis
       - PHP_FPM_HOST=php-app
+      - AMAZON_Q_START_URL=${AMAZON_Q_START_URL}
+      - AMAZON_Q_REGION=${AMAZON_Q_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
     depends_on:
       - architect-agent
       - mysql
@@ -100,6 +110,11 @@ services:
       - MYSQL_HOST=mysql
       - REDIS_HOST=redis
       - NGINX_HOST=nginx
+      - AMAZON_Q_START_URL=${AMAZON_Q_START_URL}
+      - AMAZON_Q_REGION=${AMAZON_Q_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
     depends_on:
       - coder-agent
     networks:

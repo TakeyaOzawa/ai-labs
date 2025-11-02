@@ -1,18 +1,19 @@
-FROM python:3.11-slim
+FROM agents/common:base
 
-WORKDIR /app
-
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
+# エージェント固有の依存関係をインストール
 COPY agents/architect-agent/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# エージェント固有のコードをコピー
 COPY agents/architect-agent/ .
 COPY agents/common/ ./common/
 
-RUN mkdir -p /workspace
+# 役割設定をコピー
+COPY agents/common/roles/ /app/roles/
+
+# エージェント固有の初期化スクリプト
+COPY agents/architect-agent/init-architect.sh /app/init-architect.sh
+RUN chmod +x /app/init-architect.sh
 
 EXPOSE 8081
 
