@@ -1,0 +1,40 @@
+recursive_cycle:
+  enabled: true
+  max_cycles: 100
+  cycle_interval_minutes: 30
+  auto_start: true
+
+quality_thresholds:
+  min_test_coverage: 90.0
+  max_technical_debt_score: 6.0
+  min_security_score: 7.0
+  min_performance_score: 8.0
+
+priority_weights:
+  security: 1.0
+  bugs: 0.8
+  quality: 0.6
+  features: 0.4
+  technical: 0.3
+
+resource_limits:
+  max_concurrent_tasks: 3
+  max_memory_usage_mb: 2048
+  max_cpu_usage_percent: 80
+  max_storage_usage_gb: 50
+
+development_constraints:
+  max_task_effort_hours: 40
+  min_task_effort_hours: 2
+  max_cycle_duration_hours: 72
+  min_cycle_interval_minutes: 15
+
+notification_settings:
+  slack_enabled: true
+  email_enabled: false
+  log_level: "INFO"
+  
+monitoring:
+  metrics_enabled: true
+  health_check_interval_minutes: 5
+  performance_tracking: true

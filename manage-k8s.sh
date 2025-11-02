@@ -48,6 +48,15 @@ case $1 in
     fi
     kubectl logs -n $2 -l app=$3 -f
     ;;
+  "start-monitoring")
+    echo "監視スタックを起動中..."
+    kubectl apply -f k8s/monitoring/
+    wait_for_pods "monitoring"
+    ;;
+  "stop-monitoring")
+    echo "監視スタックを停止中..."
+    kubectl delete -f k8s/monitoring/ --ignore-not-found=true
+    ;;
   "build")
     echo "Dockerイメージをビルド中..."
     docker build -t planner-agent:latest -f agents/planner-agent/Dockerfile .
@@ -57,7 +66,7 @@ case $1 in
     echo "Dockerイメージのビルドが完了しました"
     ;;
   *)
-    echo "使用方法: $0 {start-agents|start-external|start-all|stop-agents|stop-external|stop-all|status|logs <namespace> <app>|build}"
+    echo "使用方法: $0 {start-agents|start-external|start-monitoring|start-all|stop-agents|stop-external|stop-monitoring|stop-all|status|logs <namespace> <app>|build}"
     echo ""
     echo "コマンド説明:"
     echo "  start-agents    - AIエージェントを起動"

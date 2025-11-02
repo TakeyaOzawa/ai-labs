@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-history
+  namespace: ai-agents
+  labels:
+    app: postgres-history
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-history
+  template:
+    metadata:
+      labels:
+        app: postgres-history
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: "dev_history"
+        - name: POSTGRES_USER
+          value: "planner"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: postgres-history-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-history
+  namespace: ai-agents
+spec:
+  selector:
+    app: postgres-history
+  ports:
+  - port: 5432
+    targetPort: 5432
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-history-pvc
+  namespace: ai-agents
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: ai-agents
+type: Opaque
+data:
+  password: cGxhbm5lcjEyMw==  # planner123 (base64)
