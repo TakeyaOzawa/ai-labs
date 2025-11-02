@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: planner-agent
+  namespace: ai-agents
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: planner-agent
+  template:
+    metadata:
+      labels:
+        app: planner-agent
+    spec:
+      containers:
+      - name: planner-agent
+        image: planner-agent:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: AGENT_NAME
+          value: "PlannerAgent"
+        volumeMounts:
+        - name: project-storage
+          mountPath: /app/project_root
+      volumes:
+      - name: project-storage
+        persistentVolumeClaim:
+          claimName: project-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: planner-agent
+  namespace: ai-agents
+spec:
+  selector:
+    app: planner-agent
+  ports:
+  - port: 8080
+    targetPort: 8080

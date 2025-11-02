@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  planner-agent:
+    build:
+      context: .
+      dockerfile: agents/planner-agent/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - project_data:/app/project_root
+    networks:
+      - ai-agents-net
+
+  architect-agent:
+    build:
+      context: .
+      dockerfile: agents/architect-agent/Dockerfile
+    ports:
+      - "8081:8081"
+    volumes:
+      - project_data:/app/project_root
+    networks:
+      - ai-agents-net
+
+  coder-agent:
+    build:
+      context: .
+      dockerfile: agents/coder-agent/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - EXTERNAL_PHP_URL=nginx:80
+      - EXTERNAL_MYSQL_URL=mysql:3306
+      - EXTERNAL_REDIS_URL=redis:6379
+    volumes:
+      - project_data:/app/project_root
+    networks:
+      - ai-agents-net
+      - external-env-net
+
+  tester-agent:
+    build:
+      context: .
+      dockerfile: agents/tester-agent/Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - EXTERNAL_PHP_URL=nginx:80
+      - EXTERNAL_MYSQL_URL=mysql:3306
+      - EXTERNAL_REDIS_URL=redis:6379
+    volumes:
+      - project_data:/app/project_root
+    networks:
+      - ai-agents-net
+      - external-env-net
+
+  # 外部開発環境
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - external-env-net
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - external-env-net
+
+  php-app:
+    image: php:8.2-fpm-alpine
+    volumes:
+      - project_data:/var/www/html
+    environment:
+      - MYSQL_HOST=mysql
+      - REDIS_HOST=redis
+    networks:
+      - external-env-net
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - project_data:/var/www/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - php-app
+    networks:
+      - external-env-net
+
+volumes:
+  project_data:
+  mysql_data:
+  redis_data:
+
+networks:
+  ai-agents-net:
+    driver: bridge
+  external-env-net:
+    driver: bridge

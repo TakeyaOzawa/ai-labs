@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coder-agent
+  namespace: ai-agents
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coder-agent
+  template:
+    metadata:
+      labels:
+        app: coder-agent
+    spec:
+      containers:
+      - name: coder-agent
+        image: coder-agent:latest
+        ports:
+        - containerPort: 8082
+        env:
+        - name: AGENT_NAME
+          value: "CoderAgent"
+        - name: EXTERNAL_PHP_URL
+          value: "http://php-app.external-env.svc.cluster.local:9000"
+        - name: EXTERNAL_MYSQL_URL
+          value: "mysql.external-env.svc.cluster.local:3306"
+        - name: EXTERNAL_REDIS_URL
+          value: "redis.external-env.svc.cluster.local:6379"
+        volumeMounts:
+        - name: project-storage
+          mountPath: /app/project_root
+      volumes:
+      - name: project-storage
+        persistentVolumeClaim:
+          claimName: project-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coder-agent
+  namespace: ai-agents
+spec:
+  selector:
+    app: coder-agent
+  ports:
+  - port: 8082
+    targetPort: 8082

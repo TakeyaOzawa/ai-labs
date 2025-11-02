@@ -1,0 +1,18 @@
+{
+  "name": "ai-dev-project",
+  "version": "1.0.0",
+  "description": "Multi-Agent AI Development System",
+  "scripts": {
+    "cdk:deploy": "cdk deploy",
+    "cdk:destroy": "cdk destroy",
+    "k8s:start-agents": "./manage-k8s.sh start-agents",
+    "k8s:start-external": "./manage-k8s.sh start-external",
+    "k8s:start-all": "./manage-k8s.sh start-all"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.100.0",
+    "aws-cdk-lib": "^2.100.0",
+    "constructs": "^10.3.0",
+    "typescript": "^5.2.0"
+  }
+}

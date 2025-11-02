@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tester-agent
+  namespace: ai-agents
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tester-agent
+  template:
+    metadata:
+      labels:
+        app: tester-agent
+    spec:
+      containers:
+      - name: tester-agent
+        image: tester-agent:latest
+        ports:
+        - containerPort: 8083
+        env:
+        - name: AGENT_NAME
+          value: "TesterAgent"
+        - name: EXTERNAL_PHP_URL
+          value: "http://php-app.external-env.svc.cluster.local:9000"
+        - name: EXTERNAL_MYSQL_URL
+          value: "mysql.external-env.svc.cluster.local:3306"
+        - name: EXTERNAL_REDIS_URL
+          value: "redis.external-env.svc.cluster.local:6379"
+        volumeMounts:
+        - name: project-storage
+          mountPath: /app/project_root
+      volumes:
+      - name: project-storage
+        persistentVolumeClaim:
+          claimName: project-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tester-agent
+  namespace: ai-agents
+spec:
+  selector:
+    app: tester-agent
+  ports:
+  - port: 8083
+    targetPort: 8083

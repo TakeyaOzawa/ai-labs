@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: architect-agent
+  namespace: ai-agents
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: architect-agent
+  template:
+    metadata:
+      labels:
+        app: architect-agent
+    spec:
+      containers:
+      - name: architect-agent
+        image: architect-agent:latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: AGENT_NAME
+          value: "ArchitectAgent"
+        volumeMounts:
+        - name: project-storage
+          mountPath: /app/project_root
+      volumes:
+      - name: project-storage
+        persistentVolumeClaim:
+          claimName: project-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: architect-agent
+  namespace: ai-agents
+spec:
+  selector:
+    app: architect-agent
+  ports:
+  - port: 8081
+    targetPort: 8081

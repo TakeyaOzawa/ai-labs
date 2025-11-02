@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-app
+  namespace: external-env
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php-app
+  template:
+    metadata:
+      labels:
+        app: php-app
+    spec:
+      containers:
+      - name: php
+        image: php:8.2-fpm-alpine
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - name: app-code
+          mountPath: /var/www/html
+        env:
+        - name: MYSQL_HOST
+          value: "mysql.external-env.svc.cluster.local"
+        - name: REDIS_HOST
+          value: "redis.external-env.svc.cluster.local"
+      volumes:
+      - name: app-code
+        persistentVolumeClaim:
+          claimName: external-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-app
+  namespace: external-env
+spec:
+  selector:
+    app: php-app
+  ports:
+  - port: 9000
+    targetPort: 9000
