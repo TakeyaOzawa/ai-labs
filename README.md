@@ -200,7 +200,7 @@ git --version && curl --version && jq --version && make --version
 - **MySQL** (Port: 3306) - データベース
 - **Redis** (Port: 6379) - キャッシュ
 - **PHP-FPM** (Port: 9000) - アプリケーション実行
-- **Nginx** (Port: 8080) - Webサーバー
+- **Nginx** (Port: 8090) - Webサーバー
 
 ### 外部連携
 - **Amazon Q Developer** - AI開発支援
@@ -325,7 +325,7 @@ curl http://localhost:8083/health
 
 ```bash
 # Nginx (Webサーバー)
-curl http://localhost:8080/health
+curl http://localhost:8090/health
 
 # MySQL接続テスト
 mysql -h localhost -P 3306 -u testuser -ptestpass testdb -e "SELECT 1;"

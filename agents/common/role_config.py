@@ -2,9 +2,13 @@
 エージェント役割設定システム
 """
 import os
+import sys
 import yaml
 from typing import Dict, List, Optional
 from dataclasses import dataclass
+
+# 共通モジュールパスを追加
+sys.path.append('/app/common')
 
 @dataclass
 class AgentRole:

@@ -180,7 +180,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
+      - "${NGINX_PORT:-8090}:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ${WORKSPACE_HOST_PATH:-./}:/workspace

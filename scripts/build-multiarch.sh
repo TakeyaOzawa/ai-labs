@@ -13,7 +13,6 @@ docker buildx build \
     --platform linux/amd64,linux/arm64 \
     -f agents/common/Dockerfile.base \
     -t agents/common:base \
-    --load \
     .
 
 # 各エージェントをビルド
@@ -25,7 +24,6 @@ for agent in "${AGENTS[@]}"; do
         --platform linux/amd64,linux/arm64 \
         -f agents/${agent}/Dockerfile \
         -t ${agent}:latest \
-        --load \
         .
 done
 

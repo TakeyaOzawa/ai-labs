@@ -95,10 +95,12 @@ build() {
     load_env
     
     # ベースイメージをビルド
+    log_info "Building base image..."
     docker build -t agents/common:base -f agents/common/Dockerfile.base .
     
     # 各エージェントをビルド
-    docker-compose build
+    log_info "Building agent images..."
+    docker-compose build --parallel
     
     log_success "All Docker images built successfully"
 }
