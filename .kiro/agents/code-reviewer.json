@@ -1,0 +1,42 @@
+{
+    "name": "code-reviewer",
+    "description": "コードレビュアー。品質チェック（Pint/Larastan）、変更差分レビュー、specとの整合性確認、PR作成を担当。",
+    "prompt": "file://./prompts/code-reviewer.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": ["read"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": [
+                ".kiro/specs/**/requirements.md",
+                ".kiro/specs/**/design.md",
+                ".kiro/specs/**/tasks.md",
+                "issues/**"
+            ]
+        },
+        "shell": {
+            "allowedCommands": [
+                "docker compose exec app ./vendor/bin/pint *",
+                "docker compose exec app ./vendor/bin/phpstan *",
+                "docker compose exec app ./vendor/bin/phpunit *",
+                "./run-quality-checks.sh",
+                "git *",
+                "gh pr create *",
+                "gh pr view *",
+                "gh pr list *"
+            ],
+            "deniedCommands": [
+                "git push --force *",
+                "git rebase *",
+                "docker compose down *",
+                "docker compose restart *"
+            ]
+        }
+    },
+    "resources": [
+        "file://docs/development/ai-agent-shared.md",
+        "file://docs/development/coding-guidelines.md"
+    ],
+    "includeMcpJson": true,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "コードレビューを開始します。対象のブランチまたはspecを教えてください。"
+}

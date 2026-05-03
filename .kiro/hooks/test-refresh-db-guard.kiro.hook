@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "RefreshDatabase Guard",
+  "description": "テストファイルの作成時にRefreshDatabaseトレイトが使用されていないか確認する",
+  "version": "1",
+  "when": {
+    "type": "fileCreated",
+    "patterns": [
+      "tests/**/*Test.php"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "テストファイルが作成されました。RefreshDatabaseトレイトが使用されていないか確認してください。RefreshDatabaseは使用禁止です。代わりにDatabaseTransactionsトレイトを使用してください。RefreshDatabaseが検出された場合は、DatabaseTransactionsに自動的に置き換えてください。"
+  }
+}

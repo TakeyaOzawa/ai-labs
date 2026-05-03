@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Daily Academic Trend",
+  "description": "academic-scout を単体実行する。プロンプトファイルに従って動作する。",
+  "version": "2.0.0",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "academic-scout エージェントとしてプロンプトファイル（.kiro/agents/prompts/academic-scout.md）に従い実行してください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "academic-trend-daily"
+}

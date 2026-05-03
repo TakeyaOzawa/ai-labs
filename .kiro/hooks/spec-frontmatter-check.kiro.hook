@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "Spec Front-matter Check",
+  "description": "specファイル（requirements.md, design.md, tasks.md）の作成・編集時に、front-matterの存在とupdated_at/updated_byの更新を確認する",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".kiro/specs/**/requirements.md",
+      ".kiro/specs/**/design.md",
+      ".kiro/specs/**/tasks.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "このspecファイルが編集されました。以下を確認してください:\n1. YAML front-matterが存在するか（---で囲まれたブロック）\n2. front-matterに必須フィールド（spec_type, feature_name, status, created_at, created_by, updated_at, updated_by）が含まれているか\n3. updated_atが今日の日付（YYYY-MM-DD形式）に更新されているか\n4. updated_byが適切な値（kiro, claude等のAIツール名、または人名）に更新されているか\n\n不足や未更新がある場合は、自動的に修正してください。front-matterのフォーマットは .kiro/steering/requirements-format-guide.md を参照してください。"
+  }
+}

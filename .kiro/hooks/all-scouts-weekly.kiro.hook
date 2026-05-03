@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "All Scouts Weekly + Blog Writing",
+  "description": "週1回実行。slack-digest-scout → gws-digest-scout → tech-event-scout → lifestyle-event-scout → tech-blog-material-scout → tech-blog-writer → notion-digest-scout をサブエージェント委譲で順次実行する。各エージェントのプロンプトファイルに従って動作する。",
+  "version": "10.0.0",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "以下の7つのエージェントを invokeSubAgent（name: general-task-execution）で順次委譲してください。各エージェントの作業が完了してから次に進んでください。メインコンテキストでプロンプトファイルを読み込まないでください。\n\n1. contextFiles: .kiro/agents/prompts/slack-digest-scout.md\n   プロンプト: slack-digest-scout エージェントとしてプロンプトファイルに従い実行してください。\n\n2. contextFiles: .kiro/agents/prompts/gws-digest-scout.md\n   プロンプト: gws-digest-scout エージェントとしてプロンプトファイルに従い実行してください。\n\n3. contextFiles: .kiro/agents/prompts/tech-event-scout.md\n   プロンプト: tech-event-scout エージェントとして「週次パイプラインモード」でプロンプトファイルに従い実行してください。\n\n4. contextFiles: .kiro/agents/prompts/lifestyle-event-scout.md\n   プロンプト: lifestyle-event-scout エージェントとして「週次パイプラインモード」でプロンプトファイルに従い実行してください。\n\n5. contextFiles: .kiro/agents/prompts/tech-blog-material-scout.md\n   プロンプト: tech-blog-material-scout エージェントとして「週次パイプラインモード」でプロンプトファイルに従い実行してください。\n\n6. contextFiles: .kiro/agents/prompts/tech-blog-writer.md\n   プロンプト: tech-blog-writer エージェントとして「週次パイプラインモード」でプロンプトファイルに従い実行してください。\n\n7. contextFiles: .kiro/agents/prompts/notion-digest-scout.md\n   プロンプト: notion-digest-scout エージェントとしてプロンプトファイルに従い実行してください。\n\n全7つが完了したら、mcp_slack_notification_home_slack_post_message（channel_id: U076LRL1B35）で「✅ 週次パイプライン（7件）の実行が完了しました。各レポート・記事を確認してください。」と投稿してください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "all-scout-weekly"
+}

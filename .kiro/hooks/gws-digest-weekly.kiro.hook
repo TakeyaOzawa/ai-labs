@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "GWS Digest Weekly",
+  "description": "gws-digest-scout をサブエージェント委譲で実行する。プロンプトファイルに従って動作する。",
+  "version": "1.0.0",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "以下のエージェントを invokeSubAgent（name: general-task-execution）で委譲してください。メインコンテキストでプロンプトファイルを読み込まないでください。\n\n1. contextFiles: .kiro/agents/prompts/gws-digest-scout.md\n   プロンプト: gws-digest-scout エージェントとしてプロンプトファイルに従い実行してください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "gws-digest-weekly"
+}

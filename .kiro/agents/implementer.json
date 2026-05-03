@@ -1,0 +1,54 @@
+{
+    "name": "implementer",
+    "description": "実装者。tasks.mdに基づくPHP/Laravel実装とユニット/機能テストの作成を担当。",
+    "prompt": "file://./prompts/implementer.md",
+    "tools": ["read", "write", "shell", "@dbhub"],
+    "allowedTools": ["read"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": [
+                "app/**",
+                "config/**",
+                "database/migrations/**",
+                "database/factories/**",
+                "database/seeders/**",
+                "database/queries/**",
+                "routes/**",
+                "resources/**",
+                "lang/**",
+                "tests/**",
+                ".kiro/specs/**/tasks.md"
+            ]
+        },
+        "shell": {
+            "allowedCommands": [
+                "docker compose exec app *",
+                "git status",
+                "git diff *",
+                "git add *",
+                "git log *"
+            ],
+            "deniedCommands": [
+                "git push *",
+                "git commit *",
+                "docker compose down *",
+                "docker compose restart *",
+                "docker compose exec app php artisan migrate:fresh *",
+                "docker compose exec app php artisan migrate:refresh *",
+                "docker compose exec app php artisan migrate:reset *",
+                "docker compose exec app php artisan db:wipe *"
+            ]
+        }
+    },
+    "resources": [
+        "file://docs/development/ai-agent-shared.md",
+        "file://.kiro/steering/spec-testing-guidelines.md",
+        "skill://.agents/skills/**/SKILL.md",
+        "skill://.claude/skills/laravel-admin/SKILL.md",
+        "skill://.claude/skills/laravel-boost/SKILL.md",
+        "skill://.claude/skills/laravel-migration/SKILL.md"
+    ],
+    "includeMcpJson": true,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "実装を開始します。対象のspecディレクトリを教えてください。"
+}

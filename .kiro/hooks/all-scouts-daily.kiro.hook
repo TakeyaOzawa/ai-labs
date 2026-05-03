@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "All Scouts Daily",
+  "description": "日次scoutエージェント（slack-daily / tech-trend / biz-car-trend / academic）をサブエージェント委譲で順次実行する。各エージェントのプロンプトファイルに従って動作する。",
+  "version": "5.0.0",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "以下の4つのエージェントを invokeSubAgent（name: general-task-execution）で順次委譲してください。各エージェントの作業が完了してから次に進んでください。メインコンテキストでプロンプトファイルを読み込まないでください。\n\n1. contextFiles: .kiro/agents/prompts/tech-trend-scout.md\n   プロンプト: tech-trend-scout エージェントとしてプロンプトファイルに従い実行してください。\n\n2. contextFiles: .kiro/agents/prompts/biz-car-trend-scout.md\n   プロンプト: biz-car-trend-scout エージェントとしてプロンプトファイルに従い実行してください。\n\n3. contextFiles: .kiro/agents/prompts/academic-scout.md\n   プロンプト: academic-scout エージェントとしてプロンプトファイルに従い実行してください。\n\n4. contextFiles: .kiro/agents/prompts/slack-daily-scout.md\n   プロンプト: slack-daily-scout エージェントとしてプロンプトファイルに従い実行してください。\n\n全4つが完了したら、mcp_slack_notification_home_slack_post_message（channel_id: U076LRL1B35）で「✅ 日次scoutエージェント（4件）の実行が完了しました。各レポートを確認してください。」と投稿してください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "all-scouts-daily"
+}

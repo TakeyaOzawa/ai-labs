@@ -1,0 +1,16 @@
+{
+    "name": "slack-daily-scout",
+    "description": "Slack日次スカウト。前日のSlackチャンネル投稿をスレッド返信含めて収集し、スレッドID・投稿IDを明記した日次レポートを自動生成する。slack-digest-scoutの週次集約の入力データとなる。",
+    "prompt": "file://./prompts/slack-daily-scout.md",
+    "tools": ["read", "write"],
+    "allowedTools": [],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/slack_digest/daily/**"]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": true,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "Slack日次スカウトを開始します。前日のSlackチャンネル投稿を収集し、日次レポートを作成します。"
+}

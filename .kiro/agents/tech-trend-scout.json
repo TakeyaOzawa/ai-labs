@@ -1,0 +1,15 @@
+{
+    "name": "tech-trend-scout",
+    "description": "技術トレンドスカウト。前日の技術トレンドをWeb検索で収集し、チーム向けサマリーを自動生成する。",
+    "prompt": "file://./prompts/tech-trend-scout.md",
+    "tools": ["read", "write", "web"],
+    "allowedTools": ["web"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/tech_trends/daily/**"]
+        }
+    },
+    "resources": [],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "技術トレンドの収集を開始します。前日のトレンドを検索してサマリーを作成します。"
+}

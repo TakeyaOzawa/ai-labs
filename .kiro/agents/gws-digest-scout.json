@@ -1,0 +1,15 @@
+{
+    "name": "gws-digest-scout",
+    "description": "GWS週次ダイジェストスカウト。過去2週間に社内で共有されたGoogle Docs・Slides・Sheets・Forms・PDFをDrive APIで収集し、事業部横断のドキュメントキャッチアップ用サマリーレポートを自動生成する。",
+    "prompt": "file://./prompts/gws-digest-scout.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": ["shell"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/gws_digest/weekly/**"]
+        }
+    },
+    "resources": [],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "GWS週次ダイジェストの収集を開始します。過去2週間に共有されたドキュメントをDrive APIで検索し、種別ごとにサマリーを作成します。"
+}

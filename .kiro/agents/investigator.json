@@ -1,0 +1,41 @@
+{
+    "name": "investigator",
+    "description": "調査専門エージェント。要件/不具合の調査、外部DB参照、ドメイン知識の確認・更新を担当。",
+    "prompt": "file://./prompts/investigator.md",
+    "tools": ["read", "write", "shell", "@dbhub"],
+    "allowedTools": ["read", "@dbhub"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["docs/domain/**"]
+        },
+        "shell": {
+            "allowedCommands": [
+                "git log *",
+                "git diff *",
+                "git status",
+                "git show *"
+            ],
+            "deniedCommands": [
+                "git push *",
+                "git commit *",
+                "docker compose down *",
+                "docker compose restart *"
+            ]
+        }
+    },
+    "resources": [
+        "file://docs/domain/README.md",
+        "skill://.agents/skills/carmo-db/SKILL.md",
+        {
+            "type": "knowledgeBase",
+            "source": "file://./docs/domain",
+            "name": "DomainKnowledge",
+            "description": "プロジェクトのドメイン知識（契約、商品、営業、車両、請求等）",
+            "indexType": "best",
+            "autoUpdate": true
+        }
+    ],
+    "includeMcpJson": true,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "調査を開始します。要件や不具合の内容を教えてください。"
+}

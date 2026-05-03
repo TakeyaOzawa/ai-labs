@@ -1,0 +1,21 @@
+{
+    "name": "tech-blog-writer",
+    "description": "テックブログ作成エージェント。テーマのヒアリングからアウトライン設計、本文執筆、Google Docsへの反映までを一貫して行う。",
+    "prompt": "file://./prompts/tech-blog-writer.md",
+    "tools": ["read", "write", "shell", "web"],
+    "allowedTools": ["web"],
+    "toolsSettings": {
+        "read": {
+            "allowedPaths": ["Documents/works/scout_histories/tech_blog_materials/weekly/**"]
+        },
+        "write": {
+            "allowedPaths": ["Documents/works/tech_blogs/**"]
+        },
+        "shell": {
+            "allowedCommands": ["gws docs *", "gws schema *"]
+        }
+    },
+    "resources": [],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "テックブログの作成をお手伝いします。まずテーマを教えてください。対象読者・公開先・文字数目安などもあればお知らせください。"
+}

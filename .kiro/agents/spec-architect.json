@@ -1,0 +1,29 @@
+{
+    "name": "spec-architect",
+    "description": "SDD設計者。ISO/IEC/IEEE 29148準拠のrequirements、IEEE 1016準拠のdesign、WBS準拠のtasksを作成する。",
+    "prompt": "file://./prompts/spec-architect.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": ["read"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": [".kiro/specs/**"]
+        },
+        "shell": {
+            "allowedCommands": ["git log *", "git diff *", "git status"],
+            "deniedCommands": ["git push *", "git commit *", "docker compose *"]
+        }
+    },
+    "resources": [
+        "file://.kiro/steering/spec-testing-guidelines.md",
+        {
+            "type": "knowledgeBase",
+            "source": "file://./docs/domain",
+            "name": "DomainKnowledge",
+            "description": "プロジェクトのドメイン知識（spec作成時の参照用）",
+            "indexType": "best",
+            "autoUpdate": false
+        }
+    ],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "Spec設計を開始します。要件や機能の概要を教えてください。"
+}

@@ -1,0 +1,34 @@
+{
+    "name": "integration-tester",
+    "description": "結合テスト担当。E2Eテスト（Playwright）、epsilon環境検証、統合テストの実施。",
+    "prompt": "file://./prompts/integration-tester.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": ["read"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["tests/e2e/**", "screenshots/**"]
+        },
+        "shell": {
+            "allowedCommands": [
+                "npx playwright *",
+                "docker compose exec app php artisan test *",
+                "docker compose exec app ./vendor/bin/phpunit *",
+                "git status",
+                "git diff *"
+            ],
+            "deniedCommands": [
+                "git push *",
+                "git commit *",
+                "docker compose down *"
+            ]
+        }
+    },
+    "resources": [
+        "file://.kiro/steering/spec-testing-guidelines.md",
+        "skill://.claude/skills/epsilon-ui-verification/SKILL.md",
+        "skill://.agents/skills/epsilon-testing/SKILL.md",
+        "skill://.agents/skills/local-docker-testing/SKILL.md"
+    ],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "結合テストを開始します。対象のspecと検証環境を教えてください。"
+}

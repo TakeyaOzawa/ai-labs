@@ -1,0 +1,19 @@
+{
+    "name": "slack-user-directory-updater",
+    "description": "Slackユーザーディレクトリ更新エージェント。Pythonスクリプトで全ユーザーを取得し、事業部別のsteering用マッピングファイルを最新化する。隔週〜月1回の手動実行を想定。",
+    "prompt": "file://./prompts/slack-user-directory-updater.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": [],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": [
+                "Documents/works/slack_users/**",
+                ".kiro/steering/slack-user-lookup-guide.md"
+            ]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": true,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "Slackユーザーディレクトリの更新を開始します。Slack APIから全ユーザーを取得し、事業部別のsteeringファイルを最新化します。"
+}
