@@ -4,7 +4,7 @@ inclusion: manual
 
 # Slackチャンネルマッピング
 
-Slackチャンネルの調査・収集を行うエージェント（slack-daily-scout、slack-digest-scout等）が参照するチャンネル情報。
+Slackチャンネルの調査・収集を行うエージェント（slack-trend-scout、slack-digest-scout等）が参照するチャンネル情報。
 
 ## 調査対象チャンネル
 

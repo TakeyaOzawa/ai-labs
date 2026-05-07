@@ -1,0 +1,22 @@
+{
+    "name": "notion-trend-scout",
+    "description": "Notion日次トレンドスカウト。前日に更新されたNotionのタスクリスト・Wiki・その他ページを収集し、タスク状況とドキュメント更新の日次キャッチアップレポートを出力する。",
+    "prompt": "file://./prompts/notion-trend-scout.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": ["shell"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/notion_trends/daily/**"]
+        },
+        "read": {
+            "allowedPaths": [
+                "Documents/works/notion_users/**",
+                "Documents/works/scout_histories/notion_trends/**"
+            ]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": true,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "Notion日次トレンドの収集を開始します。前日に更新されたタスクリスト・Wiki・その他ページを調査し、サマリーを作成します。"
+}

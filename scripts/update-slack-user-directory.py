@@ -1,19 +1,19 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.12
 """
-Slack ユーザーディレクトリ更新スクリプト
+update-slack-user-directory: SlackユーザーJSONを事業部別steering用Markdownに変換する
+
+目的:
+    fetch-slack-users.py で取得した全ユーザーJSONを読み込み、ボットを除外した上で
+    active/inactive × 事業部に分類し、steering用のMarkdownファイルとして出力する。
+    AIエージェントがユーザーID逆引きに使用するディレクトリデータを生成する。
 
 使い方:
-  python3 scripts/update-slack-user-directory.py <input_json_dir> <output_steering_dir>
+    python3.12 scripts/update-slack-user-directory.py <input_json_dir> <output_steering_dir>
 
-引数:
-  input_json_dir:    fetch-slack-users.py で取得した all_users.json が格納されたディレクトリ
-  output_steering_dir: steering出力先（例: ${HOME}/Documents/works/slack_users/2026-05-01）
+例:
+    python3.12 scripts/update-slack-user-directory.py ~/Documents/works/slack_users/raw ~/Documents/works/slack_users/2026-05-01
 
-このスクリプトは以下を行う:
-  1. input_json_dir 内のJSONファイルを読み込み、ユーザーを統合
-  2. ボット（is_bot=true）を除外
-  3. active/inactive × 事業部 に分類
-  4. steering用mdファイルを出力
+出力: Markdown ファイル群（output_steering_dir/active/*.md, output_steering_dir/inactive/*.md）
 """
 
 import json
@@ -25,7 +25,7 @@ from pathlib import Path
 
 
 def classify_user(title: str, email: str) -> str:
-    """ユーザーを事業部に分類する"""
+    """ユーザーを事業部に分類する。"""
     t = (title or "").upper()
 
     # MDX（兼任時の優先）
@@ -83,8 +83,8 @@ def classify_user(title: str, email: str) -> str:
     return "other"
 
 
-def parse_users_from_json_dir(json_dir: str) -> dict:
-    """JSONディレクトリから全ユーザーを読み込む"""
+def parse_users_from_json_dir(json_dir: str) -> dict[str, dict]:
+    """JSONディレクトリから全ユーザーを読み込む。"""
     users = {}
     json_files = sorted(Path(json_dir).glob("*.json"))
 
@@ -111,8 +111,8 @@ def parse_users_from_json_dir(json_dir: str) -> dict:
     return users
 
 
-def write_steering_file(path: str, title: str, desc: str, members: dict):
-    """steering用mdファイルを書き出す"""
+def write_steering_file(path: str, title: str, desc: str, members: dict) -> int:
+    """steering用mdファイルを書き出す。"""
     today = datetime.now().strftime("%Y-%m-%d")
     lines = [
         "---",
@@ -155,7 +155,7 @@ DIV_META = {
 }
 
 
-def main():
+def main() -> None:
     if len(sys.argv) != 3:
         print(f"Usage: {sys.argv[0]} <input_json_dir> <output_steering_dir>")
         sys.exit(1)

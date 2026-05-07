@@ -3,12 +3,20 @@
 /.cache/*
 /.claude/*
 /works/*
+/scripts/__pycache__/*
 /Applications/*
 /Downloads/*
 /Documents/*
 !/Documents/works
 /Desktop/*
 /Library/*
+!/Library/Application Support/
+/Library/Application Support/*
+!/Library/Application Support/Kiro/
+/Library/Application Support/Kiro/*
+!/Library/Application Support/Kiro/User/
+/Library/Application Support/Kiro/User/*
+!/Library/Application Support/Kiro/User/settings.json
 /Music/*
 /Movies/*
 /Pictures/*

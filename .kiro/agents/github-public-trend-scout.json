@@ -1,0 +1,16 @@
+{
+    "name": "github-public-trend-scout",
+    "description": "GitHub Trendingおよびスター急上昇リポジトリを日次で収集し、注目OSSの動向・修正傾向・開発スタイルを市場調査の観点でレポートする。",
+    "prompt": "file://./prompts/github-public-trend-scout.md",
+    "tools": ["read", "write", "shell", "web"],
+    "allowedTools": ["web"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/github_public_trends/daily/**"]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "GitHub Public Trend Scoutを開始します。GitHub Trendingから注目リポジトリを収集します。"
+}

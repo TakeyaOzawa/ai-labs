@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Free Notion MCP Port",
+  "description": "Notion MCP (mcp-remote) が使用するポート9553を占有しているプロセスを停止し、再接続可能な状態にする",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "bash ~/scripts/free-notion-mcp-port.sh"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "free-notion-mcp-port"
+}

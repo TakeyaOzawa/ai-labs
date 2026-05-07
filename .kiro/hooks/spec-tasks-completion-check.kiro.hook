@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "Spec Tasks Completion Check",
+  "description": "Detects when all spec tasks are completed and prompts switching to code-reviewer for quality check and PR creation",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".kiro/specs/**/tasks.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "tasks.mdが編集されました。全タスクのチェックボックスが完了（[x]）になっているか確認してください。全タスクが完了している場合は、ユーザーに「全タスクが完了しました。code-reviewerエージェントに切り替えて品質チェックとPR作成を行いますか？」と提案してください。未完了タスクがある場合は何もしないでください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "spec-tasks-completion-check"
+}

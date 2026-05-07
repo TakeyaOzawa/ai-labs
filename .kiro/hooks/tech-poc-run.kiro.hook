@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Tech PoC Run",
+  "description": "技術検証PoCを実行するエージェントを起動する。Tech Blog Planの検証計画またはユーザー指示に基づき、コンテナ環境を構築して技術検証を自動実行する。",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "tech-poc-runner エージェントとして動作してください。`.kiro/agents/prompts/tech-poc-runner.md` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。ユーザーに「Tech Blog Planのファイルパス、または検証したい技術テーマ・内容を教えてください」と確認してください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "tech-poc-run"
+}

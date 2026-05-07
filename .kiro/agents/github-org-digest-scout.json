@@ -1,0 +1,16 @@
+{
+    "name": "github-org-digest-scout",
+    "description": "github-org-trend-scoutの日次レポート（直近7日分）を集約し、リポジトリ別の変更傾向・主要PR・コントリビューター活動を週次サマリーとして出力する。",
+    "prompt": "file://./prompts/github-org-digest-scout.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": [],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/github_org_trends/weekly/**"]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "GitHub org週次ダイジェストスカウトを開始します。日次レポートを集約して週次サマリーを作成します。"
+}

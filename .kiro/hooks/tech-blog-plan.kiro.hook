@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Tech Blog Plan",
+  "description": "テックブログの記事草案と技術検証・情報収集計画を作成するエージェントを起動する。素材シートまたはユーザー提供の草案・文章を入力として受け取る。",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "tech-blog-planner エージェントとして動作してください。`.kiro/agents/prompts/tech-blog-planner.md` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。ユーザーに「素材シートのパス、または書きたいテーマ・草案を教えてください」と確認してください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "tech-blog-plan"
+}

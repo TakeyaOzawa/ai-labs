@@ -1,0 +1,59 @@
+{
+    "name": "tech-poc-runner",
+    "description": "技術検証PoC実行エージェント。Tech Blog Planの検証計画やユーザー指示に基づき、コンテナ環境を構築して技術検証を自動実行し、結果と残課題をまとめる。",
+    "prompt": "file://./prompts/tech-poc-runner.md",
+    "tools": ["read", "write", "shell", "web"],
+    "allowedTools": ["web", "shell"],
+    "toolsSettings": {
+        "read": {
+            "allowedPaths": [
+                "Documents/works/tech_blog_plans/**",
+                "works/poc-something/**"
+            ]
+        },
+        "write": {
+            "allowedPaths": ["works/poc-something/**"]
+        },
+        "shell": {
+            "allowedCommands": [
+                "docker *",
+                "docker compose *",
+                "gh *",
+                "git *",
+                "curl *",
+                "npm *",
+                "npx *",
+                "node *",
+                "php *",
+                "composer *",
+                "python *",
+                "pip *",
+                "go *",
+                "cargo *",
+                "date *",
+                "mkdir *",
+                "ls *",
+                "cat *",
+                "cp *",
+                "mv *",
+                "rm *",
+                "chmod *",
+                "find *",
+                "grep *",
+                "wc *",
+                "head *",
+                "tail *",
+                "jq *",
+                "ping *",
+                "nslookup *",
+                "dig *",
+                "traceroute *",
+                "netstat *",
+                "ss *"
+            ]
+        }
+    },
+    "resources": [],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "技術検証PoCの実行をお手伝いします。Tech Blog Planのファイルパス、または検証したい技術テーマ・内容を教えてください。"
+}

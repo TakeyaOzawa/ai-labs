@@ -1,0 +1,16 @@
+{
+    "name": "github-public-digest-scout",
+    "description": "github-public-trend-scoutの日次レポート（直近7日分）を集約し、週次のOSSトレンドサマリー・修正傾向分析・自社適用候補を出力する。",
+    "prompt": "file://./prompts/github-public-digest-scout.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": [],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/github_public_trends/weekly/**"]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "GitHub Public Digest Scoutを開始します。日次レポートを集約して週次OSSトレンドサマリーを作成します。"
+}

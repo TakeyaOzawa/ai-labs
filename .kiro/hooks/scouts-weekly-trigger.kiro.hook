@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Scouts Weekly Trigger",
+  "description": "週次scoutパイプラインのトリガー。create-weekly-tasks.shを実行してタスクファイルを生成し、親タスクのstatusをrunningに更新することでpostToolUse watcherを発火させる。",
+  "version": "6.0.0",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "週次scoutパイプラインを起動します。\n\n## Step 0: 基準日の確認\n\nユーザーに基準日の指定があるか確認してください。\n- 直前のユーザーメッセージに日付（YYYY-MM-DD形式）が含まれていればそれを基準日とする\n- 指定がなければ前日を基準日とする:\n```bash\nTZ=Asia/Tokyo date -v-1d +%Y-%m-%d\n```\n\n以降、決定した基準日を `{BASE_DATE}` として使用します。\n\n## Step 1: タスクファイルの生成\n\n以下のコマンドを実行してタスクファイルを生成:\n```bash\n~/scripts/create-weekly-tasks.sh {BASE_DATE}\n```\n\n出力からファイルパスを取得してください。\n\n## Step 2: タスクファイルの読み込みと確認\n\n生成されたファイルをreadFileで読み込み、`child_tasks` 配列を確認してください。\n\n- `depends_on` が null の子タスクが `status: \"starting\"` で生成されていることを確認\n- `depends_on` が null でない子タスクが `status: \"pending\"` で生成されていることを確認\n\n## Step 3: 親タスクのstatus更新（Watcher発火トリガー）\n\n現在時刻を取得:\n```bash\nTZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00\n```\n\nタスクファイル内の親タスクを strReplace で更新:\n- `\"status\": \"pending\"` → `\"status\": \"running\"`\n- `\"started_at\": null` → `\"started_at\": \"{現在時刻}\"`\n- `\"updated_at\"` を現在時刻に更新\n\n**注意: この strReplace がpostToolUse(write)を発火させ、Scouts Weekly Watcherが起動します。**\n\n## Step 4: 完了報告\n\n「📋 週次scoutパイプラインを起動しました（基準日: {BASE_DATE}）。{N}件の子タスクがstarting状態で生成されました（依存タスク{M}件はpending）。postToolUse watcherが自動検知して実行を開始します。」と報告。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "scouts-weekly-trigger"
+}

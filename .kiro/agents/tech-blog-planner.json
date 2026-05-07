@@ -1,0 +1,24 @@
+{
+    "name": "tech-blog-planner",
+    "description": "テックブログ企画エージェント。素材シートやユーザー提供の草案・文章から、記事草案（TBD付き）と技術検証・情報収集の計画を作成する。",
+    "prompt": "file://./prompts/tech-blog-planner.md",
+    "tools": ["read", "write", "shell", "web"],
+    "allowedTools": ["web"],
+    "toolsSettings": {
+        "read": {
+            "allowedPaths": [
+                "Documents/works/scout_histories/tech_blog_materials/weekly/**",
+                "Documents/works/tech_blog_plans/**"
+            ]
+        },
+        "write": {
+            "allowedPaths": ["Documents/works/tech_blog_plans/**"]
+        },
+        "shell": {
+            "allowedCommands": ["gws docs *", "gws schema *", "date *"]
+        }
+    },
+    "resources": [],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "テックブログの企画・草案作成をお手伝いします。素材シートのパス、または書きたいテーマ・草案を教えてください。"
+}

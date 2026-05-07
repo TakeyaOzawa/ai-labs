@@ -45,7 +45,8 @@
         "browser_console_messages",
         "browser_network_requests",
         "browser_take_screenshot",
-        "browser_evaluate"
+        "browser_evaluate",
+        "browser_close"
       ]
     },
     "chrome-carmoon-home": {

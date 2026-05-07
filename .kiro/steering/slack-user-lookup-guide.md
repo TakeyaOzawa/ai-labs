@@ -13,7 +13,7 @@ Slackの投稿やメッセージを調査する際、ユーザーID（例: `U02L
 
 ## エージェントへの指示
 
-Slackメッセージを処理するエージェント（slack-daily-scout、slack-digest-scout等）は、以下のルールに従うこと:
+Slackメッセージを処理するエージェント（slack-trend-scout、slack-digest-scout等）は、以下のルールに従うこと:
 
 1. **ユーザーID→名前変換が必要な場合、まず `${HOME}/Documents/works/slack_users/` 配下のユーザーデータを読み込む**
 2. 対象チャンネルの事業部が分かっている場合は該当ファイルのみ読み込む

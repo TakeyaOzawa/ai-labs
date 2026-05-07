@@ -1,16 +1,16 @@
 {
     "name": "slack-digest-scout",
-    "description": "Slack週次ダイジェストスカウト。過去2週間のSlackチャンネルのやり取りをスレッド内の会話を含めて収集し、「確定事項」「継続議論」「未着手・要検討」の3軸で分類・優先度付けしたサマリーレポートを自動生成する。",
+    "description": "Slack週次ダイジェストスカウト。過去1週間のSlackチャンネルのやり取りをスレッド内の会話を含めて収集し、「確定事項」「継続議論」「未着手・要検討」の3軸で分類・優先度付けしたサマリーレポートを自動生成する。",
     "prompt": "file://./prompts/slack-digest-scout.md",
     "tools": ["read", "write"],
     "allowedTools": [],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_histories/slack_digest/weekly/**"]
+            "allowedPaths": ["Documents/works/scout_histories/slack_trends/weekly/**"]
         }
     },
     "resources": [],
     "includeMcpJson": true,
     "model": "claude-sonnet-4",
-    "welcomeMessage": "Slack週次ダイジェストの収集を開始します。過去2週間のSlackチャンネルを調査し、意思決定ステータス別にサマリーを作成します。"
+    "welcomeMessage": "Slack週次ダイジェストの収集を開始します。過去1週間のSlackチャンネルを調査し、意思決定ステータス別にサマリーを作成します。"
 }

@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Scouts Daily Watcher",
+  "description": "日次scoutタスクファイルへのwrite操作を検知し、startingステータスの子タスクを1つずつ実行する（1タスク1発火方式）。完了後にstrReplaceで再発火トリガーを発行。",
+  "version": "9.0.0",
+  "when": {
+    "type": "postToolUse",
+    "toolTypes": ["write"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "直前のwrite操作が日次scoutタスクファイルへの書き込みかどうかを判定し、該当する場合のみ処理を実行してください。\n\n## Step 0: 対象ファイル判定\n\n- パスが `Documents/works/agent_histories/scout_daily/` 配下の `.json` ファイル **でない** 場合 → 何もせず終了\n- 該当する場合 → `.kiro/agents/prompts/pipeline-executor.md` をreadFileで読み込み、`{pipeline}` を `daily` として手順に従い実行してください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "scouts-daily-watcher"
+}

@@ -1,0 +1,17 @@
+{
+    "name": "gws-trend-scout",
+    "description": "GWSトレンドスカウト。前日に更新・共有されたGoogle Docs・Slides・Sheets・Forms・PDFを収集し、ミーティング議事録の結論・ネクストアクションを含む日次レポートを自動生成する。",
+    "prompt": "file://./prompts/gws-trend-scout.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": ["shell"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": [
+                "Documents/works/scout_histories/gws_trends/daily/**"
+            ]
+        }
+    },
+    "resources": [],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "GWSトレンドの収集を開始します。前日に更新されたドキュメントを収集し、日次レポートを作成します。"
+}

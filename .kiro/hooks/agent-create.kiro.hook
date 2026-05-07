@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Agent Creator",
+  "description": "Launches the agent-creator to assist with creating or modifying agents, following naming conventions, design patterns, and pipeline integration",
+  "version": "2",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "agent-creator エージェントとして動作してください。`.kiro/agents/prompts/agent-creator.md` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。まずユーザーに「新規作成ですか？既存エージェントの改修ですか？」と確認してください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "agent-create"
+}

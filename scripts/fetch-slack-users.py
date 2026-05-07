@@ -1,12 +1,19 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.12
 """
-Slack APIから全ユーザーを取得し、1つのJSONファイルとして保存する。
+fetch-slack-users: Slack APIから全ユーザー情報を取得しJSONファイルに保存する
+
+目的:
+    Slack users.list APIをページネーション付きで呼び出し、ワークスペース内の
+    全ユーザー情報を取得する。後続の update-slack-user-directory.py で
+    事業部別ディレクトリを生成するための入力データとして使用する。
 
 使い方:
-  SLACK_BOT_TOKEN=xoxb-... python3 scripts/fetch-slack-users.py <output_dir>
+    SLACK_BOT_TOKEN=xoxb-... python3.12 scripts/fetch-slack-users.py <output_dir>
 
-引数:
-  output_dir: JSONファイルの保存先ディレクトリ（all_users.json として出力）
+例:
+    SLACK_BOT_TOKEN=xoxb-xxx python3.12 scripts/fetch-slack-users.py ~/Documents/works/slack_users/raw
+
+出力: JSON ファイル（output_dir/all_users.json）
 """
 
 import json
@@ -17,7 +24,19 @@ import urllib.request
 import urllib.error
 
 
-def fetch_all_users(token: str, output_dir: str):
+def fetch_all_users(token: str, output_dir: str) -> int:
+    """Slack APIから全ユーザーを取得しJSONファイルに保存する。
+
+    Args:
+        token: Slack Bot Token（xoxb-...）
+        output_dir: 出力先ディレクトリパス
+
+    Returns:
+        取得したメンバー数
+
+    Raises:
+        SystemExit: API呼び出し失敗時
+    """
     os.makedirs(output_dir, exist_ok=True)
 
     cursor = ""
@@ -81,7 +100,7 @@ def fetch_all_users(token: str, output_dir: str):
     return len(all_members)
 
 
-def main():
+def main() -> None:
     if len(sys.argv) != 2:
         print(f"Usage: {sys.argv[0]} <output_dir>")
         sys.exit(1)

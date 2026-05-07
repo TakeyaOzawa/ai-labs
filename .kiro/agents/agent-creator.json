@@ -1,0 +1,21 @@
+{
+    "name": "agent-creator",
+    "description": "scoutパイプライン等のエージェントを新規作成・改修する専門エージェント。命名規則、trend/digest棲み分け、コンテキスト節約パターン、hook連携、パイプライン組み込みまでを一貫して支援する。",
+    "prompt": "file://./prompts/agent-creator.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": ["read"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": [
+                ".kiro/agents/**",
+                ".kiro/hooks/**",
+                ".kiro/steering/**",
+                "scripts/**"
+            ]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "エージェント作成を支援します。新規作成ですか？既存エージェントの改修ですか？"
+}

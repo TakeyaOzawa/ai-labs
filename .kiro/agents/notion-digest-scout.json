@@ -1,22 +1,22 @@
 {
     "name": "notion-digest-scout",
-    "description": "Notion週次ダイジェストスカウト。過去2週間に更新されたNotionのタスクリスト・Wiki・その他ページを収集し、タスク状況とドキュメント更新のサマリーレポートを自動生成する。",
+    "description": "Notion週次ダイジェストスカウト。過去1週間に更新されたNotionのタスクリスト・Wiki・その他ページを収集し、タスク状況とドキュメント更新のサマリーレポートを自動生成する。",
     "prompt": "file://./prompts/notion-digest-scout.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": ["shell"],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_histories/notion_digest/weekly/**"]
+            "allowedPaths": ["Documents/works/scout_histories/notion_trends/weekly/**"]
         },
         "read": {
             "allowedPaths": [
                 "Documents/works/notion_users/**",
-                "Documents/works/scout_histories/notion_digest/**"
+                "Documents/works/scout_histories/notion_trends/**"
             ]
         }
     },
     "resources": [],
     "includeMcpJson": true,
     "model": "claude-sonnet-4",
-    "welcomeMessage": "Notion週次ダイジェストの収集を開始します。過去2週間のタスクリスト・Wiki・その他ページを調査し、サマリーを作成します。"
+    "welcomeMessage": "Notion週次ダイジェストの収集を開始します。過去1週間のタスクリスト・Wiki・その他ページを調査し、サマリーを作成します。"
 }
