@@ -5,7 +5,7 @@ set -eu -o pipefail
 #
 # 目的:
 #   日次scoutパイプライン実行前に、各エージェントの実行状態を追跡するための
-#   タスクファイル（JSON）を生成する。RSSフィードの事前取得も行う。
+#   タスクファイル（JSON）を生成する。
 #
 # 使い方:
 #   create-daily-tasks.sh [基準日]
@@ -14,7 +14,7 @@ set -eu -o pipefail
 #   create-daily-tasks.sh 2026-05-04
 #
 # 出力: JSON形式のタスクファイル（~/Documents/works/agent_histories/scout_daily/）
-# 依存: npx (ulid), python3 (fetch-rss-feeds.py), jq
+# 依存: npx (ulid), jq
 
 BASE_DATE="${1:-$(TZ=Asia/Tokyo date -v-1d +%Y-%m-%d)}"
 TASK_ID=$(npx --yes ulid 2>/dev/null)
@@ -22,19 +22,6 @@ NOW=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
 DIR="$HOME/Documents/works/agent_histories/scout_daily"
 
 mkdir -p "$DIR"
-
-# ─── RSSフィード事前取得 ─────────────────────────────────────────
-# 各カテゴリのRSSフィードを事前取得し、scoutが参照する一時ファイルを生成
-RSS_SCRIPT="$HOME/scripts/fetch-rss-feeds.py"
-if [ -f "$RSS_SCRIPT" ]; then
-  echo "📡 RSSフィード事前取得中..."
-  python3.12 "$RSS_SCRIPT" --category tech --date "$BASE_DATE" 2>/dev/null && echo "   ✅ tech" || echo "   ⚠️  tech (失敗・続行)"
-  python3.12 "$RSS_SCRIPT" --category biz --date "$BASE_DATE" 2>/dev/null && echo "   ✅ biz" || echo "   ⚠️  biz (失敗・続行)"
-  python3.12 "$RSS_SCRIPT" --category academic --date "$BASE_DATE" 2>/dev/null && echo "   ✅ academic" || echo "   ⚠️  academic (失敗・続行)"
-  echo ""
-else
-  echo "⚠️  RSSスクリプト未検出: ${RSS_SCRIPT}（スキップ）"
-fi
 
 # ─── 子タスクのULID生成 ──────────────────────────────────────────
 CHILD_IDS=()

@@ -127,7 +127,6 @@ invokeSubAgent:
     - 出力: {ファイルパス}
     - 合計メッセージ数: {N}
     - 合計スレッド数: {N}
-    - Slack通知: 成功/失敗
 ```
 
 ### Phase 4: 完了報告
@@ -138,7 +137,6 @@ invokeSubAgent:
 ✅ slack-trend-scout 完了
 - 出力ファイル: Documents/works/scout_histories/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md
 - 件数/概要: {合計メッセージ数}件のメッセージを{4}チャンネルから収集
-- Slack通知: 成功/失敗
 - エラー: なし / {エラー内容}
 ```
 

@@ -133,6 +133,3 @@ channels:
 6. 勤怠メッセージはトピックとして扱わない
 7. 情報なし分類・優先度は無理に埋めずスキップ
 8. 出力は日本語
-
-## Slack通知
-レポート完了後、`mcp_slack_notification_home_slack_post_message` で `channel_id: U076LRL1B35` に投稿。ヘッダー: `📋 Slack週次ダイジェスト: {日付}`。4000文字超はセクション分割。💤高優先度トピックは先頭に配置。Markdown→Slack mrkdwn変換（#→*太字*、[]()→<URL|text>）。投稿失敗はエラー報告のみ（レポート作成は成功扱い）。

@@ -112,20 +112,17 @@ echo "Split total: ${SPLIT}"
 
 ### 6. 完了報告
 
-処理結果のサマリーをSlackに通知する。
+処理結果のサマリーを出力する。
 
 ```
-mcp_slack_notification_home_slack_post_message:
-  channel_id: U076LRL1B35
-  text: |
-    ✅ Slackユーザーディレクトリを更新しました（{日付}）
-    
-    *アクティブ*: {N}名（MDX:{n} DXM:{n} MS:{n} HR:{n} CP:{n} 未設定:{n} 他:{n} ゲスト:{n}）
-    *非アクティブ*: {N}名（MDX:{n} DXM:{n} MS:{n} HR:{n} CP:{n} 未設定:{n} 他:{n} ゲスト:{n}）
-    *合計*: {N}名（ボット除外後）
-    
-    整合性チェック: ✅ PASS
-    前回比: {差分サマリー}
+✅ Slackユーザーディレクトリを更新しました（{日付}）
+
+*アクティブ*: {N}名（MDX:{n} DXM:{n} MS:{n} HR:{n} CP:{n} 未設定:{n} 他:{n} ゲスト:{n}）
+*非アクティブ*: {N}名（MDX:{n} DXM:{n} MS:{n} HR:{n} CP:{n} 未設定:{n} 他:{n} ゲスト:{n}）
+*合計*: {N}名（ボット除外後）
+
+整合性チェック: ✅ PASS
+前回比: {差分サマリー}
 ```
 
 ## 出力ファイル一覧

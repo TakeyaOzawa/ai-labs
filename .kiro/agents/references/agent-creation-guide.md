@@ -182,7 +182,6 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 ## 収集手順（2段階実行・コンテキスト節約方式）
 ## 出力
 ## 行動原則
-## Slack通知
 ## 週次パイプラインモード  ← 週次パイプライン対象のみ
 ```
 
@@ -193,8 +192,11 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 - [ ] `.kiro/agents/references/{name}-sources.md` 作成（Web検索系のみ）
 - [ ] `scripts/fetch-rss-feeds.py` にカテゴリ追加（RSS取得が必要な場合）
 - [ ] `scripts/create-{frequency}-tasks.sh` に子タスク追加（IDE hook方式の場合）
-- [ ] `scripts/run-daily-pipeline.sh` の `AGENTS` 配列に追加（kiro-cli方式の場合）
+- [ ] `scripts/run-{frequency}-pipeline.sh` の `AGENTS` 配列に追加（kiro-cli方式の場合）
+- [ ] `scripts/run-{frequency}-pipeline.sh` の `NOTIFY_FILES` マッピングに追加（Slack通知対象の場合）
 - [ ] `.kiro/agents/prompts/pipeline-executor.md` の対象タスクリスト更新（週次モード対象の場合）
+- [ ] `.kiro/agents/prompts/pipeline-executor.md` Step 5.1 のSlack通知マッピングに追加（通知対象の場合）
+- [ ] `scouts-{frequency}-trigger.kiro.hook` のRSS事前取得ステップに追加（RSS必要な場合）
 - [ ] 出力先ディレクトリの存在確認（`Documents/works/scout_histories/{dir}/`）
 - [ ] プロンプトサイズ確認（`wc -c` で8KB以下）
 
@@ -217,10 +219,12 @@ kiro-cli chat --trust-all-tools --no-interactive \
 | 項目 | 内容 |
 |------|------|
 | MCP環境変数 | `.zshrc` で定義された環境変数をsourceして解決。`kiro-cli` はmcp.jsonの `${...}` をプロセス環境変数から展開する |
+| SLACK_BOT_TOKEN | 収集フェーズでは `SLACK_REFERENCE_BOT_TOKEN` を、通知フェーズでは `MY_SLACK_OAUTH_TOKEN` を `SLACK_BOT_TOKEN` にexportして切り替える |
 | Notion MCP | SSE接続でブラウザ認証が必要。初回は手動で認証を完了させる。トークンはキャッシュされる |
 | ツール承認 | `--trust-all-tools` で全ツールを自動承認。`--no-interactive` と併用必須 |
 | セッション独立性 | 各エージェントは独立したセッションで実行される。コンテキスト共有なし |
 | 実行完了待ち | ブロッキング動作。エージェント完了までプロセスが待機する |
+| Python | `python3.12` を使用（`python3` / `python3.13` は使用禁止） |
 
 ### launchd自動実行
 
@@ -236,15 +240,40 @@ kiro-cli chat --trust-all-tools --no-interactive \
 ~/scripts/manage-launchd.sh reload scout-daily-pipeline
 ```
 
-### 日次パイプラインへのエージェント追加
+### 日次/週次パイプラインへのエージェント追加
 
-`scripts/run-daily-pipeline.sh` の `AGENTS` 配列に追加:
+`scripts/run-{frequency}-pipeline.sh` の `AGENTS` 配列に追加:
 
 ```bash
+# run-daily-pipeline.sh
 AGENTS=(
   "tech-trend-scout"
   "biz-car-trend-scout"
   ...
   "{new-agent-name}"  # ← 追加
 )
+
+# run-weekly-pipeline.sh
+AGENTS=(
+  "slack-digest-scout"
+  "gws-digest-scout"
+  ...
+  "{new-agent-name}"  # ← 追加
+)
+```
+
+Slack通知対象の場合は `NOTIFY_FILES` マッピングにも追加:
+
+```bash
+NOTIFY_FILES[{new-agent-name}]="$HOME/Documents/works/scout_histories/{output_dir}/{frequency}/${BASE_DATE}_{output_file}.md"
+```
+
+週次パイプラインモード対象の場合は `case` 文にも追加:
+
+```bash
+case "$AGENT" in
+  tech-event-scout|lifestyle-event-scout|...|{new-agent-name})
+    PROMPT="... 「週次パイプラインモード」で ..."
+    ;;
+esac
 ```

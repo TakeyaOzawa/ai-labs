@@ -1,0 +1,19 @@
+{
+    "name": "slack-notify",
+    "description": "指定されたmdファイルまたはテキストをSlackチャンネルに投稿する汎用通知エージェント",
+    "prompt": "file://./prompts/slack-notify.md",
+    "tools": ["read", "shell"],
+    "allowedTools": [],
+    "toolsSettings": {
+        "read": {
+            "allowedPaths": [
+                "Documents/works/scout_histories/**",
+                "Documents/works/agent_histories/**"
+            ]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": true,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "Slack通知エージェントです。投稿するファイルパスとチャンネルIDを指定してください。"
+}

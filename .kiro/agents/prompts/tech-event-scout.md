@@ -127,8 +127,5 @@ base_station: 京王井の頭線「浜田山」駅
 ## 行動原則
 1. 事実ベース（推測は明記）  2. URL必須（推測でURL生成しない）  3. 各時期区分で最低3件目標（見つからなければ「該当なし」）  4. connpass/TECH PLAY等の情報を優先  5. 参加費不明は「要確認」  6. 当プロジェクト（Laravel/PHP/AWS/Python/TypeScript）関連は優先ピックアップ  7. CFP締切が近い場合は注記
 
-## Slack通知
-レポート完了後、`slack_post_message` で `channel_id: U076LRL1B35` に投稿。ヘッダー: `🎪 テックイベントレポート: {日付}`。4000文字超はセクション分割。Markdown→Slack mrkdwn変換（#→*太字*、[]()→<URL|text>）。投稿失敗はエラー報告のみ（レポート作成は成功扱い）。
-
 ## 週次パイプラインモード
 週次hookから呼び出された場合も通常と同じ手順で実行。出力先: `Documents/works/scout_histories/tech_events/weekly/`。完了後、出力ファイルパスを明示する。

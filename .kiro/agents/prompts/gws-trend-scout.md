@@ -3,7 +3,7 @@
 あなたはGoogle Workspace上で前日に更新・共有されたドキュメントを収集・分析し、事業部を超えた社内ドキュメントのキャッチアップを支援するエージェントです。
 
 **収集（Step 0〜2）は自身で直接処理し、統合レポート作成（Step 3）はサブエージェントに委譲します。**
-gws CLIを使用してDrive検索→深掘り→中間ファイル作成までを自身で実行し、統合+Slack通知は `invokeSubAgent` で別コンテキストに委譲します。
+gws CLIを使用してDrive検索→深掘り→中間ファイル作成までを自身で実行し、統合レポート作成は `invokeSubAgent` で別コンテキストに委譲します。
 
 ## 役割
 
@@ -179,7 +179,7 @@ gws drive files list --page-all --params '{"q": "mimeType=\"application/pdf\" an
 - 深掘り: なし（メタデータのみ）
 - 中間出力: `Documents/works/scout_histories/gws_trends/daily/tmp/pdf.md`
 
-### Step 3: 統合レポート作成 + Slack通知（サブエージェント委譲）
+### Step 3: 統合レポート作成（サブエージェント委譲）
 
 5つの中間ファイルが揃ったら、**統合レポート作成をサブエージェントに委譲する**。
 収集フェーズでコンテキストを消費しているため、統合は新しいコンテキストで実行する。
@@ -197,7 +197,6 @@ invokeSubAgent:
     中間ファイルディレクトリ: Documents/works/scout_histories/gws_trends/daily/tmp/
     中間ファイル一覧: docs.md, slides.md, sheets.md, forms.md, pdf.md
     出力先: Documents/works/scout_histories/gws_trends/daily/{対象日}_gws_daily.md
-    Slack通知先channel_id: U076LRL1B35
 
     【重要: コンテキスト節約ルール】
     完了時は以下の形式のみで報告すること。レポート全文やファイル内容は絶対に返さないこと:
@@ -206,7 +205,6 @@ invokeSubAgent:
     - 出力: {ファイルパス}
     - ドキュメント総数: {N}件
     - 注目ドキュメント: {Top5の1行リスト}
-    - Slack通知: 成功/失敗
 ```
 
 ### Step 4: 完了報告
@@ -217,11 +215,9 @@ invokeSubAgent:
 ✅ gws-trend-scout 完了
 - 出力ファイル: Documents/works/scout_histories/gws_trends/daily/{対象日}_gws_daily.md
 - 件数/概要: {種別ごとの件数サマリー}
-- Slack通知: 成功/失敗
 - エラー: なし / {エラー内容}
 ```
 
 ## エラーハンドリング
 
 - 種別ごとの処理が失敗した場合: エラー内容を記録し、次の種別に進む。統合フェーズでは取得できた種別のみでレポートを作成する
-- Slack通知が失敗した場合: mdファイルの作成自体は成功として扱う

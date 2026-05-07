@@ -73,7 +73,6 @@
     "npm info *",
     "npx *",
     "node *",
-    "python3 *",
     "SLACK_BOT_TOKEN=\"${SLACK_REFERENCE_BOT_TOKEN}\" python3 *",
     "php artisan *",
     "./vendor/bin/sail *",
@@ -120,7 +119,9 @@
     "kiro-cli *",
     "plutil *",
     "zsh *",
-    "python3.12 *"
+    "python3.12 *",
+    "TZ=UTC date *",
+    "~/scripts/epoch-to-jst.sh *"
   ],
   "kiroAgent.agentAutonomy": "Autopilot",
   "kiroAgent.trustedTools": ["webFetch", "remote_web_search"],

@@ -5,7 +5,7 @@ set -eu -o pipefail
 #
 # 目的:
 #   週次scoutパイプライン実行前に、各エージェントの実行状態を追跡するための
-#   タスクファイル（JSON）を生成する。イベント系RSSフィードの事前取得も行う。
+#   タスクファイル（JSON）を生成する。
 #
 # 使い方:
 #   create-weekly-tasks.sh [基準日]
@@ -14,7 +14,7 @@ set -eu -o pipefail
 #   create-weekly-tasks.sh 2026-05-04
 #
 # 出力: JSON形式のタスクファイル（~/Documents/works/agent_histories/scout_weekly/）
-# 依存: npx (ulid), python3 (fetch-rss-feeds.py)
+# 依存: npx (ulid)
 
 BASE_DATE="${1:-$(TZ=Asia/Tokyo date -v-1d +%Y-%m-%d)}"
 TASK_ID=$(npx --yes ulid 2>/dev/null)
@@ -261,8 +261,3 @@ echo "   タスク名: scout_weekly"
 echo "   基準日:   ${BASE_DATE}"
 echo "   子タスク: 9件"
 echo "   ファイル: ${FILEPATH}"
-
-# RSS事前取得（イベント系）
-echo "📡 RSSフィード事前取得中..."
-python3.12 ~/scripts/fetch-rss-feeds.py --category tech_events --date "${BASE_DATE}" --no-filter 2>/dev/null && echo "   ✅ tech_events フィード取得完了" || echo "   ⚠️ tech_events フィード取得失敗（続行）"
-python3.12 ~/scripts/fetch-rss-feeds.py --category lifestyle_events --date "${BASE_DATE}" --no-filter 2>/dev/null && echo "   ✅ lifestyle_events フィード取得完了" || echo "   ⚠️ lifestyle_events フィード取得失敗（続行）"

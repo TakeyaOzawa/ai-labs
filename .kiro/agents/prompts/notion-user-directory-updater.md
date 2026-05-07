@@ -110,19 +110,16 @@ Notionワークスペースのボットユーザー。
 
 ### 5. 完了報告
 
-処理結果のサマリーをSlackに通知する。
+処理結果のサマリーを出力する。
 
 ```
-mcp_slack_notification_home_slack_post_message:
-  channel_id: U076LRL1B35
-  text: |
-    ✅ Notionユーザーディレクトリを更新しました（{日付}）
-    
-    *人物*: {N}名
-    *ボット*: {N}名
-    *合計*: {N}名
-    
-    出力先: ~/Documents/works/notion_users/{日付}/
+✅ Notionユーザーディレクトリを更新しました（{日付}）
+
+*人物*: {N}名
+*ボット*: {N}名
+*合計*: {N}名
+
+出力先: ~/Documents/works/notion_users/{日付}/
 ```
 
 ## 出力ファイル一覧

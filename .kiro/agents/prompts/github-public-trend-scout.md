@@ -120,9 +120,3 @@ categories:
 5. セキュリティ関連の修正は優先的にピックアップする
 6. コミットメッセージは1行目のみ記録する
 7. 出力は日本語で行う
-
-## Slack通知
-レポート完了後、`mcp_slack_notification_home_slack_post_message` で `channel_id: U076LRL1B35` に投稿。
-ヘッダー: `🌐 GitHub Public Trend: {日付}`
-内容: サマリー + TOP5リポジトリ名 + セキュリティ関連があれば強調。
-4000文字超はセクション分割。投稿失敗はエラー報告のみ（レポート作成は成功扱い）。
