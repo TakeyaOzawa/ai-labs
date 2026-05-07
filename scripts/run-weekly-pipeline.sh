@@ -136,12 +136,23 @@ for AGENT in "${AGENTS[@]}"; do
   # ─── エージェント実行 ───────────────────────────────────────
   # 週次パイプラインモード対象かどうかでプロンプトを分岐
   case "$AGENT" in
-    tech-event-scout|lifestyle-event-scout|tech-blog-material-scout|tech-blog-planner)
+    tech-event-scout|lifestyle-event-scout|tech-blog-material-scout)
       PROMPT="${AGENT} エージェントとして「週次パイプラインモード」で動作してください。"
       PROMPT="${PROMPT} ~/.kiro/agents/prompts/${AGENT}.md をreadFileで読み込み、"
       PROMPT="${PROMPT}そこに記載された週次パイプラインモードのワークフローに従って実行してください。"
       PROMPT="${PROMPT}基準日は ${BASE_DATE} です。"
       PROMPT="${PROMPT}日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
+      ;;
+    tech-blog-planner)
+      # tech-blog-plannerは素材シート1件ごとに個別起動する（コンテキスト節約）
+      # ここではスキップし、後続のStep 2.5で処理する
+      echo "[$AGENT_START]    ⏭️  $AGENT: Step 2.5で個別実行（スキップ）"
+      SUCCESS=$((SUCCESS + 1))
+      if [[ "$USE_TASK_FILE" == "true" && -n "$CHILD_TASK_ID" ]]; then
+        "$HOME/scripts/update-task.sh" --task-file "$TASK_FILE" --task-id "$CHILD_TASK_ID" \
+          --set "{\"status\": \"completed\", \"completed_at\": \"$AGENT_START\", \"status_detail\": \"Step 2.5で個別実行\"}" >/dev/null || true
+      fi
+      continue
       ;;
     *)
       PROMPT="${AGENT} エージェントとして動作してください。"
@@ -177,6 +188,60 @@ for AGENT in "${AGENTS[@]}"; do
     fi
   fi
 done
+
+# ─── Step 2.5: tech-blog-planner 個別実行（素材シート1件ごと） ──
+PLANNER_NOW=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
+echo "[$PLANNER_NOW] Step 2.5: tech-blog-planner 個別実行..."
+
+MATERIAL_DIR="$HOME/Documents/works/scout_histories/tech_blog_materials/weekly"
+PLANNER_LOG="$LOG_DIR/scout-weekly-tech-blog-planner.log"
+PLANNER_SUCCESS=0
+PLANNER_FAILED=0
+
+# ログローテーション
+if [[ -f "$PLANNER_LOG" ]] && (( $(wc -l < "$PLANNER_LOG") > 500 )); then
+  tail -100 "$PLANNER_LOG" > "$PLANNER_LOG.tmp" && mv "$PLANNER_LOG.tmp" "$PLANNER_LOG"
+fi
+
+# 当該基準日の素材シートを列挙
+MATERIAL_FILES=()
+for f in "$MATERIAL_DIR/${BASE_DATE}_"*_material.md(N); do
+  [[ -f "$f" ]] && MATERIAL_FILES+=("$f")
+done
+
+if (( ${#MATERIAL_FILES[@]} == 0 )); then
+  echo "[$PLANNER_NOW]    ⚠️  素材シートなし（${BASE_DATE}_*_material.md）"
+else
+  echo "[$PLANNER_NOW]    📄 素材シート ${#MATERIAL_FILES[@]} 件検出"
+
+  for MATERIAL_FILE in "${MATERIAL_FILES[@]}"; do
+    MATERIAL_NAME=$(basename "$MATERIAL_FILE")
+    PLAN_START=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
+    echo "[$PLAN_START]    🔄 tech-blog-planner: $MATERIAL_NAME"
+
+    PLANNER_PROMPT="tech-blog-planner エージェントとして「週次パイプラインモード」で動作してください。"
+    PLANNER_PROMPT="${PLANNER_PROMPT} ~/.kiro/agents/prompts/tech-blog-planner.md をreadFileで読み込み、"
+    PLANNER_PROMPT="${PLANNER_PROMPT}そこに記載された週次パイプラインモードのワークフローに従って実行してください。"
+    PLANNER_PROMPT="${PLANNER_PROMPT} 素材シート: ${MATERIAL_FILE}"
+    PLANNER_PROMPT="${PLANNER_PROMPT} 基準日は ${BASE_DATE} です。"
+    PLANNER_PROMPT="${PLANNER_PROMPT}日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
+
+    if kiro-cli chat --trust-all-tools --no-interactive \
+      "$PLANNER_PROMPT" \
+      >> "$PLANNER_LOG" 2>&1; then
+      PLAN_END=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
+      echo "[$PLAN_END]       ✅ $MATERIAL_NAME 完了"
+      PLANNER_SUCCESS=$((PLANNER_SUCCESS + 1))
+    else
+      PLAN_END=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
+      echo "[$PLAN_END]       ❌ $MATERIAL_NAME 失敗"
+      PLANNER_FAILED=$((PLANNER_FAILED + 1))
+    fi
+  done
+
+  PLANNER_END=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
+  echo "[$PLANNER_END]    📊 tech-blog-planner: ✅${PLANNER_SUCCESS}件 / ❌${PLANNER_FAILED}件"
+fi
 
 # ─── Step 3: 親タスク完了処理 ────────────────────────────────────
 END_NOW=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)

@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "PoC更新→記事完成",
+  "description": "tech-poc-runnerがSUMMARY.mdを更新（上書き）した場合にもtech-blog-writerの起動を提案する。再実行時のフォローアップ用。",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "works/poc-something/**/SUMMARY.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "tech-poc-runnerの検証結果が更新されました（SUMMARY.mdが更新されました）。\n\n`.kiro/agents/prompts/tech-blog-writer.md` をreadFileで読み込み、そこに記載されたワークフローを把握してください。\n\nその上でユーザーに以下を確認してください:\n\n1. 更新された検証結果を確認しますか？（SUMMARY.mdの内容を表示）\n2. このまま tech-blog-writer で記事を完成（または再生成）させますか？\n3. output_format は md / docs のどちらですか？（デフォルト: md）\n\nユーザーが記事完成を希望した場合:\n- SUMMARY.mdのパスからpoc_directoryを特定\n- poc_directory名からplanファイルのパスを推定（Documents/works/tech_blog_plans/ 配下で日付+テーマが一致するもの）\n- tech-blog-writer のワークフローに従い、plan_path と poc_directory を指定して実行"
+  }
+}

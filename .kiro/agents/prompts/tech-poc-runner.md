@@ -24,7 +24,52 @@
 ```
 Documents/works/tech_blog_plans/{YYYY-MM-DD}_{theme}.md
 ```
-フロントマターの `verification_items` と本文中の `<!-- TBD: ... -->` マーカーから検証項目を抽出する。
+
+planファイルから以下の情報を抽出する:
+
+1. **フロントマター**:
+   - `feasibility_assessment.verification_strategy` — 検証深度（minimal/standard/full）
+   - `feasibility_assessment.freshness_pressure` — 鮮度圧力（high/medium/low）
+   - `verification_items` — 検証項目リスト（id, title, priority, depends_on, skip_if）
+   - `poc_directory` — 作業ディレクトリ
+   - `concerns` — 障壁・懸念事項
+
+2. **本文末尾の「技術検証計画（詳細）」セクション**:
+   - 各項目の「目的」「手順」「コード例」「確認ポイント」「参考URL」
+   - 依存関係図
+   - 環境構成テーブル
+   - Docker Compose構成（記載がある場合）
+
+3. **本文中の `<!-- TBD: ... -->` マーカー**:
+   - 検証で埋めるべき箇所の特定
+
+#### verification_strategy に応じた実行範囲
+
+| strategy | 実行対象 | 判断基準 |
+|----------|---------|---------|
+| `minimal` | `priority: required` の項目のみ | 鮮度圧力が高い。速報性優先 |
+| `standard` | `priority: required` + 主要な `recommended` | バランス型。skip_if条件に該当しないrecommendedも実行 |
+| `full` | 全項目 | 鮮度圧力が低い。品質重視 |
+
+#### depends_on に基づく実行順序
+
+検証項目は `depends_on` フィールドで依存関係が定義されている。以下のルールで実行順序を決定する:
+
+1. `depends_on: []`（依存なし）の項目を最初に実行
+2. 依存先が全て完了した項目を次に実行
+3. **ゲート項目**（他の多くの項目が依存する項目、通常はid:1の環境構築）が失敗した場合、依存する全項目をスキップ
+4. 独立した項目（他の項目に依存されない `depends_on: []`）は任意のタイミングで実行可能
+
+#### skip_if 条件の判定
+
+推奨（recommended）項目に `skip_if` が定義されている場合、以下の条件でスキップを判定する:
+
+- `verification_strategy: minimal` の場合 → 推奨項目は全てスキップ
+- ゲート項目が失敗した場合 → 依存する項目は全てスキップ
+- 必須項目の検証に想定時間の1.5倍以上かかった場合 → `skip_if` に「時間超過」系の条件がある推奨項目をスキップ
+- `skip_if` に記載された具体的条件に該当する場合 → スキップ
+
+スキップした項目は結果ファイルに「スキップ（理由: {skip_if条件}）」と記録する。
 
 ### パターン2: ユーザー直接指示
 
@@ -43,17 +88,53 @@ date +%Y-%m-%d
 ### Phase 1: 検証計画の確定
 
 1. 入力を読み取り、検証項目リストを作成
-2. 各項目に優先度（必須/推奨）と所要時間見積もりを付与
-3. 必要な環境要件を整理（言語バージョン、DB、外部サービス等）
-4. 検証計画をユーザーに提示し、承認を得る
+   - planファイルの場合: フロントマターの `verification_items` + 本文末尾の「技術検証計画（詳細）」セクションから抽出
+   - ユーザー直接指示の場合: 自分で検証計画を立案
+2. `feasibility_assessment.verification_strategy` に基づき実行範囲を決定（minimal/standard/full）
+3. `depends_on` に基づき実行順序を決定（依存関係図を参照）
+4. `concerns` の障壁を確認し、回避策を適用
+5. 検証計画をユーザーに提示し、承認を得る
+6. **planファイルのstatus更新**: 承認後、planファイルのフロントマター `status` を `in_progress` に更新する
+
+```yaml
+status: in_progress  # draft → in_progress（検証開始）
+```
+
+**注意**: statusフィールドの更新のみ行い、planファイルの他の内容は変更しない。
+
+**planファイルに「技術検証計画（詳細）」セクションがある場合**:
+- 各項目の「手順」「コード例」をそのまま実行する（自分で計画を立案し直さない）
+- 「確認ポイント」に記載された基準で成功/失敗を判定する
+- 「素材シートとの乖離テーブル」がある場合、公式API（正）の方を使用する
 
 ### Phase 2: 環境構築
 
-1. PoCディレクトリを作成: `~/works/poc-something/{YYYY-MM-DD}_{テーマkebab}/`
-2. `docker-compose.yml` を生成（必要なサービス定義）
+#### Docker利用判定
+
+**原則: 全ての検証はDocker Compose + devContainerで構成する。** ローカル環境へのランタイムやパッケージのインストールは行わない。
+
+| 条件 | 判定 | 理由 |
+|------|------|------|
+| DB（PostgreSQL, MySQL等）が必要 | Docker必須 | ローカルDB汚染防止 |
+| 特定バージョンのランタイムが必要（PHP 8.5, Go 1.23等） | Docker必須 | ローカル環境のバージョン競合防止 |
+| 複数サービスの連携が必要 | Docker必須 | サービス間通信の再現性 |
+| Node.jsのみ | Docker必須 | ローカルへのバージョンインストール・パッケージ汚染防止 |
+| ブラウザAPIのみ（ランタイム組み込み機能） | Docker必須 | 再現性確保。特定バージョンのランタイムに依存するため |
+| 外部APIのみ（curl/fetch） | Docker必須 | 環境の再現性・クリーンアップの容易さ |
+
+**例外なし。** ローカル実行は許容しない。検証の再現性とホスト環境の保護を最優先する。
+
+#### Docker利用時の手順
+
+1. PoCディレクトリを作成: planファイルの `poc_directory` を使用（未指定の場合: `~/works/poc-something/{YYYY-MM-DD}_{テーマkebab}/`）
+2. planファイルの「環境構成」テーブルと「Docker Compose構成」を参照し、`docker-compose.yml` を生成
 3. `.devcontainer/devcontainer.json` を生成
 4. `README.md` を作成（PoC概要・前提条件・実行方法）
 5. コンテナをビルド・起動
+
+#### ローカル実行は許容しない
+
+全ての検証はコンテナ内で実行する。ホスト環境へのランタイムインストール（nvm install, volta install等）やパッケージインストール（npm install）は行わない。
 
 ### Phase 3: 検証実行（逐次処理）
 

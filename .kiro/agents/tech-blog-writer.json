@@ -1,0 +1,35 @@
+{
+    "name": "tech-blog-writer",
+    "description": "テックブログ記事完成エージェント。tech-blog-plannerが作成したplanファイルとtech-poc-runnerが作成した検証結果（SUMMARY.md + results/）を統合し、TBDを埋めて記事を完成させる。完成した記事はMarkdownファイルとして保存し、オプションでGoogle Docsにアップロードする。",
+    "prompt": "file://./prompts/tech-blog-writer.md",
+    "tools": ["read", "write", "shell", "web"],
+    "allowedTools": ["web"],
+    "toolsSettings": {
+        "read": {
+            "allowedPaths": [
+                "Documents/works/tech_blog_plans/**",
+                "Documents/works/tech_blog_articles/**",
+                "Documents/works/scout_histories/tech_blog_materials/**",
+                "works/poc-something/**"
+            ]
+        },
+        "write": {
+            "allowedPaths": [
+                "Documents/works/tech_blog_articles/**",
+                "Documents/works/tech_blog_plans/**"
+            ]
+        },
+        "shell": {
+            "allowedCommands": [
+                "date *",
+                "gws docs *",
+                "gws drive *",
+                "gws schema *",
+                "wc *"
+            ]
+        }
+    },
+    "resources": [],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "テックブログ記事の完成をお手伝いします。planファイルのパスを教えてください。オプションで `output_format: docs` を指定するとGoogle Docsにもアップロードします。"
+}

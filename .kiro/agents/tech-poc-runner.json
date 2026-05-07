@@ -12,7 +12,10 @@
             ]
         },
         "write": {
-            "allowedPaths": ["works/poc-something/**"]
+            "allowedPaths": [
+                "works/poc-something/**",
+                "Documents/works/tech_blog_plans/**"
+            ]
         },
         "shell": {
             "allowedCommands": [

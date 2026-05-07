@@ -121,10 +121,15 @@
     "zsh *",
     "python3.12 *",
     "TZ=UTC date *",
-    "~/scripts/epoch-to-jst.sh *"
+    "~/scripts/epoch-to-jst.sh *",
+    "source *"
   ],
   "kiroAgent.agentAutonomy": "Autopilot",
-  "kiroAgent.trustedTools": ["webFetch", "remote_web_search"],
+  "kiroAgent.trustedTools": [
+    "webFetch",
+    "remote_web_search",
+    "web_fetch"
+  ],
   "kiroAgent.mcpApprovedEnvVars": [
     "POSTMAN_API_KEY",
     "GITHUB_PERSONAL_ACCESS_TOKEN",

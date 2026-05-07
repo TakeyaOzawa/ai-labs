@@ -1,13 +1,13 @@
 {
     "name": "tech-blog-planner",
-    "description": "テックブログ企画エージェント。素材シートやユーザー提供の草案・文章から、記事草案（TBD付き）と技術検証・情報収集の計画を作成する。",
+    "description": "テックブログ企画エージェント。素材シートやユーザー提供の草案・文章から、実施是非（Go/No-Go）を判定し、記事草案（TBD付き）と技術検証計画を作成する。",
     "prompt": "file://./prompts/tech-blog-planner.md",
     "tools": ["read", "write", "shell", "web"],
     "allowedTools": ["web"],
     "toolsSettings": {
         "read": {
             "allowedPaths": [
-                "Documents/works/scout_histories/tech_blog_materials/weekly/**",
+                "Documents/works/scout_histories/tech_blog_materials/**",
                 "Documents/works/tech_blog_plans/**"
             ]
         },
