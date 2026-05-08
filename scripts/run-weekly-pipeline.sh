@@ -102,7 +102,7 @@ AGENTS=(
   "tech-event-scout"
   "lifestyle-event-scout"
   "tech-blog-material-scout"
-  "tech-blog-planner"
+  "tech-poc-planner"
 )
 
 SUCCESS=0
@@ -143,8 +143,8 @@ for AGENT in "${AGENTS[@]}"; do
       PROMPT="${PROMPT}基準日は ${BASE_DATE} です。"
       PROMPT="${PROMPT}日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
       ;;
-    tech-blog-planner)
-      # tech-blog-plannerは素材シート1件ごとに個別起動する（コンテキスト節約）
+    tech-poc-planner)
+      # tech-poc-plannerは素材シート1件ごとに個別起動する（コンテキスト節約）
       # ここではスキップし、後続のStep 2.5で処理する
       echo "[$AGENT_START]    ⏭️  $AGENT: Step 2.5で個別実行（スキップ）"
       SUCCESS=$((SUCCESS + 1))
@@ -189,12 +189,12 @@ for AGENT in "${AGENTS[@]}"; do
   fi
 done
 
-# ─── Step 2.5: tech-blog-planner 個別実行（素材シート1件ごと） ──
+# ─── Step 2.5: tech-poc-planner 個別実行（素材シート1件ごと） ──
 PLANNER_NOW=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
-echo "[$PLANNER_NOW] Step 2.5: tech-blog-planner 個別実行..."
+echo "[$PLANNER_NOW] Step 2.5: tech-poc-planner 個別実行..."
 
 MATERIAL_DIR="$HOME/Documents/works/scout_histories/tech_blog_materials/weekly"
-PLANNER_LOG="$LOG_DIR/scout-weekly-tech-blog-planner.log"
+PLANNER_LOG="$LOG_DIR/scout-weekly-tech-poc-planner.log"
 PLANNER_SUCCESS=0
 PLANNER_FAILED=0
 
@@ -217,10 +217,10 @@ else
   for MATERIAL_FILE in "${MATERIAL_FILES[@]}"; do
     MATERIAL_NAME=$(basename "$MATERIAL_FILE")
     PLAN_START=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
-    echo "[$PLAN_START]    🔄 tech-blog-planner: $MATERIAL_NAME"
+    echo "[$PLAN_START]    🔄 tech-poc-planner: $MATERIAL_NAME"
 
-    PLANNER_PROMPT="tech-blog-planner エージェントとして「週次パイプラインモード」で動作してください。"
-    PLANNER_PROMPT="${PLANNER_PROMPT} ~/.kiro/agents/prompts/tech-blog-planner.md をreadFileで読み込み、"
+    PLANNER_PROMPT="tech-poc-planner エージェントとして「週次パイプラインモード」で動作してください。"
+    PLANNER_PROMPT="${PLANNER_PROMPT} ~/.kiro/agents/prompts/tech-poc-planner.md をreadFileで読み込み、"
     PLANNER_PROMPT="${PLANNER_PROMPT}そこに記載された週次パイプラインモードのワークフローに従って実行してください。"
     PLANNER_PROMPT="${PLANNER_PROMPT} 素材シート: ${MATERIAL_FILE}"
     PLANNER_PROMPT="${PLANNER_PROMPT} 基準日は ${BASE_DATE} です。"
@@ -240,7 +240,7 @@ else
   done
 
   PLANNER_END=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
-  echo "[$PLANNER_END]    📊 tech-blog-planner: ✅${PLANNER_SUCCESS}件 / ❌${PLANNER_FAILED}件"
+  echo "[$PLANNER_END]    📊 tech-poc-planner: ✅${PLANNER_SUCCESS}件 / ❌${PLANNER_FAILED}件"
 fi
 
 # ─── Step 3: 親タスク完了処理 ────────────────────────────────────
@@ -279,7 +279,7 @@ NOTIFY_SUCCESS=0
 NOTIFY_SKIPPED=0
 
 for AGENT in "${AGENTS[@]}"; do
-  # tech-blog-material-scout / tech-blog-planner は複数ファイル出力のため通知スキップ
+  # tech-blog-material-scout / tech-poc-planner は複数ファイル出力のため通知スキップ
   FILE_PATH="${NOTIFY_FILES[$AGENT]:-}"
   if [[ -z "$FILE_PATH" || ! -f "$FILE_PATH" ]]; then
     echo "   ⏭️  $AGENT: 出力ファイルなし（スキップ）"

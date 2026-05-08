@@ -25,7 +25,7 @@ mkdir -p "$DIR"
 
 # 子タスクのULIDを事前生成
 CHILD_IDS=()
-for i in {1..9}; do
+for i in {1..10}; do
   CHILD_IDS+=("$(npx --yes ulid 2>/dev/null)")
 done
 
@@ -160,7 +160,7 @@ cat > "$FILEPATH" << EOJSON
     },
     {
       "task_id": "${CHILD_IDS[6]}",
-      "task_name": "tech-blog-planner",
+      "task_name": "tech-poc-planner",
       "args": {
         "base_date": "${BASE_DATE}"
       },
@@ -245,6 +245,28 @@ cat > "$FILEPATH" << EOJSON
       "started_at": null,
       "completed_at": null,
       "error": null
+    },
+    {
+      "task_id": "${CHILD_IDS[10]}",
+      "task_name": "github-verification-candidate-scout",
+      "args": {
+        "base_date": "${BASE_DATE}"
+      },
+      "options": {
+        "async": true,
+        "timeout_seconds": 600,
+        "max_retries": 1,
+        "retry_delay_seconds": 60
+      },
+      "status": "pending",
+      "status_detail": null,
+      "depends_on": "github-public-digest-scout",
+      "child_tasks": [],
+      "created_at": "${NOW}",
+      "updated_at": "${NOW}",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
     }
   ],
   "created_at": "${NOW}",
@@ -259,5 +281,5 @@ echo "📋 週次scoutタスクファイルを作成しました"
 echo "   タスクID: ${TASK_ID}"
 echo "   タスク名: scout_weekly"
 echo "   基準日:   ${BASE_DATE}"
-echo "   子タスク: 9件"
+echo "   子タスク: 10件"
 echo "   ファイル: ${FILEPATH}"

@@ -47,7 +47,7 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 |--------|------|-----|
 | `scout` | 情報収集・偵察 | `tech-trend-scout`, `lifestyle-event-scout` |
 | `writer` | 文書作成 | （将来の文書作成エージェント用） |
-| `planner` | 企画・計画 | `tech-blog-planner` |
+| `planner` | 企画・計画 | `tech-poc-planner` |
 | `updater` | データ更新 | `slack-user-directory-updater` |
 | `reviewer` | レビュー・検証 | `agent-output-reviewer`, `code-reviewer` |
 | `architect` | 設計・構造化 | `spec-architect` |

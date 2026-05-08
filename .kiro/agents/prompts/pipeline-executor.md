@@ -49,7 +49,7 @@ postToolUse(write) hookから呼び出される共通実行手順。
 #### 週次パイプライン（pipeline=weekly）の場合
 
 週次パイプラインモード対象タスク:
-- tech-event-scout, lifestyle-event-scout, tech-blog-material-scout, tech-blog-planner
+- tech-event-scout, lifestyle-event-scout, tech-blog-material-scout, tech-poc-planner, github-verification-candidate-scout
 
 上記タスクの呼び出し:
 ```
@@ -159,7 +159,7 @@ contextFiles: .kiro/agents/prompts/{task_name}.md
 | tech-event-scout | `~/Documents/works/scout_histories/tech_events/weekly/{base_date}_tech_events.md` |
 | lifestyle-event-scout | `~/Documents/works/scout_histories/lifestyle_events/weekly/{base_date}_lifestyle_events.md` |
 
-※ 上記マッピングに無い task_name（tech-blog-material-scout, tech-blog-planner 等）は通知スキップ。
+※ 上記マッピングに無い task_name（tech-blog-material-scout, tech-poc-planner, github-verification-candidate-scout 等）は通知スキップ。
 
 ### 5.2 通知実行
 
