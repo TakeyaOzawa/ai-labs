@@ -44,6 +44,8 @@
 !/.kiro/steering/
 /.kiro/settings/*
 !/.kiro/settings/mcp.json
+!/.kiro/specs/
+/.kiro/specs/**/.config.kiro
 /.gemini/*
 !.gemini/GEMINI.md
 /.vim/*
