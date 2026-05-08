@@ -55,7 +55,7 @@ readFile: .kiro/agents/references/scout-pipeline-integration.md
 
 コンテキスト節約・テーマ分割が必要な場合は追加で:
 ```
-readFile: .kiro/agents/references/scout-pipeline-patterns.md
+readFile: .kiro/agents/references/agent-prompt-patterns.md
 ```
 
 ## Step 3: エージェント設計
