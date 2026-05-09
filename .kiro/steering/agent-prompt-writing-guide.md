@@ -9,14 +9,23 @@ fileMatchPattern: ".shared-ai/prompts/*.md"
 
 ## 参照ファイルの読み込み判断
 
-以下に該当する場合は `.kiro/agents/references/agent-prompt-patterns.md` をreadFileで読み込むこと:
-- 新規エージェントプロンプトの作成
+### 新規エージェントプロンプトの作成
+
+以下を全て読み込むこと:
+- `.shared-ai/references/agent-creation-guide.md`（命名規則、ファイル構成、チェックリスト）
+- `.shared-ai/references/agent-prompt-guide.md`（プロンプト構造、コンテキスト節約）
+
+### 既存プロンプトの構造的変更
+
+以下に該当する場合は `.shared-ai/references/agent-prompt-guide.md` をreadFileで読み込むこと:
 - Phase構造の変更・追加
 - コンパクト化・リファクタリング
 - 出力フォーマットの変更
 - フィルタリングルールの追加・変更
 
-以下の場合は読み込み不要:
+### 読み込み不要
+
+以下の場合は参照ファイルの読み込み不要:
 - typo修正、文言微調整
 - 検索カテゴリの追加・削除のみ
 - 行動原則の追加・修正のみ

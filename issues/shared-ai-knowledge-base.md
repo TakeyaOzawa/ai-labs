@@ -49,8 +49,8 @@ refactor
 │   └── ...（全エージェント分）
 ├── references/                 # 参照データ
 │   ├── agent-creation-guide.md
-│   ├── agent-prompt-patterns.md
-│   ├── scout-pipeline-integration.md
+│   ├── agent-prompt-guide.md
+│   ├── agent-pipeline-guide.md
 │   ├── tech-trend-sources.md
 │   └── ...
 ├── templates/                  # フォーマットガイド

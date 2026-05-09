@@ -4,7 +4,7 @@ feature_name: shared-ai-knowledge-base
 status: active
 created_at: 2026-05-01
 created_by: kiro
-updated_at: 2026-05-01
+updated_at: 2026-05-09
 updated_by: kiro
 related_domain: []
 ---
@@ -278,8 +278,8 @@ resume_launchd() { launchctl load ~/Library/LaunchAgents/com.nyle.kiro-*.plist; 
 │   └── ...（全35ファイル）
 ├── references/
 │   ├── agent-creation-guide.md
-│   ├── agent-prompt-patterns.md
-│   ├── scout-pipeline-integration.md
+│   ├── agent-prompt-guide.md
+│   ├── agent-pipeline-guide.md
 │   ├── tech-trend-sources.md
 │   └── ...（全9ファイル）
 ├── templates/

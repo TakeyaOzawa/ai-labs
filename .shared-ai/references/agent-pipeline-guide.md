@@ -1,6 +1,6 @@
-# Scout パイプライン統合ガイド
+# パイプライン統合ガイド
 
-パイプラインへのエージェント組み込み、hook連携、低頻度更新データの設計パターン。
+エージェントのパイプラインへの組み込み、hook連携、低頻度更新データの設計指針。
 `pipeline-executor.md` やwatcher hookを読み込んだ際に自動ロードされる。
 
 ## hook連携の設計
@@ -31,7 +31,9 @@
 
 ## パイプラインへの組み込み
 
-### タスク生成スクリプトへの追加
+### IDE hook方式
+
+#### タスク生成スクリプトへの追加
 
 `scripts/create-{frequency}-tasks.sh` に子タスクを追加:
 
@@ -50,6 +52,97 @@
 - `depends_on`: 他タスクの完了を待つ場合はそのタスク名を指定
 - `status`: `depends_on` が null なら `"starting"`、null でなければ `"pending"`
 - `timeout_seconds`: Web検索系は300〜600、API系は600〜900が目安
+
+#### その他のIDE hook方式更新
+
+1. `pipeline-executor.md` の対象タスクリスト更新（週次パイプラインモード対象の場合）
+2. `pipeline-executor.md` Step 5.1 のSlack通知マッピングテーブルに追加（通知対象の場合）
+3. RSS事前取得が必要なら:
+   - `scripts/fetch-rss-feeds.py` にカテゴリ追加
+   - `scouts-{frequency}-trigger.kiro.hook` のRSS事前取得ステップに追加
+
+### kiro-cli シェルスクリプト方式
+
+`kiro-cli chat --trust-all-tools --no-interactive` でエージェントをヘッドレス実行する方式。
+IDE hookのpostToolUse連鎖に依存せず、シェルスクリプトから直接各エージェントを順次実行する。
+
+#### 実行コマンド
+
+```bash
+kiro-cli chat --trust-all-tools --no-interactive \
+  "{agent-name} エージェントとして動作してください。\`~/.shared-ai/prompts/{agent-name}.md\` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。基準日は {BASE_DATE} です。日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
+```
+
+#### 環境変数の設定
+
+```bash
+# .zshrc からsource（未設定時のみ）
+if [[ -z "${MY_SLACK_OAUTH_TOKEN:-}" ]]; then
+  [[ -f "$HOME/.zshrc" ]] && source "$HOME/.zshrc" 2>/dev/null || true
+fi
+
+# MCPサーバーが直接参照する環境変数をexport
+export SLACK_BOT_TOKEN="${SLACK_REFERENCE_BOT_TOKEN:-}"  # 収集フェーズ
+export SLACK_TEAM_ID="${SLACK_REFERENCE_TEAM_ID:-}"
+
+# 通知フェーズ前に切り替え
+export SLACK_BOT_TOKEN="${MY_SLACK_OAUTH_TOKEN:-}"  # 通知フェーズ
+```
+
+#### エージェント追加手順
+
+`scripts/run-{frequency}-pipeline.sh` の `AGENTS` 配列に追加:
+
+```bash
+AGENTS=(
+  "tech-trend-scout"
+  "biz-car-trend-scout"
+  ...
+  "{new-agent-name}"  # ← 追加
+)
+```
+
+Slack通知対象の場合は `NOTIFY_FILES` マッピングにも追加:
+
+```bash
+NOTIFY_FILES[{new-agent-name}]="$HOME/Documents/works/scout_histories/{output_dir}/{frequency}/${BASE_DATE}_{output_file}.md"
+```
+
+週次パイプラインモード対象の場合は `case` 文にも追加:
+
+```bash
+case "$AGENT" in
+  tech-event-scout|lifestyle-event-scout|...|{new-agent-name})
+    PROMPT="... 「週次パイプラインモード」で ..."
+    ;;
+esac
+```
+
+#### 制約と注意事項
+
+| 項目 | 内容 |
+|------|------|
+| MCP環境変数 | `.zshrc` で定義された環境変数をsourceして解決。`kiro-cli` はmcp.jsonの `${...}` をプロセス環境変数から展開する |
+| SLACK_BOT_TOKEN | 収集フェーズでは `SLACK_REFERENCE_BOT_TOKEN` を、通知フェーズでは `MY_SLACK_OAUTH_TOKEN` を `SLACK_BOT_TOKEN` にexportして切り替える |
+| Notion MCP | SSE接続でブラウザ認証が必要。初回は手動で認証を完了させる。トークンはキャッシュされる |
+| ツール承認 | `--trust-all-tools` で全ツールを自動承認。`--no-interactive` と併用必須 |
+| セッション独立性 | 各エージェントは独立したセッションで実行される。コンテキスト共有なし |
+| 実行完了待ち | ブロッキング動作。エージェント完了までプロセスが待機する |
+| Python | `python3.12` を使用（`python3` / `python3.13` は使用禁止） |
+
+#### launchd自動実行
+
+```
+~/Library/LaunchAgents/com.takeya.scout-daily-pipeline.plist
+  → /bin/zsh -l -c ~/scripts/run-daily-pipeline.sh
+  → 毎日指定時刻に実行
+```
+
+管理コマンド:
+```bash
+~/scripts/manage-launchd.sh status scout-daily-pipeline
+~/scripts/manage-launchd.sh reload scout-daily-pipeline
+```
 
 ## 低頻度更新データの事前取得エージェント設計
 

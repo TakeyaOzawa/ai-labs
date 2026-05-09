@@ -4,8 +4,8 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 既存の `*-trend-scout` / `*-event-scout` / `*-digest-scout` の実装パターンに基づく。
 
 詳細な実装パターンは以下の参照ファイルを参照:
-- `agent-prompt-patterns.md` — コンテキスト節約、2段階実行、テーマ分割、コマンド抽象化
-- `scout-pipeline-integration.md` — hook連携、パイプライン組み込み、低頻度更新データ設計
+- `agent-prompt-guide.md` — プロンプト設計、コンテキスト節約、2段階実行、テーマ分割、コマンド抽象化
+- `agent-pipeline-guide.md` — hook連携、パイプライン組み込み、kiro-cli実行、低頻度更新データ設計
 
 ## 命名規則
 
@@ -33,9 +33,9 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 |------|------|----------|--------|--------|
 | エージェント名 | **名詞（役割）** | `{領域}-{機能}-{役割}` | `tech-trend-scout` | `scout-tech-trends` |
 | hookファイル名 | **名詞（イベント/動作名）** | `{対象}-{動作名}` | `reference-data-refresh` | `refresh-reference-data` |
-| steeringファイル名 | **名詞（文書種別）** | `{トピック}-{文書種別}` | `agent-creation-guide` | `guide-for-creating-agents` |
+| steeringファイル名 | **名詞（文書種別）** | `{トピック}-{文書種別}` | `design-format-guide`, `dev-environment-rules` | `guide-for-creating-agents` |
 | スクリプトファイル名 | **動詞始まり（コマンド）** | `{動詞}-{対象}` | `find-task.sh`, `create-weekly-tasks.sh` | `task-finder.sh` |
-| referencesファイル名 | **名詞（データ種別）** | `{エージェント名}-sources` | `tech-trend-sources.md` | `sources-for-tech-trend.md` |
+| referencesファイル名 | **名詞（データ種別）** | `{トピック}-{文書種別}` or `{エージェント名}-sources` | `agent-prompt-guide`, `tech-trend-sources.md` | `sources-for-tech-trend.md` |
 
 ### 詳細ルール
 
@@ -69,15 +69,15 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 | `{対象}-{動作}` | `scouts-daily-trigger` | 日次scoutの起動 |
 | `{対象}-{検証名}` | `domain-frontmatter-check` | ドメインファイルのfrontmatter検証 |
 
-#### steeringファイル名: `{トピック}-{文書種別}`
+#### steering / references 共通の文書ファイル名: `{トピック}-{文書種別}`
 
-| 文書種別 | 意味 | 例 |
-|----------|------|-----|
-| `guide` | 手順・ガイド | `agent-creation-guide` |
-| `rules` | ルール・制約 | `gws-integration-rules` |
-| `base` | 基本方針（グローバル用） | `knowledge-management-base` |
-| `patterns` | 設計パターン集 | `agent-prompt-patterns` |
-| `mapping` | マッピング・対応表 | `slack-channel-mapping` |
+| 文書種別 | 意味 | steering例 | references例 |
+|----------|------|------------|--------------|
+| `guide` | 手順・ガイド | `design-format-guide` | `agent-creation-guide`, `agent-prompt-guide` |
+| `rules` | ルール・制約 | `gws-integration-rules` | — |
+| `base` | 基本方針 | `knowledge-management-base` | — |
+| `mapping` | マッピング・対応表 | `slack-channel-mapping` | — |
+| `sources` | 収集対象ソース一覧 | — | `tech-trend-sources` |
 
 #### スクリプトファイル名: `{動詞}-{対象}`
 
@@ -134,22 +134,19 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 2. 日次レポートが十分に蓄積されたら `{source}-digest-scout`（週次集約）を作成
 3. digest-scoutは**必ず日次レポートを主入力とする設計**にする（APIを直接叩かない）
 
-## ファイル構成
+## ファイル構成とエージェント定義
+
+### ファイル構成
 
 ```
-.kiro/agents/
-├── {agent-name}.json              # エージェント定義（メタデータ・権限）
-├── prompts/
-│   ├── {agent-name}.md            # プロンプト本体（~3〜8KB目標）
-│   └── pipeline-executor.md       # パイプライン共通実行手順
-└── references/
-    └── {agent-name}-sources.md    # 収集対象ソース参照（Web検索系のみ）
+.shared-ai/prompts/{agent-name}.md     # プロンプト本体（~3〜8KB目標）
+.shared-ai/references/{name}-sources.md # 収集対象ソース参照（Web検索系のみ）
 
-.kiro/hooks/
-└── scouts-{frequency}-watcher.kiro.hook  # パイプラインwatcher
+.kiro/agents/{agent-name}.json          # エージェント定義（メタデータ・権限）
+.kiro/hooks/{hook-name}.kiro.hook       # パイプラインwatcher / 手動トリガー
 ```
 
-## エージェント定義（JSON）
+### エージェント定義（JSON）
 
 ```json
 {
@@ -169,158 +166,22 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 }
 ```
 
-## プロンプト本体の構造（必須セクション）
-
-以下の順序で記載する。**サイズ目標: 3〜8KB**。コンテキスト消費を最小化しつつ必要十分な指示を含める。
-
-### 共通構造（全エージェント）
-
-```markdown
-# {Agent Name}（日本語名）
-
-{1文の概要説明}
-
-## 役割
-{対象日/対象の何を、どうやって、何を作るか}
-対象領域: {カンマ区切りで列挙}
-
-## スコープ
-{担当範囲の明示 + 担当外→他エージェント名}
-
-## 対象日付の決定
-{日付決定ロジック}
-
-## 収集手順 / 実行手順
-{Phase 0〜N の段階的手順}
-
-## 出力
-{ファイルパス + フォーマット（ヘッダのみ簡潔に）}
-
-## 行動原則
-{番号付き1行ルール。ドメイン固有の判断基準を含む}
-```
-
-### Web検索系エージェント追加セクション
-
-```markdown
-## 事前取得済み情報（検索不要）
-{RSSフィード取得済みソース一覧}
-{RSSでカバーできないサイト一覧}
-
-### Phase 0: 重複排除の準備
-{過去3日分レポートからURL抽出 → 既出URLリスト作成}
-{トップページ・一覧ページは既出リストに含めない}
-
-### Phase 1: 検索・収集
-{一時ファイルパス}
-{フィルタリングルール: publishedDate / 既出URL / トップページ}
-{検索カテゴリ一覧（番号付き、カテゴリ名のみ）}
-{書き出しフォーマット指示}
-
-### Phase 2: レポート生成
-{feeds + raw_results 統合 → レポート作成 → 一時ファイル削除}
-```
-
-### 評価基準セクション（ドメイン固有）
-
-```markdown
-## {関連度基準 / 応用可能性基準}
-{⭐⭐⭐ / ⭐⭐ / ⭐ の定義}
-```
-
-### コンパクト化の原則
-
-`agent-prompt-patterns.md` の「コンパクト化の原則」セクションを参照。
-
 ## チェックリスト（新規エージェント作成時）
 
+### エージェント本体
+
 - [ ] `.kiro/agents/{name}.json` 作成（権限・モデル・書き込み先）
-- [ ] `.shared-ai/prompts/{name}.md` 作成（3〜8KB目標）
+- [ ] `.shared-ai/prompts/{name}.md` 作成（8KB以下。構造は `agent-prompt-guide.md` 参照）
 - [ ] `.shared-ai/references/{name}-sources.md` 作成（Web検索系のみ）
-- [ ] `scripts/fetch-rss-feeds.py` にカテゴリ追加（RSS取得が必要な場合）
-- [ ] `scripts/create-{frequency}-tasks.sh` に子タスク追加（IDE hook方式の場合）
-- [ ] `scripts/run-{frequency}-pipeline.sh` の `AGENTS` 配列に追加（kiro-cli方式の場合）
-- [ ] `scripts/run-{frequency}-pipeline.sh` の `NOTIFY_FILES` マッピングに追加（Slack通知対象の場合）
-- [ ] `.shared-ai/prompts/pipeline-executor.md` の対象タスクリスト更新（週次モード対象の場合）
-- [ ] `.shared-ai/prompts/pipeline-executor.md` Step 5.1 のSlack通知マッピングに追加（通知対象の場合）
-- [ ] `scouts-{frequency}-trigger.kiro.hook` のRSS事前取得ステップに追加（RSS必要な場合）
 - [ ] 出力先ディレクトリの存在確認（`Documents/works/scout_histories/{dir}/`）
 - [ ] プロンプトサイズ確認（`wc -c` で8KB以下）
 
-## kiro-cli直接実行方式
+### パイプライン組み込み（詳細は `agent-pipeline-guide.md` 参照）
 
-### 概要
-
-`kiro-cli chat --trust-all-tools --no-interactive` でエージェントをヘッドレス実行する方式。
-IDE hookのpostToolUse連鎖に依存せず、シェルスクリプトから直接各エージェントを順次実行する。
-
-### 実行コマンド
-
-```bash
-kiro-cli chat --trust-all-tools --no-interactive \
-  "{agent-name} エージェントとして動作してください。\`~/.shared-ai/prompts/{agent-name}.md\` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。基準日は {BASE_DATE} です。日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
-```
-
-### 制約と注意事項
-
-| 項目 | 内容 |
-|------|------|
-| MCP環境変数 | `.zshrc` で定義された環境変数をsourceして解決。`kiro-cli` はmcp.jsonの `${...}` をプロセス環境変数から展開する |
-| SLACK_BOT_TOKEN | 収集フェーズでは `SLACK_REFERENCE_BOT_TOKEN` を、通知フェーズでは `MY_SLACK_OAUTH_TOKEN` を `SLACK_BOT_TOKEN` にexportして切り替える |
-| Notion MCP | SSE接続でブラウザ認証が必要。初回は手動で認証を完了させる。トークンはキャッシュされる |
-| ツール承認 | `--trust-all-tools` で全ツールを自動承認。`--no-interactive` と併用必須 |
-| セッション独立性 | 各エージェントは独立したセッションで実行される。コンテキスト共有なし |
-| 実行完了待ち | ブロッキング動作。エージェント完了までプロセスが待機する |
-| Python | `python3.12` を使用（`python3` / `python3.13` は使用禁止） |
-
-### launchd自動実行
-
-```
-~/Library/LaunchAgents/com.takeya.scout-daily-pipeline.plist
-  → /bin/zsh -l -c ~/scripts/run-daily-pipeline.sh
-  → 毎日指定時刻に実行
-```
-
-管理コマンド:
-```bash
-~/scripts/manage-launchd.sh status scout-daily-pipeline
-~/scripts/manage-launchd.sh reload scout-daily-pipeline
-```
-
-### 日次/週次パイプラインへのエージェント追加
-
-`scripts/run-{frequency}-pipeline.sh` の `AGENTS` 配列に追加:
-
-```bash
-# run-daily-pipeline.sh
-AGENTS=(
-  "tech-trend-scout"
-  "biz-car-trend-scout"
-  ...
-  "{new-agent-name}"  # ← 追加
-)
-
-# run-weekly-pipeline.sh
-AGENTS=(
-  "slack-digest-scout"
-  "gws-digest-scout"
-  ...
-  "{new-agent-name}"  # ← 追加
-)
-```
-
-Slack通知対象の場合は `NOTIFY_FILES` マッピングにも追加:
-
-```bash
-NOTIFY_FILES[{new-agent-name}]="$HOME/Documents/works/scout_histories/{output_dir}/{frequency}/${BASE_DATE}_{output_file}.md"
-```
-
-週次パイプラインモード対象の場合は `case` 文にも追加:
-
-```bash
-case "$AGENT" in
-  tech-event-scout|lifestyle-event-scout|...|{new-agent-name})
-    PROMPT="... 「週次パイプラインモード」で ..."
-    ;;
-esac
-```
+- [ ] `scripts/create-{frequency}-tasks.sh` に子タスク追加（IDE hook方式）
+- [ ] `scripts/run-{frequency}-pipeline.sh` の `AGENTS` 配列に追加（kiro-cli方式）
+- [ ] `scripts/run-{frequency}-pipeline.sh` の `NOTIFY_FILES` に追加（通知対象の場合）
+- [ ] `pipeline-executor.md` の対象タスクリスト更新（週次モード対象の場合）
+- [ ] `pipeline-executor.md` Step 5.1 のSlack通知マッピングに追加（通知対象の場合）
+- [ ] `scripts/fetch-rss-feeds.py` にカテゴリ追加（RSS必要な場合）
+- [ ] `scouts-{frequency}-trigger.kiro.hook` のRSS事前取得に追加（RSS必要な場合）
