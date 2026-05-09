@@ -308,7 +308,62 @@ done
 NOTIFY_END=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
 echo "[$NOTIFY_END] 📨 通知完了: ✅${NOTIFY_SUCCESS}件 / ⏭️${NOTIFY_SKIPPED}件スキップ"
 
-# ─── Step 5: 完了サマリー ────────────────────────────────────────
+# ─── Step 5: 参照データ鮮度チェック・更新 ───────────────────────
+REFRESH_NOW=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
+echo "[$REFRESH_NOW] Step 5: 参照データ鮮度チェック..."
+
+SLACK_FRESHNESS=$("$HOME/scripts/check-directory-freshness.sh" --type slack --max-age-days 7)
+NOTION_FRESHNESS=$("$HOME/scripts/check-directory-freshness.sh" --type notion --max-age-days 14)
+
+SLACK_STALE=$(echo "$SLACK_FRESHNESS" | python3.12 -c "import sys,json; print(json.load(sys.stdin)['stale'])")
+NOTION_STALE=$(echo "$NOTION_FRESHNESS" | python3.12 -c "import sys,json; print(json.load(sys.stdin)['stale'])")
+
+REFRESH_LOG="$LOG_DIR/scout-weekly-reference-refresh.log"
+
+# ログローテーション
+if [[ -f "$REFRESH_LOG" ]] && (( $(wc -l < "$REFRESH_LOG") > 500 )); then
+  tail -100 "$REFRESH_LOG" > "$REFRESH_LOG.tmp" && mv "$REFRESH_LOG.tmp" "$REFRESH_LOG"
+fi
+
+if [[ "$SLACK_STALE" == "True" ]]; then
+  echo "[$REFRESH_NOW]    🔄 Slack ユーザーディレクトリ更新中..."
+  UPDATER_PROMPT="slack-user-directory-updater エージェントとして動作してください。"
+  UPDATER_PROMPT="${UPDATER_PROMPT} ~/.shared-ai/prompts/slack-user-directory-updater.md をreadFileで読み込み、"
+  UPDATER_PROMPT="${UPDATER_PROMPT}そこに記載されたワークフローに従って実行してください。"
+
+  if kiro-cli chat --trust-all-tools --no-interactive \
+    "$UPDATER_PROMPT" \
+    >> "$REFRESH_LOG" 2>&1; then
+    REFRESH_END=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
+    echo "[$REFRESH_END]    ✅ Slack ユーザーディレクトリ更新完了"
+  else
+    REFRESH_END=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
+    echo "[$REFRESH_END]    ⚠️  Slack ユーザーディレクトリ更新失敗（続行）"
+  fi
+else
+  echo "[$REFRESH_NOW]    ✅ Slack データ鮮度OK（スキップ）"
+fi
+
+if [[ "$NOTION_STALE" == "True" ]]; then
+  echo "[$REFRESH_NOW]    🔄 Notion ユーザーディレクトリ更新中..."
+  UPDATER_PROMPT="notion-user-directory-updater エージェントとして動作してください。"
+  UPDATER_PROMPT="${UPDATER_PROMPT} ~/.shared-ai/prompts/notion-user-directory-updater.md をreadFileで読み込み、"
+  UPDATER_PROMPT="${UPDATER_PROMPT}そこに記載されたワークフローに従って実行してください。"
+
+  if kiro-cli chat --trust-all-tools --no-interactive \
+    "$UPDATER_PROMPT" \
+    >> "$REFRESH_LOG" 2>&1; then
+    REFRESH_END=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
+    echo "[$REFRESH_END]    ✅ Notion ユーザーディレクトリ更新完了"
+  else
+    REFRESH_END=$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00)
+    echo "[$REFRESH_END]    ⚠️  Notion ユーザーディレクトリ更新失敗（続行）"
+  fi
+else
+  echo "[$REFRESH_NOW]    ✅ Notion データ鮮度OK（スキップ）"
+fi
+
+# ─── Step 6: 完了サマリー ────────────────────────────────────────
 echo "[$NOTIFY_END] 📊 実行完了: ✅${SUCCESS}件 / ❌${FAILED}件 (全${TOTAL}件)"
 if (( FAILED > 0 )); then
   echo "[$NOTIFY_END]    失敗:${FAILED_NAMES}"

@@ -255,7 +255,7 @@ def fetch_feed(url: str, timeout: int = 15) -> str | None:
         return None
 
 
-def parse_rss(xml_text: str, max_items: int = 100) -> list[dict]:
+def parse_rss(xml_text: str, max_items: int = 500) -> list[dict]:
     """RSS 2.0 / RDF をパースして記事リストを返す。"""
     items = []
     try:
@@ -281,7 +281,7 @@ def parse_rss(xml_text: str, max_items: int = 100) -> list[dict]:
     return items
 
 
-def parse_atom(xml_text: str, max_items: int = 100) -> list[dict]:
+def parse_atom(xml_text: str, max_items: int = 500) -> list[dict]:
     """Atomフィードをパースして記事リストを返す。"""
     items = []
     ns = {"atom": "http://www.w3.org/2005/Atom"}
