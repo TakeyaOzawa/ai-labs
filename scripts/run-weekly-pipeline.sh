@@ -203,6 +203,12 @@ if [[ -f "$PLANNER_LOG" ]] && (( $(wc -l < "$PLANNER_LOG") > 500 )); then
   tail -100 "$PLANNER_LOG" > "$PLANNER_LOG.tmp" && mv "$PLANNER_LOG.tmp" "$PLANNER_LOG"
 fi
 
+# ディレクトリキャッシュ更新（launchd環境でkiro-cliが書き込んだ直後にglobが
+# 空を返す問題への対策。sync + ls でメタデータを確実に反映させる）
+sync 2>/dev/null || true
+ls "$MATERIAL_DIR/${BASE_DATE}_"* >/dev/null 2>&1 || true
+sleep 1
+
 # 当該基準日の素材シートを列挙
 MATERIAL_FILES=()
 for f in "$MATERIAL_DIR/${BASE_DATE}_"*_material.md(N); do
