@@ -121,3 +121,7 @@ git diff origin/main...HEAD
 - レビュー指摘を自分で修正する（implementerに差し戻す）
 - git push --force
 - git rebase（mergeを使用）
+
+## パイプライン参照
+
+- `~/.shared-ai/references/spec-pipeline-guide.md`（エージェント切り替えタイミング・引き継ぎ方法）

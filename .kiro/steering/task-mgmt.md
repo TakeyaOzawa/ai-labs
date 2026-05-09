@@ -1,5 +1,5 @@
 ---
-inclusion: manual
+inclusion: auto
 description: scoutパイプラインのタスク管理スクリプト（find-task.sh / update-task.sh）のインターフェース仕様
 ---
 

@@ -1,6 +1,6 @@
 ---
-inclusion: always
-description: Pythonスクリプトのコーディング規約。PEP 8/257/484準拠、Google Python Style Guide参考のプロジェクト固有規約を定義する
+inclusion: fileMatch
+fileMatchPattern: "**/*.py"
 ---
 
 # Python スクリプト コーディング規約

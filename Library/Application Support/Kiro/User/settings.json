@@ -125,7 +125,8 @@
     "source *",
     "realpath *",
     "strip_frontmatter() *",
-    "git *"
+    "git *",
+    "stat *"
   ],
   "kiroAgent.agentAutonomy": "Autopilot",
   "kiroAgent.trustedTools": [

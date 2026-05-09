@@ -1,6 +1,6 @@
 ---
-inclusion: always
-description: シェルスクリプトのコーディング規約。POSIX/Google Shell Style Guide準拠のzshスクリプト記述基準を定義する
+inclusion: fileMatch
+fileMatchPattern: "**/*.sh"
 ---
 
 # シェルスクリプト コーディング規約

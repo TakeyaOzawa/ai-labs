@@ -1,6 +1,6 @@
 ---
-inclusion: auto
-description: specのtasks.md作成時のフォーマット。WBS準拠のタスク階層構造、追加タスクの記録方法、発見フェーズ分類を定義する
+inclusion: fileMatch
+fileMatchPattern: ".kiro/specs/**/tasks.md"
 ---
 
 # タスクフォーマットガイド

@@ -42,7 +42,7 @@ mkdir -p "${WORK_DIR}"
 `fetch-slack-users.py` で全ユーザーを取得し、1つのJSONファイルに保存する。
 
 ```bash
-SLACK_BOT_TOKEN="${SLACK_REFERENCE_BOT_TOKEN}" python3 scripts/fetch-slack-users.py "${WORK_DIR}"
+SLACK_BOT_TOKEN="${SLACK_REFERENCE_BOT_TOKEN}" python3.12 scripts/fetch-slack-users.py "${WORK_DIR}"
 ```
 
 スクリプトの動作:
@@ -59,7 +59,7 @@ SLACK_BOT_TOKEN="${SLACK_REFERENCE_BOT_TOKEN}" python3 scripts/fetch-slack-users
 ```bash
 TODAY=$(date +%Y-%m-%d)
 WORK_DIR="${HOME}/Documents/works/slack_users/${TODAY}"
-python3 scripts/update-slack-user-directory.py \
+python3.12 scripts/update-slack-user-directory.py \
   "${WORK_DIR}" \
   "${HOME}/Documents/works/slack_users/${TODAY}"
 ```

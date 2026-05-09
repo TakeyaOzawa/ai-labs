@@ -49,10 +49,13 @@
 
 以下のフォーマットガイドはグローバルsteeringとして自動読み込みされる:
 
-- `requirements-format-guide.md`
-- `design-format.md`
-- `tasks-format.md`
-- `knowledge-mgmt.md`
+- `req-format.md`（requirements.md編集時に自動注入）
+- `design-format.md`（design.md編集時に自動注入）
+- `tasks-format.md`（tasks.md編集時に自動注入）
+- `knowledge-mgmt.md`（auto）
+
+パイプライン:
+- `~/.shared-ai/references/spec-pipeline-guide.md`（エージェント切り替えタイミング・引き継ぎ方法）
 
 以下はワークスペースのsteeringを参照:
 

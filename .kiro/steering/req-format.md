@@ -1,6 +1,6 @@
 ---
-inclusion: auto
-description: specのrequirements.md作成時のフォーマット。ISO/IEC/IEEE 29148:2018準拠のセクション構成とテンプレートを定義する
+inclusion: fileMatch
+fileMatchPattern: ".kiro/specs/**/requirements.md"
 ---
 
 # 要件定義フォーマットガイド

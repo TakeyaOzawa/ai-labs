@@ -14,3 +14,12 @@ python3.12 ~/scripts/fetch-rss-feeds.py --category tech --date 2026-05-07
 # ❌ 間違い
 python3 ~/scripts/fetch-rss-feeds.py --category tech --date 2026-05-07
 ```
+
+## スクリプト新規作成時の規約参照
+
+Python/シェルスクリプトを新規作成する場合は、以下のコーディング規約をreadFileで読み込み従うこと:
+
+- **Python**: `~/.shared-ai/rules/python-coding-standards.md`
+- **シェルスクリプト**: `~/.shared-ai/rules/shell-coding-standards.md`
+
+既存ファイルの編集時はsteeringの `fileMatch` で自動注入されるため、明示的な読み込みは不要。

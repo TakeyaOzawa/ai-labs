@@ -1,0 +1,41 @@
+{
+  "task_id": "{ULID}",
+  "task_name": "{pipeline_name}",
+  "args": {},
+  "options": {
+    "async": false,
+    "timeout_seconds": 3600,
+    "max_retries": 0,
+    "retry_delay_seconds": 0
+  },
+  "status": "pending",
+  "status_detail": null,
+  "depends_on": null,
+  "child_tasks": [
+    {
+      "task_id": "{ULID}",
+      "task_name": "{agent-name}",
+      "args": {},
+      "options": {
+        "async": true,
+        "timeout_seconds": 300,
+        "max_retries": 1,
+        "retry_delay_seconds": 30
+      },
+      "status": "starting",
+      "status_detail": null,
+      "depends_on": null,
+      "child_tasks": [],
+      "created_at": "{ISO8601}",
+      "updated_at": "{ISO8601}",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
+    }
+  ],
+  "created_at": "{ISO8601}",
+  "updated_at": "{ISO8601}",
+  "started_at": null,
+  "completed_at": null,
+  "error": null
+}

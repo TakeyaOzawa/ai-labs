@@ -1,6 +1,6 @@
 ---
-inclusion: auto
-description: specのdesign.md作成時のフォーマット。IEEE 1016:2009準拠のセクション構成とテンプレートを定義する
+inclusion: fileMatch
+fileMatchPattern: ".kiro/specs/**/design.md"
 ---
 
 # 設計書フォーマットガイド

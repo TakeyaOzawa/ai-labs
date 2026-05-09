@@ -114,6 +114,10 @@ npx playwright test --screenshot on
 - DBへの直接書き込み
 - テストデータの本番環境への投入
 
+## パイプライン参照
+
+- `~/.shared-ai/references/spec-pipeline-guide.md`（エージェント切り替えタイミング・引き継ぎ方法）
+
 ## epsilon環境検証の手順
 
 epsilon環境でのUI検証を行う場合:

@@ -66,7 +66,8 @@
 ## 参照すべきドキュメント
 
 - ドメイン知識: `docs/domain/README.md` から該当ドメインを探す
-- ナレッジ管理ルール: グローバルsteering `knowledge-management-rules.md`（自動読み込み）
+- パイプライン: `~/.shared-ai/references/spec-pipeline-guide.md`（エージェント切り替えタイミング・引き継ぎ方法）
+- ナレッジ管理ルール: グローバルsteering `knowledge-mgmt.md`（自動読み込み）
 - 用語集: `.kiro/steering/glossary-core.md`
 
 ## 禁止事項

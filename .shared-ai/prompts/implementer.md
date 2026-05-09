@@ -68,3 +68,7 @@ tasks.mdに基づいてPHP/Laravelのコード実装とユニット/機能テス
 - migrate:fresh / migrate:refresh / migrate:reset / db:wipe
 - RefreshDatabaseトレイトの使用
 - WHERE句なしのDELETE文
+
+## パイプライン参照
+
+- `~/.shared-ai/references/spec-pipeline-guide.md`（エージェント切り替えタイミング・引き継ぎ方法）
