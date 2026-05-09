@@ -1,7 +1,7 @@
 {
     "name": "github-public-trend-scout",
     "description": "GitHub Trendingおよびスター急上昇リポジトリを日次で収集し、注目OSSの動向・修正傾向・開発スタイルを市場調査の観点でレポートする。",
-    "prompt": "file://./prompts/github-public-trend-scout.md",
+    "prompt": "file://../../.shared-ai/prompts/github-public-trend-scout.md",
     "tools": ["read", "write", "shell", "web"],
     "allowedTools": ["web"],
     "toolsSettings": {

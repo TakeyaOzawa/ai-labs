@@ -1,7 +1,7 @@
 {
     "name": "tech-poc-runner",
     "description": "技術検証PoC実行エージェント。Tech Blog Planの検証計画やユーザー指示に基づき、コンテナ環境を構築して技術検証を自動実行し、結果と残課題をまとめる。",
-    "prompt": "file://./prompts/tech-poc-runner.md",
+    "prompt": "file://../../.shared-ai/prompts/tech-poc-runner.md",
     "tools": ["read", "write", "shell", "web"],
     "allowedTools": ["web", "shell"],
     "toolsSettings": {

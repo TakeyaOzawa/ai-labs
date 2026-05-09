@@ -1,7 +1,7 @@
 {
     "name": "agent-creator",
     "description": "scoutパイプライン等のエージェントを新規作成・改修する専門エージェント。命名規則、trend/digest棲み分け、コンテキスト節約パターン、hook連携、パイプライン組み込みまでを一貫して支援する。",
-    "prompt": "file://./prompts/agent-creator.md",
+    "prompt": "file://../../.shared-ai/prompts/agent-creator.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": ["read"],
     "toolsSettings": {

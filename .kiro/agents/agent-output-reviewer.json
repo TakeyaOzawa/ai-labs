@@ -1,7 +1,7 @@
 {
     "name": "agent-output-reviewer",
     "description": "Post-execution output quality reviewer. Performs a 3-layer progressive check based on ISO/IEC 25010:2023 (10 quality aspects) with supplementary checks by 4 task tags (investigation, design, modification, execution). Auto-fixes and re-checks on failure.",
-    "prompt": "file://./prompts/agent-output-reviewer.md",
+    "prompt": "file://../../.shared-ai/prompts/agent-output-reviewer.md",
     "tools": ["read", "write"],
     "allowedTools": ["read"],
     "toolsSettings": {},

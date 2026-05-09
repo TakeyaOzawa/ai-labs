@@ -1,7 +1,7 @@
 {
     "name": "slack-notifier",
     "description": "指定されたmdファイルまたはテキストをSlackチャンネルに投稿する汎用通知エージェント",
-    "prompt": "file://./prompts/slack-notifier.md",
+    "prompt": "file://../../.shared-ai/prompts/slack-notifier.md",
     "tools": ["read", "shell"],
     "allowedTools": [],
     "toolsSettings": {

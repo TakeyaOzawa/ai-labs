@@ -45,17 +45,17 @@ Step 4: 影響範囲確認（daily/weekly両スクリプト + hook + pipeline-ex
 要件に応じて以下の参照ファイルを読み込む:
 
 ```
-readFile: .kiro/agents/references/agent-creation-guide.md
+readFile: .shared-ai/references/agent-creation-guide.md
 ```
 
 パイプライン組み込みが必要な場合は追加で:
 ```
-readFile: .kiro/agents/references/scout-pipeline-integration.md
+readFile: .shared-ai/references/scout-pipeline-integration.md
 ```
 
 コンテキスト節約・テーマ分割が必要な場合は追加で:
 ```
-readFile: .kiro/agents/references/agent-prompt-patterns.md
+readFile: .shared-ai/references/agent-prompt-patterns.md
 ```
 
 ## Step 3: エージェント設計
@@ -78,10 +78,10 @@ readFile: .kiro/agents/references/agent-prompt-patterns.md
 
 ### 必須
 - `.kiro/agents/{name}.json` — エージェント定義
-- `.kiro/agents/prompts/{name}.md` — プロンプト本体
+- `.shared-ai/prompts/{name}.md` — プロンプト本体
 
 ### 該当する場合のみ
-- `.kiro/agents/references/{name}-sources.md` — Web検索系の収集対象ソース
+- `.shared-ai/references/{name}-sources.md` — Web検索系の収集対象ソース
 - `.kiro/hooks/{name}.kiro.hook` — 手動トリガーが必要な場合
 
 ## Step 5: パイプライン組み込み
@@ -137,7 +137,7 @@ export SLACK_BOT_TOKEN="${MY_SLACK_OAUTH_TOKEN:-}"  # 通知フェーズ
 
 ### エージェント本体
 - [ ] `.kiro/agents/{name}.json` — 権限・モデル・書き込み先が適切
-- [ ] `.kiro/agents/prompts/{name}.md` — 8KB以下
+- [ ] `.shared-ai/prompts/{name}.md` — 8KB以下
 - [ ] 出力先ディレクトリが存在する
 - [ ] プロンプトに必須セクションが全て含まれる（役割/スコープ/対象日付/収集手順/出力/行動原則）
 
@@ -150,7 +150,7 @@ export SLACK_BOT_TOKEN="${MY_SLACK_OAUTH_TOKEN:-}"  # 通知フェーズ
 - [ ] `scouts-{frequency}-trigger.kiro.hook` のRSS事前取得に追加（RSS必要な場合）
 
 ### 検証
-- [ ] プロンプトサイズ確認: `wc -c .kiro/agents/prompts/{name}.md`
+- [ ] プロンプトサイズ確認: `wc -c .shared-ai/prompts/{name}.md`
 - [ ] daily/weeklyスクリプトの構造が統一されていること
 
 ## 行動原則

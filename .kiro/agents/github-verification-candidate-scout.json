@@ -1,0 +1,21 @@
+{
+    "name": "github-verification-candidate-scout",
+    "description": "github-public-digest-scoutの週次ダイジェストから、技術検証候補となるライブラリ・ツールを抽出し、軽量な素材シート（verification_candidate）を作成する。",
+    "prompt": "file://../../.shared-ai/prompts/github-verification-candidate-scout.md",
+    "tools": ["read", "write", "web"],
+    "allowedTools": ["web"],
+    "toolsSettings": {
+        "read": {
+            "allowedPaths": [
+                "Documents/works/scout_histories/github_public_trends/weekly/**",
+                "Documents/works/scout_histories/tech_blog_materials/weekly/**"
+            ]
+        },
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/tech_blog_materials/weekly/**"]
+        }
+    },
+    "resources": [],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "GitHub Trending から技術検証候補を抽出します。週次ダイジェストのパスを指定するか、最新のダイジェストから自動抽出します。"
+}

@@ -95,7 +95,7 @@ mkdir -p Documents/works/scout_histories/gws_trends/daily/tmp
 ### Step 2: 種別ごとの直接処理（順次実行）
 
 以下の5種別を**自身で直接処理する**。invokeSubAgentは使用しない。
-`.kiro/agents/prompts/gws-trend-scout-collector.md` の手順に従い、各種別を順番に処理する。
+`.shared-ai/prompts/gws-trend-scout-collector.md` の手順に従い、各種別を順番に処理する。
 
 **重要: 各種別の処理が完了してから次の種別に進むこと。**
 
@@ -188,7 +188,7 @@ gws drive files list --page-all --params '{"q": "mimeType=\"application/pdf\" an
 invokeSubAgent:
   name: general-task-execution
   contextFiles:
-    - .kiro/agents/prompts/gws-trend-scout-aggregator.md
+    - .shared-ai/prompts/gws-trend-scout-aggregator.md
   prompt: |
     gws-trend-scout-aggregator エージェントとしてプロンプトファイルに従い実行してください。
 

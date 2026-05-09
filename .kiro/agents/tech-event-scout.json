@@ -1,7 +1,7 @@
 {
     "name": "tech-event-scout",
     "description": "テックイベントスカウト。東京都・神奈川県を中心とした関東近郊のIT・ビジネス・テクノロジー系イベント・勉強会・カンファレンスをWeb検索で収集し、開催時期別・地域優先度別にサマリーを自動生成する。",
-    "prompt": "file://./prompts/tech-event-scout.md",
+    "prompt": "file://../../.shared-ai/prompts/tech-event-scout.md",
     "tools": ["read", "write", "web"],
     "allowedTools": ["web"],
     "toolsSettings": {

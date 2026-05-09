@@ -73,7 +73,6 @@
     "npm info *",
     "npx *",
     "node *",
-    "SLACK_BOT_TOKEN=\"${SLACK_REFERENCE_BOT_TOKEN}\" python3 *",
     "php artisan *",
     "./vendor/bin/sail *",
     "docker compose *",
@@ -123,7 +122,10 @@
     "python3.12 *",
     "TZ=UTC date *",
     "~/scripts/epoch-to-jst.sh *",
-    "source *"
+    "source *",
+    "realpath *",
+    "strip_frontmatter() *",
+    "git *"
   ],
   "kiroAgent.agentAutonomy": "Autopilot",
   "kiroAgent.trustedTools": [

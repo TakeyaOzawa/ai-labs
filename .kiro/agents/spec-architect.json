@@ -1,7 +1,7 @@
 {
     "name": "spec-architect",
     "description": "SDD設計者。ISO/IEC/IEEE 29148準拠のrequirements、IEEE 1016準拠のdesign、WBS準拠のtasksを作成する。",
-    "prompt": "file://./prompts/spec-architect.md",
+    "prompt": "file://../../.shared-ai/prompts/spec-architect.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": ["read"],
     "toolsSettings": {

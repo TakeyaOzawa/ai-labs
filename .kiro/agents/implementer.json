@@ -1,7 +1,7 @@
 {
     "name": "implementer",
     "description": "実装者。tasks.mdに基づくPHP/Laravel実装とユニット/機能テストの作成を担当。",
-    "prompt": "file://./prompts/implementer.md",
+    "prompt": "file://../../.shared-ai/prompts/implementer.md",
     "tools": ["read", "write", "shell", "@dbhub"],
     "allowedTools": ["read"],
     "toolsSettings": {

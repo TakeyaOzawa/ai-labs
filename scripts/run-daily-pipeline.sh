@@ -135,7 +135,7 @@ for AGENT in "${AGENTS[@]}"; do
   # ─── エージェント実行 ───────────────────────────────────────
   # プロンプトを変数に格納（バッククォート問題を回避）
   PROMPT="${AGENT} エージェントとして動作してください。"
-  PROMPT="${PROMPT} ~/.kiro/agents/prompts/${AGENT}.md をreadFileで読み込み、"
+  PROMPT="${PROMPT} ~/.shared-ai/prompts/${AGENT}.md をreadFileで読み込み、"
   PROMPT="${PROMPT}そこに記載されたワークフローに従って実行してください。"
   PROMPT="${PROMPT}基準日は ${BASE_DATE} です。"
   PROMPT="${PROMPT}日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
@@ -214,7 +214,7 @@ for AGENT in "${AGENTS[@]}"; do
   echo "[$NOTIFY_START]    📨 $AGENT 通知中..."
 
   NOTIFY_PROMPT="slack-notifier エージェントとして動作してください。"
-  NOTIFY_PROMPT="${NOTIFY_PROMPT} ~/.kiro/agents/prompts/slack-notifier.md をreadFileで読み込み、"
+  NOTIFY_PROMPT="${NOTIFY_PROMPT} ~/.shared-ai/prompts/slack-notifier.md をreadFileで読み込み、"
   NOTIFY_PROMPT="${NOTIFY_PROMPT}そこに記載されたワークフローに従って実行してください。"
   NOTIFY_PROMPT="${NOTIFY_PROMPT} file_path=${FILE_PATH}"
 

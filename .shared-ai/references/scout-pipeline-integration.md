@@ -12,7 +12,7 @@
   "when": { "type": "postToolUse", "toolTypes": ["write"] },
   "then": {
     "type": "askAgent",
-    "prompt": "直前のwrite操作が{対象}への書き込みか判定し、該当する場合のみ処理を実行。\n\n## Step 0: 対象ファイル判定\n\n- パスが `{対象ディレクトリ}` 配下の `.json` ファイル **でない** 場合 → 何もせず終了\n- 該当する場合 → `.kiro/agents/prompts/pipeline-executor.md` をreadFileで読み込み、`{pipeline}` を `{frequency}` として手順に従い実行してください。"
+    "prompt": "直前のwrite操作が{対象}への書き込みか判定し、該当する場合のみ処理を実行。\n\n## Step 0: 対象ファイル判定\n\n- パスが `{対象ディレクトリ}` 配下の `.json` ファイル **でない** 場合 → 何もせず終了\n- 該当する場合 → `.shared-ai/prompts/pipeline-executor.md` をreadFileで読み込み、`{pipeline}` を `{frequency}` として手順に従い実行してください。"
   }
 }
 ```
@@ -81,7 +81,7 @@
 |---|---|---|
 | `scripts/check-directory-freshness.sh` | 最終更新日からの経過日数で鮮度判定 | `--type slack --max-age-days 7` |
 | `.kiro/agents/{name}-updater.json` | 更新エージェント定義 | `slack-user-directory-updater` |
-| `.kiro/agents/prompts/{name}-updater.md` | 更新手順プロンプト | API呼び出し→分類→ファイル出力 |
+| `.shared-ai/prompts/{name}-updater.md` | 更新手順プロンプト | API呼び出し→分類→ファイル出力 |
 | `.kiro/hooks/{name}-update.kiro.hook` | 手動トリガー（`userTriggered`） | 任意のタイミングで手動実行 |
 | `.kiro/hooks/reference-data-refresh.kiro.hook` | 自動トリガー（パイプライン完了後） | 週次scout完了時に鮮度チェック→必要なら更新 |
 

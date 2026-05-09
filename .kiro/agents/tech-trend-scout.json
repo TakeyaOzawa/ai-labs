@@ -1,7 +1,7 @@
 {
     "name": "tech-trend-scout",
     "description": "技術トレンドスカウト。前日の技術トレンドをWeb検索で収集し、チーム向けサマリーを自動生成する。",
-    "prompt": "file://./prompts/tech-trend-scout.md",
+    "prompt": "file://../../.shared-ai/prompts/tech-trend-scout.md",
     "tools": ["read", "write", "web"],
     "allowedTools": ["web"],
     "toolsSettings": {

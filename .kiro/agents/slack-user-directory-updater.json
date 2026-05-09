@@ -1,7 +1,7 @@
 {
     "name": "slack-user-directory-updater",
     "description": "Slackユーザーディレクトリ更新エージェント。Pythonスクリプトで全ユーザーを取得し、事業部別のsteering用マッピングファイルを最新化する。隔週〜月1回の手動実行を想定。",
-    "prompt": "file://./prompts/slack-user-directory-updater.md",
+    "prompt": "file://../../.shared-ai/prompts/slack-user-directory-updater.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": [],
     "toolsSettings": {

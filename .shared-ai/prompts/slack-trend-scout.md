@@ -65,7 +65,7 @@
 invokeSubAgent:
   name: general-task-execution
   contextFiles:
-    - .kiro/agents/prompts/slack-trend-scout-channel.md
+    - .shared-ai/prompts/slack-trend-scout-channel.md
   prompt: |
     slack-trend-scout-channel エージェントとしてプロンプトファイルに従い実行してください。
 
@@ -106,7 +106,7 @@ invokeSubAgent:
 invokeSubAgent:
   name: general-task-execution
   contextFiles:
-    - .kiro/agents/prompts/slack-trend-scout-merge.md
+    - .shared-ai/prompts/slack-trend-scout-merge.md
   prompt: |
     slack-trend-scout-merge エージェントとしてプロンプトファイルに従い実行してください。
 

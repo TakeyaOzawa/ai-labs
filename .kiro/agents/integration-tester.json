@@ -1,7 +1,7 @@
 {
     "name": "integration-tester",
     "description": "結合テスト担当。E2Eテスト（Playwright）、epsilon環境検証、統合テストの実施。",
-    "prompt": "file://./prompts/integration-tester.md",
+    "prompt": "file://../../.shared-ai/prompts/integration-tester.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": ["read"],
     "toolsSettings": {

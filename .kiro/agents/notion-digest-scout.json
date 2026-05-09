@@ -1,7 +1,7 @@
 {
     "name": "notion-digest-scout",
     "description": "Notion週次ダイジェストスカウト。過去1週間に更新されたNotionのタスクリスト・Wiki・その他ページを収集し、タスク状況とドキュメント更新のサマリーレポートを自動生成する。",
-    "prompt": "file://./prompts/notion-digest-scout.md",
+    "prompt": "file://../../.shared-ai/prompts/notion-digest-scout.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": ["shell"],
     "toolsSettings": {

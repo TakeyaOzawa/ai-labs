@@ -1,7 +1,7 @@
 {
     "name": "code-reviewer",
     "description": "コードレビュアー。品質チェック（Pint/Larastan）、変更差分レビュー、specとの整合性確認、PR作成を担当。",
-    "prompt": "file://./prompts/code-reviewer.md",
+    "prompt": "file://../../.shared-ai/prompts/code-reviewer.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": ["read"],
     "toolsSettings": {

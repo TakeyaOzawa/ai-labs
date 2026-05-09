@@ -1,7 +1,7 @@
 {
     "name": "slide-creator",
     "description": "勉強会資料作成エージェント。テーマのヒアリングからアウトライン設計、文面作成、Google Slidesへの反映までを一貫して行う。",
-    "prompt": "file://./prompts/slide-creator.md",
+    "prompt": "file://../../.shared-ai/prompts/slide-creator.md",
     "tools": ["read", "write", "shell", "web"],
     "allowedTools": ["web"],
     "toolsSettings": {

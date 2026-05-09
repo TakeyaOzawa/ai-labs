@@ -1,7 +1,7 @@
 {
     "name": "notion-user-directory-updater",
     "description": "Notionユーザーディレクトリ更新エージェント。Notion MCPからワークスペースの全ユーザーを取得し、ID→表示名のマッピングファイルを作成・更新する。notion-digest-scoutの事前処理として使用。",
-    "prompt": "file://./prompts/notion-user-directory-updater.md",
+    "prompt": "file://../../.shared-ai/prompts/notion-user-directory-updater.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": [],
     "toolsSettings": {

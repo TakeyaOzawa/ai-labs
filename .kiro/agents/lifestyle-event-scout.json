@@ -1,0 +1,15 @@
+{
+    "name": "lifestyle-event-scout",
+    "description": "ライフスタイルイベントスカウト。国内旅行・海外旅行・アクティビティ・芸術・フード・教養・マネー・健康・国際・キャリア・暮らし・結婚の12カテゴリのイベント・キャンペーン情報をWeb検索で収集し、開催時期別・カテゴリ別にサマリーを自動生成する。",
+    "prompt": "file://../../.shared-ai/prompts/lifestyle-event-scout.md",
+    "tools": ["read", "write", "web"],
+    "allowedTools": ["web"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/lifestyle_events/weekly/**"]
+        }
+    },
+    "resources": [],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "ライフスタイルイベントの収集を開始します。国内旅行・海外旅行・アクティビティ・芸術・フード・教養・マネー・健康・国際・キャリア・暮らし・結婚の12カテゴリからイベントを検索してレポートを作成します。"
+}

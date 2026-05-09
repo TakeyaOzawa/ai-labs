@@ -1,7 +1,7 @@
 {
     "name": "notion-trend-scout",
     "description": "Notion日次トレンドスカウト。前日に更新されたNotionのタスクリスト・Wiki・その他ページを収集し、タスク状況とドキュメント更新の日次キャッチアップレポートを出力する。",
-    "prompt": "file://./prompts/notion-trend-scout.md",
+    "prompt": "file://../../.shared-ai/prompts/notion-trend-scout.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": ["shell"],
     "toolsSettings": {

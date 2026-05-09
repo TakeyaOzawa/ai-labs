@@ -1,7 +1,7 @@
 {
     "name": "slack-trend-scout",
     "description": "Slack日次トレンドスカウト（オーケストレーター）。チャンネル別サブエージェントに収集を委譲し、マージサブエージェントで統合する。コンテキスト節約のため自身ではSlack APIを呼ばない。",
-    "prompt": "file://./prompts/slack-trend-scout.md",
+    "prompt": "file://../../.shared-ai/prompts/slack-trend-scout.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": [],
     "toolsSettings": {

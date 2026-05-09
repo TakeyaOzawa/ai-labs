@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: ".kiro/agents/prompts/*.md"
+fileMatchPattern: ".shared-ai/prompts/*.md"
 ---
 
 # エージェントプロンプト編集ガイド

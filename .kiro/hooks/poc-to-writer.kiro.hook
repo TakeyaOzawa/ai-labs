@@ -11,6 +11,6 @@
   },
   "then": {
     "type": "askAgent",
-    "prompt": "tech-poc-runnerの検証が完了しました（SUMMARY.mdが作成されました）。\n\n`.kiro/agents/prompts/tech-blog-writer.md` をreadFileで読み込み、そこに記載されたワークフローを把握してください。\n\nその上でユーザーに以下を確認してください:\n\n1. 検証結果を確認しますか？（SUMMARY.mdの内容を表示）\n2. このまま tech-blog-writer で記事を完成させますか？\n3. output_format は md / docs のどちらですか？（デフォルト: md）\n\nユーザーが記事完成を希望した場合:\n- SUMMARY.mdのパスからpoc_directoryを特定\n- poc_directory名からplanファイルのパスを推定（Documents/works/tech_blog_plans/ 配下で日付+テーマが一致するもの）\n- tech-blog-writer のワークフローに従い、plan_path と poc_directory を指定して実行"
+    "prompt": "tech-poc-runnerの検証が完了しました（SUMMARY.mdが作成されました）。\n\n`.shared-ai/prompts/tech-blog-writer.md` をreadFileで読み込み、そこに記載されたワークフローを把握してください。\n\nその上でユーザーに以下を確認してください:\n\n1. 検証結果を確認しますか？（SUMMARY.mdの内容を表示）\n2. このまま tech-blog-writer で記事を完成させますか？\n3. output_format は md / docs のどちらですか？（デフォルト: md）\n\nユーザーが記事完成を希望した場合:\n- SUMMARY.mdのパスからpoc_directoryを特定\n- poc_directory名からplanファイルのパスを推定（Documents/works/tech_blog_plans/ 配下で日付+テーマが一致するもの）\n- tech-blog-writer のワークフローに従い、plan_path と poc_directory を指定して実行"
   }
 }

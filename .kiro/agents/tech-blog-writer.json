@@ -1,13 +1,13 @@
 {
     "name": "tech-blog-writer",
-    "description": "テックブログ記事完成エージェント。tech-blog-plannerが作成したplanファイルとtech-poc-runnerが作成した検証結果（SUMMARY.md + results/）を統合し、TBDを埋めて記事を完成させる。完成した記事はMarkdownファイルとして保存し、オプションでGoogle Docsにアップロードする。",
-    "prompt": "file://./prompts/tech-blog-writer.md",
+    "description": "テックブログ記事完成エージェント。tech-poc-plannerが作成したplanファイルとtech-poc-runnerが作成した検証結果（SUMMARY.md + results/）を統合し、TBDを埋めて記事を完成させる。完成した記事はMarkdownファイルとして保存し、オプションでGoogle Docsにアップロードする。",
+    "prompt": "file://../../.shared-ai/prompts/tech-blog-writer.md",
     "tools": ["read", "write", "shell", "web"],
     "allowedTools": ["web"],
     "toolsSettings": {
         "read": {
             "allowedPaths": [
-                "Documents/works/tech_blog_plans/**",
+                "Documents/works/tech_poc_plans/**",
                 "Documents/works/tech_blog_articles/**",
                 "Documents/works/scout_histories/tech_blog_materials/**",
                 "works/poc-something/**"
@@ -16,7 +16,7 @@
         "write": {
             "allowedPaths": [
                 "Documents/works/tech_blog_articles/**",
-                "Documents/works/tech_blog_plans/**"
+                "Documents/works/tech_poc_plans/**"
             ]
         },
         "shell": {

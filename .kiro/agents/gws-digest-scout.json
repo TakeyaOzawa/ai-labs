@@ -1,7 +1,7 @@
 {
     "name": "gws-digest-scout",
     "description": "GWS週次ダイジェストスカウト。gws-trend-scoutの日次レポート（直近7日分）を集約し、種別横断で重要ドキュメントを分類・優先度付けしたサマリーレポートを自動生成する。",
-    "prompt": "file://./prompts/gws-digest-scout.md",
+    "prompt": "file://../../.shared-ai/prompts/gws-digest-scout.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": ["shell"],
     "toolsSettings": {

@@ -1,7 +1,7 @@
 {
     "name": "github-public-digest-scout",
     "description": "github-public-trend-scoutの日次レポート（直近7日分）を集約し、週次のOSSトレンドサマリー・修正傾向分析・自社適用候補を出力する。",
-    "prompt": "file://./prompts/github-public-digest-scout.md",
+    "prompt": "file://../../.shared-ai/prompts/github-public-digest-scout.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": [],
     "toolsSettings": {

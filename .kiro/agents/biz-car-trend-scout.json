@@ -1,7 +1,7 @@
 {
     "name": "biz-car-trend-scout",
     "description": "自動車産業DXビジネストレンドスカウト。カーリース・買取・販売・税金・法律・自動車保険・ディーラー関連のビジネストレンドをWeb検索で収集し、チーム向けサマリーを自動生成する。",
-    "prompt": "file://./prompts/biz-car-trend-scout.md",
+    "prompt": "file://../../.shared-ai/prompts/biz-car-trend-scout.md",
     "tools": ["read", "write", "web"],
     "allowedTools": ["web"],
     "toolsSettings": {

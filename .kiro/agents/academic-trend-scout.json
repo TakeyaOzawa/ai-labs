@@ -1,7 +1,7 @@
 {
     "name": "academic-trend-scout",
     "description": "アカデミックスカウト。ビジネス・行動心理学・経済心理学・経済学・ITテクノロジー・機械学習・IoT（カーモビリティ・ドローン）分野の学術論文・研究動向をWeb検索で収集し、チーム向けサマリーを自動生成する。",
-    "prompt": "file://./prompts/academic-trend-scout.md",
+    "prompt": "file://../../.shared-ai/prompts/academic-trend-scout.md",
     "tools": ["read", "write", "web"],
     "allowedTools": ["web"],
     "toolsSettings": {

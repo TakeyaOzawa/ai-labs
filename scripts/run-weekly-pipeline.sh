@@ -138,7 +138,7 @@ for AGENT in "${AGENTS[@]}"; do
   case "$AGENT" in
     tech-event-scout|lifestyle-event-scout|tech-blog-material-scout)
       PROMPT="${AGENT} エージェントとして「週次パイプラインモード」で動作してください。"
-      PROMPT="${PROMPT} ~/.kiro/agents/prompts/${AGENT}.md をreadFileで読み込み、"
+      PROMPT="${PROMPT} ~/.shared-ai/prompts/${AGENT}.md をreadFileで読み込み、"
       PROMPT="${PROMPT}そこに記載された週次パイプラインモードのワークフローに従って実行してください。"
       PROMPT="${PROMPT}基準日は ${BASE_DATE} です。"
       PROMPT="${PROMPT}日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
@@ -156,7 +156,7 @@ for AGENT in "${AGENTS[@]}"; do
       ;;
     *)
       PROMPT="${AGENT} エージェントとして動作してください。"
-      PROMPT="${PROMPT} ~/.kiro/agents/prompts/${AGENT}.md をreadFileで読み込み、"
+      PROMPT="${PROMPT} ~/.shared-ai/prompts/${AGENT}.md をreadFileで読み込み、"
       PROMPT="${PROMPT}そこに記載されたワークフローに従って実行してください。"
       PROMPT="${PROMPT}基準日は ${BASE_DATE} です。"
       PROMPT="${PROMPT}日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
@@ -220,7 +220,7 @@ else
     echo "[$PLAN_START]    🔄 tech-poc-planner: $MATERIAL_NAME"
 
     PLANNER_PROMPT="tech-poc-planner エージェントとして「週次パイプラインモード」で動作してください。"
-    PLANNER_PROMPT="${PLANNER_PROMPT} ~/.kiro/agents/prompts/tech-poc-planner.md をreadFileで読み込み、"
+    PLANNER_PROMPT="${PLANNER_PROMPT} ~/.shared-ai/prompts/tech-poc-planner.md をreadFileで読み込み、"
     PLANNER_PROMPT="${PLANNER_PROMPT}そこに記載された週次パイプラインモードのワークフローに従って実行してください。"
     PLANNER_PROMPT="${PLANNER_PROMPT} 素材シート: ${MATERIAL_FILE}"
     PLANNER_PROMPT="${PLANNER_PROMPT} 基準日は ${BASE_DATE} です。"
@@ -291,7 +291,7 @@ for AGENT in "${AGENTS[@]}"; do
   echo "[$NOTIFY_START]    📨 $AGENT 通知中..."
 
   NOTIFY_PROMPT="slack-notifier エージェントとして動作してください。"
-  NOTIFY_PROMPT="${NOTIFY_PROMPT} ~/.kiro/agents/prompts/slack-notifier.md をreadFileで読み込み、"
+  NOTIFY_PROMPT="${NOTIFY_PROMPT} ~/.shared-ai/prompts/slack-notifier.md をreadFileで読み込み、"
   NOTIFY_PROMPT="${NOTIFY_PROMPT}そこに記載されたワークフローに従って実行してください。"
   NOTIFY_PROMPT="${NOTIFY_PROMPT} file_path=${FILE_PATH}"
 

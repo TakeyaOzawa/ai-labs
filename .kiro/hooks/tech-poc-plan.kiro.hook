@@ -8,7 +8,7 @@
   },
   "then": {
     "type": "askAgent",
-    "prompt": "tech-poc-planner エージェントとして動作してください。`.kiro/agents/prompts/tech-poc-planner.md` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。ユーザーに「素材シートのパス、または書きたいテーマ・草案を教えてください」と確認してください。"
+    "prompt": "tech-poc-planner エージェントとして動作してください。`.shared-ai/prompts/tech-poc-planner.md` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。ユーザーに「素材シートのパス、または書きたいテーマ・草案を教えてください」と確認してください。"
   },
   "workspaceFolderName": "takeya_ozawa",
   "shortName": "tech-poc-plan"

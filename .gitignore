@@ -46,6 +46,7 @@
 !/.kiro/settings/mcp.json
 !/.kiro/specs/
 /.kiro/specs/**/.config.kiro
+/.codex/rules/*
 /.gemini/*
 !.gemini/GEMINI.md
 /.vim/*

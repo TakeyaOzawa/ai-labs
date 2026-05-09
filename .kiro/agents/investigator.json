@@ -1,7 +1,7 @@
 {
     "name": "investigator",
     "description": "調査専門エージェント。要件/不具合の調査、外部DB参照、ドメイン知識の確認・更新を担当。",
-    "prompt": "file://./prompts/investigator.md",
+    "prompt": "file://../../.shared-ai/prompts/investigator.md",
     "tools": ["read", "write", "shell", "@dbhub"],
     "allowedTools": ["read", "@dbhub"],
     "toolsSettings": {

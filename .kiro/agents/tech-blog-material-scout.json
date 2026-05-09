@@ -1,7 +1,7 @@
 {
     "name": "tech-blog-material-scout",
-    "description": "テックブログ素材スカウト。tech-trend-scoutの収集結果やユーザー指定テーマを深掘り調査し、裏どり済みの素材パッケージをtech-blog-planner向けに作成する。",
-    "prompt": "file://./prompts/tech-blog-material-scout.md",
+    "description": "テックブログ素材スカウト。tech-trend-scoutの収集結果やユーザー指定テーマを深掘り調査し、裏どり済みの素材パッケージをtech-poc-planner向けに作成する。",
+    "prompt": "file://../../.shared-ai/prompts/tech-blog-material-scout.md",
     "tools": ["read", "write", "web"],
     "allowedTools": ["web"],
     "toolsSettings": {
