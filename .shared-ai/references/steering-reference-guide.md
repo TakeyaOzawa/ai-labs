@@ -20,8 +20,8 @@ Kiroは `~/.kiro/steering/` （グローバル）と `.kiro/steering/` （ワー
 
 例:
 
-- `~/.kiro/steering/pr-creation-base.md` + `.kiro/steering/pr-creation-guide.md`
-- `~/.kiro/steering/knowledge-management-base.md` + `.kiro/steering/knowledge-management-rules.md`
+- `~/.kiro/steering/pr-creation.md` + `.kiro/steering/pr-creation-guide.md`
+- `~/.kiro/steering/knowledge-mgmt.md` + `.kiro/steering/knowledge-management-rules.md`
 
 ### 配置の使い分け
 

@@ -73,7 +73,7 @@ python3 scripts/update-slack-user-directory.py \
 
 ### 4. lookup-guideの件数更新
 
-分類結果の件数を確認し、`~/.kiro/steering/slack-user-lookup-guide.md` の件数テーブルを更新する。
+分類結果の件数を確認し、`~/.kiro/steering/slack-lookup.md` の件数テーブルを更新する。
 
 ```bash
 TODAY=$(date +%Y-%m-%d)
@@ -83,7 +83,7 @@ for f in ${HOME}/Documents/works/slack_users/${TODAY}/active/*.md ${HOME}/Docume
 done
 ```
 
-上記の件数で `${HOME}/.kiro/steering/slack-user-lookup-guide.md` の以下を更新する:
+上記の件数で `${HOME}/.kiro/steering/slack-lookup.md` の以下を更新する:
 - アクティブユーザーテーブルの人数列
 - 非アクティブユーザーテーブルの人数列
 - 全件数の記載（例: `全2,026件`）

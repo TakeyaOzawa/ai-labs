@@ -50,9 +50,9 @@
 以下のフォーマットガイドはグローバルsteeringとして自動読み込みされる:
 
 - `requirements-format-guide.md`
-- `design-format-guide.md`
-- `tasks-format-guide.md`
-- `knowledge-management-base.md`
+- `design-format.md`
+- `tasks-format.md`
+- `knowledge-mgmt.md`
 
 以下はワークスペースのsteeringを参照:
 

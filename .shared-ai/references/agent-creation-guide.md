@@ -33,7 +33,7 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 |------|------|----------|--------|--------|
 | エージェント名 | **名詞（役割）** | `{領域}-{機能}-{役割}` | `tech-trend-scout` | `scout-tech-trends` |
 | hookファイル名 | **名詞（イベント/動作名）** | `{対象}-{動作名}` | `reference-data-refresh` | `refresh-reference-data` |
-| steeringファイル名 | **名詞（文書種別）** | `{トピック}-{文書種別}` | `design-format-guide`, `dev-environment-rules` | `guide-for-creating-agents` |
+| steeringファイル名 | **名詞（文書種別）** | `{対象}-{種別}` | `dev-env`, `py-standards`, `kiro-arch` | `guide-for-creating-agents` |
 | スクリプトファイル名 | **動詞始まり（コマンド）** | `{動詞}-{対象}` | `find-task.sh`, `create-weekly-tasks.sh` | `task-finder.sh` |
 | referencesファイル名 | **名詞（データ種別）** | `{トピック}-{文書種別}` or `{エージェント名}-sources` | `agent-prompt-guide`, `tech-trend-sources.md` | `sources-for-tech-trend.md` |
 
@@ -69,15 +69,24 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 | `{対象}-{動作}` | `scouts-daily-trigger` | 日次scoutの起動 |
 | `{対象}-{検証名}` | `domain-frontmatter-check` | ドメインファイルのfrontmatter検証 |
 
-#### steering / references 共通の文書ファイル名: `{トピック}-{文書種別}`
+#### steering ファイル名: `{対象}-{種別}`（コンパクト）
 
-| 文書種別 | 意味 | steering例 | references例 |
-|----------|------|------------|--------------|
-| `guide` | 手順・ガイド | `design-format-guide` | `agent-creation-guide`, `agent-prompt-guide` |
-| `rules` | ルール・制約 | `gws-integration-rules` | — |
-| `base` | 基本方針 | `knowledge-management-base` | — |
-| `mapping` | マッピング・対応表 | `slack-channel-mapping` | — |
-| `sources` | 収集対象ソース一覧 | — | `tech-trend-sources` |
+steeringは略語を使い短くする。`-guide`, `-rules`, `-base` 等の冗長なサフィックスは省略。
+
+| パターン | 例 | 説明 |
+|----------|-----|------|
+| `{対象}-{種別}` | `dev-env`, `py-standards`, `gws-rules` | 本体参照型 |
+| `{対象}-{動作}` | `spec-frontmatter`, `spec-completion` | fileMatch型 |
+| `{対象}` | `pr-creation`, `design-format` | 種別が自明な場合 |
+
+#### references ファイル名: `{トピック}-{文書種別}`（フルネーム）
+
+referencesは省略せず、内容が明確に分かる名前にする。
+
+| 文書種別 | 意味 | 例 |
+|----------|------|-----|
+| `-guide` | 手順・ガイド | `agent-creation-guide`, `agent-prompt-guide` |
+| `-sources` | 収集対象ソース一覧 | `tech-trend-sources` |
 
 #### スクリプトファイル名: `{動詞}-{対象}`
 

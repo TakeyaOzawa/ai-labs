@@ -15,3 +15,6 @@
 - `~/.shared-ai/lookups/slack-user-lookup.md` — SlackユーザーID逆引き
 - `~/.shared-ai/lookups/notion-user-lookup.md` — NotionユーザーID逆引き
 - `~/.shared-ai/lookups/slack-channel-mapping.md` — Slackチャンネルマッピング
+
+### アーキテクチャ
+- `~/.shared-ai/references/ai-architecture-guide.md` — AI環境の設計原則

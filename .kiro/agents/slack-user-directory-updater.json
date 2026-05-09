@@ -8,7 +8,7 @@
         "write": {
             "allowedPaths": [
                 "Documents/works/slack_users/**",
-                ".kiro/steering/slack-user-lookup-guide.md"
+                ".kiro/steering/slack-lookup.md"
             ]
         }
     },
