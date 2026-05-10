@@ -84,7 +84,7 @@ echo "[$NOW] Step 1: RSSフィード事前取得..."
 RSS_SCRIPT="$HOME/scripts/fetch-rss-feeds.py"
 if [[ -f "$RSS_SCRIPT" ]]; then
   python3.12 "$RSS_SCRIPT" --category tech --date "$BASE_DATE" 2>/dev/null && echo "   ✅ tech" || echo "   ⚠️  tech (失敗・続行)"
-  python3.12 "$RSS_SCRIPT" --category biz --date "$BASE_DATE" 2>/dev/null && echo "   ✅ biz" || echo "   ⚠️  biz (失敗・続行)"
+  python3.12 "$RSS_SCRIPT" --category biz_car --date "$BASE_DATE" 2>/dev/null && echo "   ✅ biz_car" || echo "   ⚠️  biz_car (失敗・続行)"
   python3.12 "$RSS_SCRIPT" --category academic --date "$BASE_DATE" 2>/dev/null && echo "   ✅ academic" || echo "   ⚠️  academic (失敗・続行)"
 else
   echo "   ⚠️  RSSスクリプト未検出（スキップ）"

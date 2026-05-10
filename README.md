@@ -223,6 +223,8 @@ vim ~/.shared-ai/rules/python-coding-standards.md
 
 | 日付 | 内容 |
 |---|---|
+| 2026-05-11 | rss-source-updater新規作成（レポートから未登録サイト発見→RSS調査→ソース定義自動更新）。fetch-rss-feeds.pyカテゴリ名 biz→biz_car リネーム。lifestyle-event-scout日次パイプラインモードに開催時期分類オーバーライド追加（+7日） |
+| 2026-05-11 | lifestyle-event-scoutをweekly→daily化（曜日別テーマローテーション方式）。run-daily-pipeline.py/create-daily-jobs.pyに追加、run-weekly-pipeline.py/create-weekly-jobs.pyから除外。fetch-rss-feeds.py出力先をdailyに変更。agent-output-reviewerに敵対視点コメント（Step 4.5）を追加 |
 | 2026-05-10 | web-searcher新規作成。agent-pipeline-creator新規作成。interfaces/切り出し。Gemini CLI対応。ai-architecture-guide.md作成。agent-creator行動原則強化（固有名排除・Slack通知委譲・allowedPaths網羅）。scoutレポート曜日計算をシェルコマンドで確定する方式に修正 |
 | 2026-05-09 | hookパス更新、prompts/references元ファイル削除、テンプレート/ガイド分離、レビュアー強化 |
 | 2026-05-09 | 初版作成。shared-ai移行完了に伴いREADME整備 |

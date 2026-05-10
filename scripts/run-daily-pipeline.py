@@ -39,7 +39,9 @@ AGENTS = [
     "slack-trend-scout",
     "github-org-trend-scout",
     "github-public-trend-scout",
+    "rss-source-updater",
     "notion-trend-scout",
+    "lifestyle-event-scout",
 ]
 
 NOTIFY_FILE_MAP: dict[str, str] = {
@@ -51,6 +53,17 @@ NOTIFY_FILE_MAP: dict[str, str] = {
     "github-org-trend-scout": "scout_histories/github_org_trends/daily/{date}_github-org_daily.md",
     "github-public-trend-scout": "scout_histories/github_public_trends/daily/{date}_github-public_daily.md",
     "notion-trend-scout": "scout_histories/notion_trends/daily/{date}_notion_daily.md",
+}
+
+# lifestyle-event-scoutは曜日によって出力ファイル名が変わるため動的に解決
+LIFESTYLE_THEME_MAP: dict[int, str] = {
+    0: "outing",       # 月曜日
+    1: "experience",   # 火曜日
+    2: "culture",      # 水曜日
+    3: "learning",     # 木曜日
+    4: "food-living",  # 金曜日
+    5: "money-life",   # 土曜日
+    # 6: 日曜日 = 週次サマリー（weekly/に出力）
 }
 
 MAX_LOG_LINES = 1000
@@ -164,13 +177,16 @@ def main() -> None:
     print(f"[{now_jst()}] Step 1: RSSフィード事前取得...")
     rss_script = SCRIPTS_DIR / "fetch-rss-feeds.py"
     if rss_script.exists():
-        for category in ["tech", "biz", "academic"]:
+        today_date = datetime.now(tz=JST).strftime("%Y-%m-%d")
+        for category in ["tech", "biz_car", "academic", "lifestyle_events"]:
+            # lifestyle_eventsは当日基準（エージェントが当日の曜日テーマで動作するため）
+            feed_date = today_date if category == "lifestyle_events" else base_date
             result = subprocess.run(
-                ["python3.12", str(rss_script), "--category", category, "--date", base_date],
+                ["python3.12", str(rss_script), "--category", category, "--date", feed_date],
                 capture_output=True, text=True,
             )
             status = "✅" if result.returncode == 0 else "⚠️ "
-            print(f"   {status} {category}")
+            print(f"   {status} {category} (date={feed_date})")
     else:
         print("   ⚠️  RSSスクリプト未検出（スキップ）")
 
@@ -199,11 +215,17 @@ def main() -> None:
                             updates={"status_detail": f"{agent} 実行中"})
 
         # エージェント実行
+        # lifestyle-event-scoutは「当日の曜日テーマ」で収集するため当日を基準日とする
+        if agent == "lifestyle-event-scout":
+            agent_base_date = datetime.now(tz=JST).strftime("%Y-%m-%d")
+        else:
+            agent_base_date = base_date
+
         prompt = (
             f"{agent} エージェントとして動作してください。"
             f" ~/.shared-ai/prompts/{agent}.md をreadFileで読み込み、"
             f"そこに記載されたワークフローに従って実行してください。"
-            f"基準日は {base_date} です。"
+            f"基準日は {agent_base_date} です。"
             f"日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
         )
 
@@ -258,10 +280,22 @@ def main() -> None:
     for agent in AGENTS:
         template = NOTIFY_FILE_MAP.get(agent, "")
         if not template:
-            notify_skipped += 1
-            continue
-
-        file_path = HOME / "Documents" / "works" / template.format(date=base_date)
+            # lifestyle-event-scoutは曜日で動的にパスを解決（当日基準）
+            if agent == "lifestyle-event-scout":
+                today_date = datetime.now(tz=JST).strftime("%Y-%m-%d")
+                target_date = datetime.now(tz=JST)
+                weekday = target_date.weekday()
+                theme = LIFESTYLE_THEME_MAP.get(weekday)
+                if theme is None:
+                    # 日曜日: 週次サマリー
+                    file_path = HOME / "Documents" / "works" / f"scout_histories/lifestyle_events/weekly/{today_date}_lifestyle_weekly_summary.md"
+                else:
+                    file_path = HOME / "Documents" / "works" / f"scout_histories/lifestyle_events/daily/{today_date}_lifestyle_{theme}.md"
+            else:
+                notify_skipped += 1
+                continue
+        else:
+            file_path = HOME / "Documents" / "works" / template.format(date=base_date)
         if not file_path.exists():
             print(f"   ⏭️  {agent}: 出力ファイルなし（スキップ）")
             notify_skipped += 1

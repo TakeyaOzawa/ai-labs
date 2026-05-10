@@ -166,7 +166,7 @@ print(f"→ {feed_name}... ✅ {count}件", file=sys.stderr)
 ```python
 def main():
     parser = argparse.ArgumentParser(description="フィード取得スクリプト")
-    parser.add_argument("--category", required=True, choices=["tech", "biz", "academic"])
+    parser.add_argument("--category", required=True, choices=["tech", "biz_car", "academic"])
     parser.add_argument("--date", required=True, help="対象日 (YYYY-MM-DD)")
     parser.add_argument("--output", help="出力先パス（省略時: デフォルト）")
     args = parser.parse_args()
@@ -191,7 +191,7 @@ JST = timezone(timedelta(hours=9))
 
 FEEDS: dict[str, list[dict]] = {
     "tech": [...],
-    "biz": [...],
+    "biz_car": [...],
 }
 ```
 

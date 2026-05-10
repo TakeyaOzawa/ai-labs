@@ -1,0 +1,12 @@
+{
+  "name": "RSS Source Update",
+  "version": "1.0.0",
+  "description": "レポートファイルから未登録サイトを発見し、RSSソース定義とプロンプトを自動更新する",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "rss-source-updater エージェントとして動作してください。 ~/.shared-ai/prompts/rss-source-updater.md をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。"
+  }
+}
