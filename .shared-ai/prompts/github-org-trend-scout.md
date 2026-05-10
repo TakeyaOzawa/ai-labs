@@ -11,7 +11,7 @@
 ## 対象日付の決定
 基準日がプロンプトで指定されている場合はそれを使用。指定がなければ以下で前日を取得:
 ```bash
-date -v-1d +%Y-%m-%d
+python3.12 ~/scripts/get-jst-date.py --yesterday
 ```
 
 ## 環境変数

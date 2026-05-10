@@ -10,8 +10,10 @@
 学術・研究・論文の観点のみ。技術製品リリース→tech-trend-scout、業界ニュース→biz-car-trend-scoutが担当。
 
 ## 対象日付の決定
-基準日がプロンプトで指定されている場合はそれを使用。指定がなければ `date -v-1d +%Y-%m-%d` で前日を取得。
-曜日は `LANG=ja_JP.UTF-8 date -j -f "%Y-%m-%d" "{基準日}" "+%a曜日"` で確定させる。AIモデルの推測で曜日を決定しないこと。
+基準日がプロンプトで指定されている場合はそれを使用。指定がなければ以下で前日を取得:
+```bash
+python3.12 ~/scripts/get-jst-date.py --yesterday
+```
 
 ## 信頼性基準
 Tier 1: 査読付きトップジャーナル/カンファレンス、Nature/Science
@@ -64,7 +66,7 @@ date: {YYYY-MM-DD}
 collected_by: academic-trend-scout
 sources: [{ソース1}, ...]
 ---
-# アカデミックトレンドレポート: {YYYY-MM-DD} ({曜日})
+# アカデミックトレンドレポート: {YYYY-MM-DD}
 
 ## 🔥 注目論文・研究
 最重要1〜3件。著者、掲載先、信頼性Tier、概要(3〜5文: 目的・手法・発見・定量結果)、出典、応用可能性(⭐⭐⭐)

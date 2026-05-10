@@ -10,8 +10,10 @@
 技術・実装・ツール・セキュリティの観点のみ。ビジネス戦略→biz-car-trend-scout、学術論文→academic-trend-scoutが担当。
 
 ## 対象日付の決定
-基準日がプロンプトで指定されている場合はそれを使用。指定がなければ `date -v-1d +%Y-%m-%d` で前日を取得。
-曜日は `LANG=ja_JP.UTF-8 date -j -f "%Y-%m-%d" "{基準日}" "+%a曜日"` で確定させる。AIモデルの推測で曜日を決定しないこと。
+基準日がプロンプトで指定されている場合はそれを使用。指定がなければ以下で前日を取得:
+```bash
+python3.12 ~/scripts/get-jst-date.py --yesterday
+```
 
 ## 事前取得済み情報（検索不要）
 
@@ -59,7 +61,7 @@ date: {YYYY-MM-DD}
 collected_by: tech-trend-scout
 sources: [{ソース1}, ...]
 ---
-# 技術トレンドレポート: {YYYY-MM-DD} ({曜日})
+# 技術トレンドレポート: {YYYY-MM-DD}
 
 ## 🔥 注目トピック
 最重要1〜3件。概要(2〜3文)、出典([名](URL))、関連度(⭐⭐⭐)

@@ -36,7 +36,7 @@
 **重要: 日付はAIモデルの推測に頼らず、必ずシェルコマンドで確定させること。**
 
 ```bash
-date +%Y-%m-%d
+python3.12 ~/scripts/get-jst-date.py
 ```
 
 ---
@@ -114,7 +114,7 @@ date +%Y-%m-%d
 
 1. **Markdown保存**
    - 出力先: `Documents/works/tech_blog_articles/{YYYY-MM-DD}_{テーマkebab}.md`
-   - `{YYYY-MM-DD}` は `date` コマンドで取得した基準日付
+   - `{YYYY-MM-DD}` は `get-jst-date.py` で取得した基準日付
    - `{テーマkebab}` はplanファイルのフロントマター `theme` をkebab-caseに変換
    - フロントマターには最終的なメタ情報を含める
 

@@ -41,7 +41,7 @@ Slack収集→slack-trend-scout、GWSキャッチアップ→gws-trend-scout、N
 1. ユーザーメッセージに日付指定がある場合 → その日付を対象日とする
 2. ユーザーメッセージに日付指定がない場合 → 以下のコマンドを実行して前日の日付を取得する:
    ```bash
-   date -v-1d +%Y-%m-%d
+   python3.12 ~/scripts/get-jst-date.py --yesterday
    ```
 
 対象期間: **基準日の0:00〜23:59（JST）** = 1日分

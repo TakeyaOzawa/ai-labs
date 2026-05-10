@@ -11,7 +11,7 @@ github-public-trend-scoutの日次レポート（直近7日分）を集約し、
 ## 対象日付の決定
 基準日がプロンプトで指定されている場合はそれを使用。指定がなければ以下で当日を取得:
 ```bash
-date +%Y-%m-%d
+python3.12 ~/scripts/get-jst-date.py
 ```
 - 集約期間: 基準日から7日前〜基準日
 

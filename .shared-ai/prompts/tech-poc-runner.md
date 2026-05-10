@@ -46,7 +46,7 @@ Tech Blog Planの検証計画やユーザー指示に基づき、コンテナ環
 
 ## 基準日付の決定
 ```bash
-date +%Y-%m-%d
+python3.12 ~/scripts/get-jst-date.py
 ```
 
 ## 実行手順

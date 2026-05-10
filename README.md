@@ -223,8 +223,6 @@ vim ~/.shared-ai/rules/python-coding-standards.md
 
 | 日付 | 内容 |
 |---|---|
-| 2026-05-10 | 8KB超プロンプト7件の出力フォーマット・リソース定義をinterfaces/に切り出し（prompt-interface-extraction） |
-| 2026-05-10 | agent-pipeline-creator新規作成。task→job用語統一。agent_histories→jobs/ディレクトリ移行。ログ構造を~/logs/jobs/{pipeline}/に変更。manage-launchd→manage-scheduler。pipeline-executor.md廃止→agent-pipeline-run-script-guide.mdに統合 |
-| 2026-05-10 | Gemini CLI対応追加。ai-architecture-guide.md作成。CLAUDE.mdインライン重複削除 |
+| 2026-05-10 | web-searcher新規作成。agent-pipeline-creator新規作成。interfaces/切り出し。Gemini CLI対応。ai-architecture-guide.md作成。agent-creator行動原則強化（固有名排除・Slack通知委譲・allowedPaths網羅）。scoutレポート曜日計算をシェルコマンドで確定する方式に修正 |
 | 2026-05-09 | hookパス更新、prompts/references元ファイル削除、テンプレート/ガイド分離、レビュアー強化 |
 | 2026-05-09 | 初版作成。shared-ai移行完了に伴いREADME整備 |
