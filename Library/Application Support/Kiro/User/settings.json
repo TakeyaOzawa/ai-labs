@@ -126,7 +126,8 @@
     "strip_frontmatter() *",
     "git *",
     "stat *",
-    "~/scripts/platform-commands.sh *"
+    "~/scripts/platform-commands.sh *",
+    "LANG=ja_JP.UTF-8 date *"
   ],
   "kiroAgent.agentAutonomy": "Autopilot",
   "kiroAgent.trustedTools": [
