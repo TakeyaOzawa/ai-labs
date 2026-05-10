@@ -8,7 +8,7 @@
         "read": {
             "allowedPaths": [
                 "Documents/works/scout_histories/**",
-                "Documents/works/agent_histories/**"
+                "Documents/works/jobs/**"
             ]
         }
     },

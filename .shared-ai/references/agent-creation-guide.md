@@ -16,7 +16,7 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 | エージェント名 | ケバブケース | `-` | `tech-trend-scout` |
 | プロンプトファイル名 | ケバブケース | `-` | `tech-trend-scout.md` |
 | hookファイル名 | ケバブケース | `-` | `agent-output-review.kiro.hook` |
-| スクリプトファイル名 | ケバブケース | `-` | `find-task.py` |
+| スクリプトファイル名 | ケバブケース | `-` | `find-job.py` |
 | referencesファイル名 | ケバブケース | `-` | `tech-trend-sources.md` |
 | steeringファイル名 | ケバブケース | `-` | `agent-creation-guide.md` |
 | 出力ディレクトリ名 | スネークケース | `_` | `tech_trends`, `slack_trends` |
@@ -34,7 +34,7 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 | エージェント名 | **名詞（役割）** | `{領域}-{機能}-{役割}` | `tech-trend-scout` | `scout-tech-trends` |
 | hookファイル名 | **名詞（イベント/動作名）** | `{対象}-{動作名}` | `agent-output-review` | `refresh-reference-data` |
 | steeringファイル名 | **名詞（文書種別）** | `{対象}-{種別}` | `dev-env`, `py-standards`, `kiro-arch` | `guide-for-creating-agents` |
-| スクリプトファイル名 | **動詞始まり（コマンド）** | `{動詞}-{対象}` | `find-task.py`, `create-weekly-tasks.py` | `task-finder.sh` |
+| スクリプトファイル名 | **動詞始まり（コマンド）** | `{動詞}-{対象}` | `find-job.py`, `create-weekly-jobs.py` | `task-finder.sh` |
 | referencesファイル名 | **名詞（データ種別）** | `{トピック}-{文書種別}` or `{エージェント名}-sources` | `agent-prompt-guide`, `tech-trend-sources.md` | `sources-for-tech-trend.md` |
 
 ### 詳細ルール
@@ -92,9 +92,9 @@ referencesは省略せず、内容が明確に分かる名前にする。
 
 | 動詞 | 意味 | 例 |
 |------|------|-----|
-| `find-` | 検索・取得 | `find-task.py` |
-| `update-` | 更新 | `update-task.py` |
-| `create-` | 生成 | `create-weekly-tasks.py` |
+| `find-` | 検索・取得 | `find-job.py` |
+| `update-` | 更新 | `update-job.py` |
+| `create-` | 生成 | `create-weekly-jobs.py` |
 | `fetch-` | 外部取得 | `fetch-rss-feeds.py` |
 | `check-` | 検証・判定 | `check-directory-freshness.py` |
 
@@ -128,6 +128,20 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 4. 日次レポートで既に解決済みの情報（ユーザー名変換等）は再取得しない
 5. 欠損日がある場合はスキップし、レポートに明記する
 6. 日次レポートが不足している場合のフォールバック動作を定義する
+7. **日次レポート間の重複を検知し、重み付けを正規化する**（下記参照）
+
+### digest-scoutの重複正規化ルール
+
+日次収集では日付フィルタの許容幅（±1日）やpublishedDate=nullにより、同一記事が複数日のレポートに含まれることがある。digest集約時にこれを補正する。
+
+**検知基準（以下のいずれかで同一と判定）:**
+- 同一URL
+- タイトルの類似度が高い（同一ソースかつタイトル先頭20文字が一致）
+
+**正規化ルール:**
+- 同一記事が複数日に出現した場合、**最初に出現した日のみをカウント**する
+- 重要度・関連度の評価は1回分として扱う（出現回数で重み付けしない）
+- digestレポートには初出日を記載する
 
 ### 現在の実装
 
@@ -187,7 +201,7 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 
 ### パイプライン組み込み（詳細は `agent-pipeline-guide.md` 参照）
 
-- [ ] `scripts/create-{frequency}-tasks.py` に子タスク追加
+- [ ] `scripts/create-{frequency}-jobs.py` に子ジョブ追加
 - [ ] `scripts/run-{frequency}-pipeline.py` の `AGENTS` 配列に追加（kiro-cli方式）
 - [ ] `scripts/run-{frequency}-pipeline.py` の `NOTIFY_FILE_MAP` に追加（通知対象の場合）
 - [ ] `scripts/fetch-rss-feeds.py` にカテゴリ追加（RSS必要な場合）

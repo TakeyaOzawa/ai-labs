@@ -1,6 +1,6 @@
 {
-  "task_id": "{ULID}",
-  "task_name": "{pipeline_name}",
+  "job_id": "{ULID}",
+  "job_name": "{pipeline_name}",
   "args": {},
   "options": {
     "async": false,
@@ -11,10 +11,10 @@
   "status": "pending",
   "status_detail": null,
   "depends_on": null,
-  "child_tasks": [
+  "child_jobs": [
     {
-      "task_id": "{ULID}",
-      "task_name": "{agent-name}",
+      "job_id": "{ULID}",
+      "job_name": "{agent-name}",
       "args": {},
       "options": {
         "async": true,
@@ -25,7 +25,7 @@
       "status": "starting",
       "status_detail": null,
       "depends_on": null,
-      "child_tasks": [],
+      "child_jobs": [],
       "created_at": "{ISO8601}",
       "updated_at": "{ISO8601}",
       "started_at": null,

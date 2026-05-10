@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "name": "Agent Creator",
+  "name": "Agent Create",
   "description": "Launches the agent-creator to assist with creating or modifying agents, following naming conventions, design patterns, and pipeline integration",
   "version": "2",
   "when": {

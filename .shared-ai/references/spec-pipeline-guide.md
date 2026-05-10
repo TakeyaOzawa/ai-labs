@@ -91,20 +91,20 @@ code-reviewerがレビュー指摘を出した場合:
 ## タスクファイルによる進捗管理
 
 scoutパイプラインと同じタスクファイル形式で進捗を管理する。
-テンプレート: `~/.shared-ai/templates/task-file.json`
+テンプレート: `~/.shared-ai/templates/job-file.json`
 
 ### タスクファイルの配置
 
 ```
-Documents/works/agent_histories/spec/{TASK_ID}_spec.json
+Documents/works/jobs/spec/{TASK_ID}_spec.json
 ```
 
 ### specパイプラインのタスクファイル例
 
 ```json
 {
-  "task_id": "{ULID}",
-  "task_name": "spec_pipeline",
+  "job_id": "{ULID}",
+  "job_name": "spec_pipeline",
   "args": {
     "spec_path": ".kiro/specs/{feature-name}/",
     "spec_type": "feat"
@@ -118,16 +118,16 @@ Documents/works/agent_histories/spec/{TASK_ID}_spec.json
   "status": "pending",
   "status_detail": null,
   "depends_on": null,
-  "child_tasks": [
+  "child_jobs": [
     {
-      "task_id": "{ULID}",
-      "task_name": "investigator",
+      "job_id": "{ULID}",
+      "job_name": "investigator",
       "args": { "spec_path": ".kiro/specs/{feature-name}/" },
       "options": { "async": true, "timeout_seconds": 600, "max_retries": 0, "retry_delay_seconds": 0 },
       "status": "starting",
       "status_detail": null,
       "depends_on": null,
-      "child_tasks": [],
+      "child_jobs": [],
       "created_at": "{ISO8601}",
       "updated_at": "{ISO8601}",
       "started_at": null,
@@ -135,14 +135,14 @@ Documents/works/agent_histories/spec/{TASK_ID}_spec.json
       "error": null
     },
     {
-      "task_id": "{ULID}",
-      "task_name": "spec-architect",
+      "job_id": "{ULID}",
+      "job_name": "spec-architect",
       "args": { "spec_path": ".kiro/specs/{feature-name}/" },
       "options": { "async": true, "timeout_seconds": 900, "max_retries": 0, "retry_delay_seconds": 0 },
       "status": "pending",
       "status_detail": null,
       "depends_on": "investigator",
-      "child_tasks": [],
+      "child_jobs": [],
       "created_at": "{ISO8601}",
       "updated_at": "{ISO8601}",
       "started_at": null,
@@ -150,14 +150,14 @@ Documents/works/agent_histories/spec/{TASK_ID}_spec.json
       "error": null
     },
     {
-      "task_id": "{ULID}",
-      "task_name": "implementer",
+      "job_id": "{ULID}",
+      "job_name": "implementer",
       "args": { "spec_path": ".kiro/specs/{feature-name}/" },
       "options": { "async": true, "timeout_seconds": 3600, "max_retries": 0, "retry_delay_seconds": 0 },
       "status": "pending",
       "status_detail": null,
       "depends_on": "spec-architect",
-      "child_tasks": [],
+      "child_jobs": [],
       "created_at": "{ISO8601}",
       "updated_at": "{ISO8601}",
       "started_at": null,
@@ -165,14 +165,14 @@ Documents/works/agent_histories/spec/{TASK_ID}_spec.json
       "error": null
     },
     {
-      "task_id": "{ULID}",
-      "task_name": "integration-tester",
+      "job_id": "{ULID}",
+      "job_name": "integration-tester",
       "args": { "spec_path": ".kiro/specs/{feature-name}/" },
       "options": { "async": true, "timeout_seconds": 1800, "max_retries": 0, "retry_delay_seconds": 0 },
       "status": "pending",
       "status_detail": null,
       "depends_on": "implementer",
-      "child_tasks": [],
+      "child_jobs": [],
       "created_at": "{ISO8601}",
       "updated_at": "{ISO8601}",
       "started_at": null,
@@ -180,14 +180,14 @@ Documents/works/agent_histories/spec/{TASK_ID}_spec.json
       "error": null
     },
     {
-      "task_id": "{ULID}",
-      "task_name": "code-reviewer",
+      "job_id": "{ULID}",
+      "job_name": "code-reviewer",
       "args": { "spec_path": ".kiro/specs/{feature-name}/" },
       "options": { "async": true, "timeout_seconds": 900, "max_retries": 0, "retry_delay_seconds": 0 },
       "status": "pending",
       "status_detail": null,
       "depends_on": "integration-tester",
-      "child_tasks": [],
+      "child_jobs": [],
       "created_at": "{ISO8601}",
       "updated_at": "{ISO8601}",
       "started_at": null,
@@ -210,7 +210,7 @@ Documents/works/agent_histories/spec/{TASK_ID}_spec.json
 | 子タスクの実行順序 | 並列（`depends_on: null`） | 直列（`depends_on: "{前のエージェント}"`) |
 | 子タスクの `status` 初期値 | 全て `starting` | 最初のみ `starting`、残りは `pending` |
 | 親タスクの `args` | `base_date` | `spec_path`, `spec_type` |
-| タスク管理スクリプト | `find-task.py --pipeline daily\|weekly` | 将来対応（現時点は手動管理） |
+| ジョブ管理スクリプト | `find-job.py --pipeline daily\|weekly` | 将来対応（現時点は手動管理） |
 
 ### ステータス遷移
 
@@ -236,7 +236,7 @@ pending → starting → running → completed / failed
 
 ### IDE方式（手動切り替え）
 
-ユーザーがエージェントを手動で切り替える。steering `spec-pipeline.md`（fileMatch: `Documents/works/agent_histories/spec/**/*.json`）がタスクファイル操作時に自動注入され、次のエージェントへの切り替えを提案する。
+ユーザーがエージェントを手動で切り替える。steering `spec-pipeline.md`（fileMatch: `Documents/works/jobs/spec/**/*.json`）がタスクファイル操作時に自動注入され、次のエージェントへの切り替えを提案する。
 
 ### kiro-cli方式（自動実行）
 

@@ -32,14 +32,14 @@ case "$COMMAND" in
   caffeinate-start)
     PID="${1:-$$}"
     if [[ "$OS" == "Darwin" ]]; then
-      caffeinate -i -w "$PID" &
+      caffeinate -i -w "$PID" >/dev/null 2>&1 &
       echo "$!"
     else
       # Linux: systemd-inhibit がある場合はそれを使う
       # ない場合は何もしない（サーバー環境ではスリープしない前提）
       if command -v systemd-inhibit >/dev/null 2>&1; then
         systemd-inhibit --what=idle --who="scout-pipeline" --why="pipeline running" \
-          tail --pid="$PID" -f /dev/null &
+          tail --pid="$PID" -f /dev/null >/dev/null 2>&1 &
         echo "$!"
       else
         echo "0"

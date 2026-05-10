@@ -1,0 +1,15 @@
+{
+  "name": "agent-pipeline-creator",
+  "description": "複数エージェントを1つのパイプラインフローとして構成し、実行スクリプト・タスク管理を生成する",
+  "prompt": "file://./prompts/agent-pipeline-creator.md",
+  "tools": ["read", "write", "shell"],
+  "allowedTools": [],
+  "toolsSettings": {
+    "write": {
+      "allowedPaths": ["scripts/**", ".shared-ai/**", ".kiro/**", "Documents/works/jobs/**", "Library/LaunchAgents/**"]
+    }
+  },
+  "resources": [],
+  "model": "claude-sonnet-4",
+  "welcomeMessage": "Agent Pipeline Creator です。新しいパイプラインを構成しますか？既存パイプラインへの追加ですか？"
+}

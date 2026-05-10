@@ -9,12 +9,33 @@
 `kiro-cli chat --trust-all-tools --no-interactive` でエージェントをヘッドレス実行する方式。
 `scripts/run-{frequency}-pipeline.py` から直接各エージェントを順次実行する。
 
-#### 1. タスク生成スクリプトへの追加
+#### 1. ジョブ生成スクリプトへの追加
 
-`scripts/create-{frequency}-tasks.py` の `CHILD_TASKS` に子タスク定義を追加:
+**既存パイプライン（daily/weekly）に追加する場合:**
+
+`scripts/create-{frequency}-jobs.py` の `CHILD_TASKS` に子ジョブ定義を追加:
 
 ```python
-{"task_name": "{agent-name}", "timeout": 300, "retry_delay": 30, "depends_on": None},
+{"job_name": "{agent-name}", "timeout": 300, "retry_delay": 30, "depends_on": None},
+```
+
+**新規パイプラインの場合:**
+
+汎用 `scripts/create-jobs.py` を使用:
+
+```bash
+python3.12 ~/scripts/create-jobs.py \
+  --pipeline {pipeline_name} \
+  --base-date {YYYY-MM-DD} \
+  --jobs-file /path/to/tasks-def.json
+```
+
+または `--jobs` でインライン指定:
+```bash
+python3.12 ~/scripts/create-jobs.py \
+  --pipeline {pipeline_name} \
+  --base-date {YYYY-MM-DD} \
+  --jobs '[{"job_name": "{agent-name}", "timeout": 300, "retry_delay": 30, "depends_on": null}]'
 ```
 
 - `depends_on`: 他タスクの完了を待つ場合はそのタスク名を指定（例: `"tech-blog-material-scout"`）
@@ -56,48 +77,9 @@ NOTIFY_FILE_MAP = {
 - `scripts/fetch-rss-feeds.py` の `FEEDS` にカテゴリ追加
 - `run-{frequency}-pipeline.py` のStep 1にカテゴリ追加
 
-#### 実行コマンド
+#### 実行スクリプトの実装ルール
 
-```bash
-kiro-cli chat --trust-all-tools --no-interactive \
-  "{agent-name} エージェントとして動作してください。\`~/.shared-ai/prompts/{agent-name}.md\` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。基準日は {BASE_DATE} です。日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
-```
-
-週次パイプラインモード対象の場合は `case` 文にも追加:
-
-```bash
-case "$AGENT" in
-  tech-event-scout|lifestyle-event-scout|...|{new-agent-name})
-    PROMPT="... 「週次パイプラインモード」で ..."
-    ;;
-esac
-```
-
-#### 制約と注意事項
-
-| 項目 | 内容 |
-|------|------|
-| MCP環境変数 | `.zshrc` で定義された環境変数をsourceして解決。`kiro-cli` はmcp.jsonの `${...}` をプロセス環境変数から展開する |
-| SLACK_BOT_TOKEN | 収集フェーズでは `SLACK_REFERENCE_BOT_TOKEN` を、通知フェーズでは `MY_SLACK_OAUTH_TOKEN` を `SLACK_BOT_TOKEN` にexportして切り替える |
-| Notion MCP | SSE接続でブラウザ認証が必要。初回は手動で認証を完了させる。トークンはキャッシュされる |
-| ツール承認 | `--trust-all-tools` で全ツールを自動承認。`--no-interactive` と併用必須 |
-| セッション独立性 | 各エージェントは独立したセッションで実行される。コンテキスト共有なし |
-| 実行完了待ち | ブロッキング動作。エージェント完了までプロセスが待機する |
-| Python | `python3.12` を使用（`python3` / `python3.13` は使用禁止） |
-
-#### launchd自動実行
-
-```
-~/Library/LaunchAgents/com.takeya.scout-daily-pipeline.plist
-  → python3.12 ~/scripts/run-daily-pipeline.py
-  → 毎日指定時刻に実行
-```
-
-管理コマンド:
-```bash
-python3.12 ~/scripts/manage-launchd.py status scout-daily-pipeline
-python3.12 ~/scripts/manage-launchd.py reload scout-daily-pipeline
-```
+実行コマンド、制約事項、ログ構造、スケジューラ管理については `~/.shared-ai/references/agent-pipeline-run-script-guide.md` を参照。
 
 ## 低頻度更新データの事前取得エージェント設計
 

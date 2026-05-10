@@ -188,8 +188,8 @@ Web検索を伴うエージェントは必ずこの方式を採用する。
 
 | 操作カテゴリ | コマンド | 備考 |
 |---|---|---|
-| タスク検索 | `python3.12 ~/scripts/find-task.py` | `--pipeline`, `--status`, `--task-name`, `--limit` |
-| タスク更新 | `python3.12 ~/scripts/update-task.py` | `--task-file`, `--task-id`, `--scope`, `--set` |
+| タスク検索 | `python3.12 ~/scripts/find-job.py` | `--pipeline`, `--status`, `--job-name`, `--limit` |
+| タスク更新 | `python3.12 ~/scripts/update-job.py` | `--job-file`, `--job-id`, `--scope`, `--set` |
 | タスク生成 | `~/scripts/create-{freq}-tasks.sh` | 基準日を引数に受け取り、タスクファイル+RSS事前取得を実行 |
 | RSSフィード取得 | `~/scripts/fetch-rss-feeds.py` | `--category`, `--date`, `--output`, `--no-filter` |
 

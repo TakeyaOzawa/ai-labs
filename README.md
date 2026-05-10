@@ -221,6 +221,7 @@ vim ~/.shared-ai/rules/python-coding-standards.md
 
 | 日付 | 内容 |
 |---|---|
+| 2026-05-10 | agent-pipeline-creator新規作成。task→job用語統一。agent_histories→jobs/ディレクトリ移行。ログ構造を~/logs/jobs/{pipeline}/に変更。manage-launchd→manage-scheduler。pipeline-executor.md廃止→agent-pipeline-run-script-guide.mdに統合 |
 | 2026-05-10 | Gemini CLI対応追加。ai-architecture-guide.md作成。CLAUDE.mdインライン重複削除 |
 | 2026-05-09 | hookパス更新、prompts/references元ファイル削除、テンプレート/ガイド分離、レビュアー強化 |
 | 2026-05-09 | 初版作成。shared-ai移行完了に伴いREADME整備 |

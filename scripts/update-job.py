@@ -1,22 +1,22 @@
 #!/usr/bin/env python3.12
 """
-update-task: タスクファイル内の特定タスクのステータスを更新する
+update-job: ジョブファイル内の特定ジョブのステータスを更新する
 
 目的:
-    scoutパイプラインのタスク状態遷移を管理するための抽象レイヤー。
+    パイプラインのジョブ状態遷移を管理するための抽象レイヤー。
     将来的にバックエンドをDB/APIに差し替え可能。
 
 使い方:
-    python3.12 scripts/update-task.py --task-file /path/to/file.json --task-id ID --set '{"status": "running"}'
-    python3.12 scripts/update-task.py --task-file /path/to/file.json --scope parent --set '{"status": "running"}'
+    python3.12 scripts/update-job.py --job-file /path/to/file.json --job-id ID --set '{"status": "running"}'
+    python3.12 scripts/update-job.py --job-file /path/to/file.json --scope parent --set '{"status": "running"}'
 
 例:
-    python3.12 scripts/update-task.py --task-file ~/Documents/works/agent_histories/scout_daily/2026-05-07_xxx.json --task-id 01J... --set '{"status": "running"}'
+    python3.12 scripts/update-job.py --job-file ~/Documents/works/jobs/scout_daily/2026-05-07_xxx.json --job-id 01J... --set '{"status": "running"}'
 
 オプション:
-    --task-file  必須。対象タスクファイルのパス
-    --task-id    更新対象の子タスクID（--scope child 時に必須）
-    --scope      parent: 親タスクを更新 / child: 子タスクを更新（デフォルト: child）
+    --job-file   必須。対象ジョブファイルのパス
+    --job-id     更新対象の子ジョブID（--scope child 時に必須）
+    --scope      parent: 親ジョブを更新 / child: 子ジョブを更新（デフォルト: child）
     --set        必須。更新するフィールドのJSON
 
 出力: JSON形式
@@ -38,20 +38,20 @@ UPDATABLE_FIELDS = {"status", "status_detail", "started_at", "updated_at",
 # ─── メイン ──────────────────────────────────────────────────────
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="タスクステータス更新")
-    parser.add_argument("--task-file", required=True, help="対象タスクファイルのパス")
-    parser.add_argument("--task-id", help="更新対象の子タスクID")
+    parser = argparse.ArgumentParser(description="ジョブステータス更新")
+    parser.add_argument("--job-file", required=True, help="対象ジョブファイルのパス")
+    parser.add_argument("--job-id", help="更新対象の子ジョブID")
     parser.add_argument("--scope", default="child", choices=["parent", "child"],
                         help="更新スコープ（デフォルト: child）")
     parser.add_argument("--set", required=True, dest="set_json",
                         help="更新フィールドのJSON")
     args = parser.parse_args()
 
-    task_file = Path(args.task_file)
+    job_file = Path(args.job_file)
 
     # バリデーション
-    if not task_file.exists():
-        print(json.dumps({"success": False, "error": f"Task file not found: {task_file}"}))
+    if not job_file.exists():
+        print(json.dumps({"success": False, "error": f"Job file not found: {job_file}"}))
         sys.exit(1)
 
     try:
@@ -60,8 +60,8 @@ def main() -> None:
         print(json.dumps({"success": False, "error": "Invalid JSON in --set"}))
         sys.exit(1)
 
-    # タスクファイル読み込み
-    with open(task_file, encoding="utf-8") as f:
+    # ジョブファイル読み込み
+    with open(job_file, encoding="utf-8") as f:
         data = json.load(f)
 
     now = datetime.now(tz=JST).strftime("%Y-%m-%dT%H:%M:%S+09:00")
@@ -71,22 +71,22 @@ def main() -> None:
         updates["updated_at"] = now
 
     if args.scope == "parent":
-        result = update_parent(data, updates, task_file)
+        result = update_parent(data, updates, job_file)
     else:
-        if not args.task_id:
-            print(json.dumps({"success": False, "error": "--task-id is required for child scope"}))
+        if not args.job_id:
+            print(json.dumps({"success": False, "error": "--job-id is required for child scope"}))
             sys.exit(1)
-        result = update_child(data, updates, args.task_id, task_file)
+        result = update_child(data, updates, args.job_id, job_file)
 
     # ファイル書き戻し
-    with open(task_file, "w", encoding="utf-8") as f:
+    with open(job_file, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
     print(json.dumps(result, ensure_ascii=False))
 
 
-def update_parent(data: dict, updates: dict, task_file: Path) -> dict:
-    """親タスクを更新する。"""
+def update_parent(data: dict, updates: dict, job_file: Path) -> dict:
+    """親ジョブを更新する。"""
     before = {k: data.get(k) for k in UPDATABLE_FIELDS}
 
     for key, value in updates.items():
@@ -97,8 +97,8 @@ def update_parent(data: dict, updates: dict, task_file: Path) -> dict:
 
     return {
         "success": True,
-        "task_file": str(task_file),
-        "task_id": "parent",
+        "job_file": str(job_file),
+        "job_id": "parent",
         "scope": "parent",
         "before": before,
         "after": after,
@@ -106,19 +106,19 @@ def update_parent(data: dict, updates: dict, task_file: Path) -> dict:
     }
 
 
-def update_child(data: dict, updates: dict, task_id: str, task_file: Path) -> dict:
-    """子タスクを更新する。"""
-    child_tasks = data.get("child_tasks", [])
+def update_child(data: dict, updates: dict, job_id: str, job_file: Path) -> dict:
+    """子ジョブを更新する。"""
+    child_jobs = data.get("child_jobs", [])
 
-    # 対象タスクを検索
+    # 対象ジョブを検索
     target = None
-    for task in child_tasks:
-        if task.get("task_id") == task_id:
-            target = task
+    for job in child_jobs:
+        if job.get("job_id") == job_id:
+            target = job
             break
 
     if target is None:
-        return {"success": False, "error": f"Child task not found: {task_id}"}
+        return {"success": False, "error": f"Child job not found: {job_id}"}
 
     before = {k: target.get(k) for k in UPDATABLE_FIELDS}
 
@@ -130,14 +130,13 @@ def update_child(data: dict, updates: dict, task_id: str, task_file: Path) -> di
 
     return {
         "success": True,
-        "task_file": str(task_file),
-        "task_id": task_id,
+        "job_file": str(job_file),
+        "job_id": job_id,
         "scope": "child",
         "before": before,
         "after": after,
-        "message": f"Task {task_id} updated: {before.get('status')} → {after.get('status')}",
+        "message": f"Job {job_id} updated: {before.get('status')} → {after.get('status')}",
     }
-
 
 
 from _version_check import check_python_version

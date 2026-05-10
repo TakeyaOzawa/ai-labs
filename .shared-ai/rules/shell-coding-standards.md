@@ -45,7 +45,7 @@ set -eu -o pipefail
 
 ## 3. 命名規則
 
-- ファイル名: `{動詞}-{対象}.sh`（例: `find-task.sh`, `manage-launchd.sh`）
+- ファイル名: `{動詞}-{対象}.sh`（例: `find-job.sh`, `manage-scheduler.sh`）
 - 動詞: find-, update-, create-, fetch-, check-, manage-, run-
 - 変数名: `UPPER_SNAKE_CASE`
 - 関数名: `lower_snake_case`

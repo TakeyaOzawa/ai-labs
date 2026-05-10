@@ -1,0 +1,12 @@
+{
+  "name": "Agent Pipeline Create",
+  "version": "1.0.0",
+  "description": "パイプライン構成エージェントを手動起動する",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "agent-pipeline-creator エージェントとして動作してください。`~/.shared-ai/prompts/agent-pipeline-creator.md` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。まずユーザーに「新しいパイプラインを構成しますか？既存パイプラインへの追加ですか？」と確認してください。"
+  }
+}

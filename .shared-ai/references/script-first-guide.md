@@ -93,9 +93,9 @@ if __name__ == "__main__":
 以下のコマンドを実行してタスクファイルを生成:
 1. ULIDを生成: npx --yes ulid
 2. 現在時刻を取得: TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00
-3. ディレクトリ作成: mkdir -p ~/Documents/works/agent_histories/scout_daily
+3. ディレクトリ作成: mkdir -p ~/Documents/works/jobs/scout_daily
 4. JSONファイルを生成（以下のテンプレートに値を埋め込む）:
-   { "task_id": "...", "task_name": "scout_daily", ... }
+   { "job_id": "...", "job_name": "scout_daily", ... }
 5. ファイルに書き出し
 ```
 

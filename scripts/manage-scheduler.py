@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.12
 """
-manage-launchd: LaunchAgentsジョブの管理（load/unload/status/reload）
+manage-scheduler: スケジュールジョブの管理（load/unload/status/reload）
 
 目的:
     scoutパイプラインのスケジュール実行を担うlaunchdジョブを
@@ -8,14 +8,14 @@ manage-launchd: LaunchAgentsジョブの管理（load/unload/status/reload）
     Linux環境ではsystemctlにフォールバックする。
 
 使い方:
-    python3.12 scripts/manage-launchd.py <action> [label]
+    python3.12 scripts/manage-scheduler.py <action> [label]
 
 例:
-    python3.12 scripts/manage-launchd.py load scout-daily-pipeline
-    python3.12 scripts/manage-launchd.py unload scout-daily-pipeline
-    python3.12 scripts/manage-launchd.py reload scout-daily-pipeline
-    python3.12 scripts/manage-launchd.py status scout-daily-pipeline
-    python3.12 scripts/manage-launchd.py list
+    python3.12 scripts/manage-scheduler.py load scout-daily-pipeline
+    python3.12 scripts/manage-scheduler.py unload scout-daily-pipeline
+    python3.12 scripts/manage-scheduler.py reload scout-daily-pipeline
+    python3.12 scripts/manage-scheduler.py status scout-daily-pipeline
+    python3.12 scripts/manage-scheduler.py list
 
 出力: JSON形式
 """
@@ -36,7 +36,7 @@ def main() -> None:
     if len(sys.argv) < 2:
         print(json.dumps({
             "success": False,
-            "error": "Usage: manage-launchd.py <load|unload|reload|status|list> [label]",
+            "error": "Usage: manage-scheduler.py <load|unload|reload|status|list> [label]",
         }))
         sys.exit(1)
 
