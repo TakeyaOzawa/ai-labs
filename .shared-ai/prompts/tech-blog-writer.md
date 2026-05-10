@@ -142,114 +142,26 @@ date +%Y-%m-%d
 
 ## 出力ファイルのフォーマット
 
-完成記事は以下の構造で保存する:
-
-```markdown
----
-title: "{最終タイトル}"
-date: {YYYY-MM-DD}
-author: "{著者名}"
-tags: [{タグリスト}]
-target_audience: "{想定読者}"
-description: "{メタディスクリプション 120〜160文字}"
-original_plan: "{planファイルのパス}"
-poc_results: "{PoC結果ディレクトリのパス}"
----
-
-# {タイトル}
-
-## はじめに
-{導入文}
-
-## {本文セクション}
-{検証結果を反映した具体的な内容}
-
-## まとめ
-{要点と次のステップ}
-
-## 参考資料
-{有効性確認済みのリンク一覧}
-```
-
-## planファイルのstatus更新
-
-記事完成後、planファイルのフロントマターの `status` を更新する:
-
-```yaml
-status: completed  # in_progress → completed（記事完成）
-```
-
-**注意**: statusフィールドの更新のみ行い、planファイルの他の内容は変更しない。
-
----
-
-## 文章品質の基準
-
-### トーン・スタイル
-
-- 技術ブログとして適切な「です/ます」調
-- 読者に語りかける親しみやすさと、技術的正確性のバランス
-- 冗長な前置きを避け、価値ある情報を早く提供する
-- 「〜と思います」「〜かもしれません」等の曖昧表現を避け、検証結果に基づく断定的な記述
-
-### コードサンプル
-
-- 実行可能であること（検証済みコードを使用）
-- 適切なコメント付き
-- コピー&ペーストで動作する完全なスニペット
-- エラーハンドリングを含む実践的なコード
-
-### 構成
-
-- 1セクションは300〜800文字程度
-- コードサンプルの前後に説明を配置
-- Before/After形式の比較を活用
-- 箇条書きと文章のバランス
+完成記事の構造、文章品質の基準（トーン・スタイル、コードサンプル、構成）、planファイルのstatus更新ルールは `readFile: ~/.shared-ai/interfaces/tech-blog-writer-output.md` を参照すること。
 
 ---
 
 ## エラーハンドリング
 
-### PoC結果が見つからない場合
-
-1. `poc_directory` のパスを再確認
-2. planファイルのフロントマター `poc_directory` を確認
-3. どちらも無効な場合 → ユーザーに確認を求める
-
-### TBDに対応する検証結果がない場合
-
-- SUMMARY.mdで該当項目のステータスを確認
-- スキップされた項目として Phase 2-4 の対処方法を適用
-
-### 参考URLが全て無効な場合
-
-- Web検索で最新の公式ドキュメントURLを探索
-- 見つからない場合は参考資料セクションから削除し、その旨を完了報告に記載
+- **PoC結果が見つからない場合**: `poc_directory` → planフロントマターの `poc_directory` の順で確認。無効ならユーザーに確認
+- **TBDに対応する検証結果がない場合**: SUMMARY.mdでステータス確認 → スキップ項目としてPhase 2-4の対処方法を適用
+- **参考URLが無効な場合**: Web検索で最新URLを探索。見つからなければ削除し完了報告に記載
 
 ---
 
 ## 呼び出し例
 
-### 基本（Markdownのみ）
 ```
 tech-blog-writer エージェントとして動作してください。
 plan_path=Documents/works/tech_blog_plans/2026-05-07_nodejs-26-temporal-api.md
-```
-
-### Google Docsアップロード付き
-```
-tech-blog-writer エージェントとして動作してください。
-plan_path=Documents/works/tech_blog_plans/2026-05-07_nodejs-26-temporal-api.md
-output_format=docs
-```
-
-### PoC結果ディレクトリ明示 + フォルダ指定
-```
-tech-blog-writer エージェントとして動作してください。
-plan_path=Documents/works/tech_blog_plans/2026-05-07_nodejs-26-temporal-api.md
-poc_directory=~/works/poc-something/2026-05-07_nodejs-26-temporal-api/
-output_format=docs
-docs_folder_id=1AbCdEfGhIjKlMnOpQrStUvWxYz
+poc_directory=~/works/poc-something/2026-05-07_nodejs-26-temporal-api/  # 任意
+output_format=docs  # 任意（デフォルト: md）
+docs_folder_id=1AbCdEfGhIjKlMnOpQrStUvWxYz  # 任意
 ```
 
 ---

@@ -11,6 +11,7 @@
 ├── lookups/               # マスタデータ（ID逆引き、チャンネル一覧等）
 ├── prompts/               # エージェントプロンプト（薄いラッパー）
 ├── references/            # 設計ガイド・手順書・パターン集（本体）
+├── interfaces/            # エージェントの出力フォーマット・入力リソース定義
 ├── templates/             # 新規ファイル作成時の雛形
 └── skills/                # 共通スキル（GWS CLI等）
 ```
@@ -23,6 +24,7 @@
 | `lookups/` | **参照データ** | ID→名前の対応表、チャンネル一覧等のマスタデータ | slack-user-lookup.md, slack-channel-mapping.md |
 | `prompts/` | **実行指示** | エージェント固有のワークフロー（薄いラッパー → references参照） | agent-creator.md, agent-output-reviewer.md |
 | `references/` | **参照知識** | 設計ガイド、パターン集、手順書（本体） | agent-creation-guide.md, agent-prompt-guide.md |
+| `interfaces/` | **入出力仕様** | エージェントの出力フォーマット・入力リソース定義 | notion-trend-scout-output.md, tech-poc-planner-output.md |
 | `templates/` | **雛形** | 新規ファイル作成時のスケルトン | spec-design.md, reference-guide.md |
 | `skills/` | **ツール操作** | GWS CLI等の共通スキル定義（SKILL.md） | gws-gmail/, gws-drive/ |
 
@@ -34,6 +36,7 @@
 ├─ ID/キー→値のマスタデータ？ → lookups/
 ├─ エージェント固有の実行フロー？ → prompts/（薄く、referencesを参照）
 ├─ 複数箇所から参照される設計知識・手順？ → references/
+├─ エージェントの出力フォーマット・入力リソース定義？ → interfaces/
 ├─ 新規ファイル作成時の雛形？ → templates/
 └─ 外部ツール操作のスキル？ → skills/
 ```
@@ -62,6 +65,16 @@
 | 主語 | 「あなたは〜として動作してください」 | 「〜の設計基準は以下の通り」 |
 | 読み方 | 上から順に従って実行する | 必要な箇所を参照する |
 | 再利用性 | エージェント固有（1対1） | 複数箇所から参照される |
+
+#### interfaces/ vs references/ の判断
+
+| 観点 | interfaces/ | references/ |
+|---|---|---|
+| 内容 | 「何を入力し、何を出力するか」の仕様 | 「なぜ・どうやって」の設計知識 |
+| 読み方 | 仕様としてそのまま適用する | 方針として参照する |
+| 変更頻度 | 出力項目追加・フォーマット変更時 | 設計方針変更時 |
+| 再利用性 | 通常1エージェント固有 | 複数エージェントから参照 |
+| 命名 | `{agent-name}-output.md`, `{agent-name}-resources.md` | `{topic}-guide.md`, `{topic}-sources.md` |
 
 #### steering（.kiro/steering/）の設計
 

@@ -246,6 +246,7 @@ def main() -> None:
         else:
             agent_end = now_jst()
             print(f"[{agent_end}]    ❌ {agent} 失敗（ログ: {agent_log}）")
+            print(f"[{agent_end}]    💡 再実行: kiro-cli chat --trust-all-tools --no-interactive \"{prompt}\"")
             log_error("weekly-pipeline", agent, "kiro-cli exit non-zero")
             failed += 1
             failed_names.append(agent)
@@ -380,6 +381,7 @@ def run_poc_planner(base_date: str) -> None:
             planner_success += 1
         else:
             print(f"[{now_jst()}]       ❌ {material_name} 失敗")
+            print(f"[{now_jst()}]       💡 再実行: kiro-cli chat --trust-all-tools --no-interactive \"{prompt}\"")
             log_error("weekly-pipeline", f"tech-poc-planner:{material_name}", "kiro-cli exit non-zero")
             planner_failed += 1
 

@@ -217,6 +217,7 @@ def main() -> None:
         else:
             agent_end = now_jst()
             print(f"[{agent_end}]    ❌ {agent} 失敗（ログ: {agent_log}）")
+            print(f"[{agent_end}]    💡 再実行: kiro-cli chat --trust-all-tools --no-interactive \"{prompt}\"")
             log_error("daily-pipeline", agent, "kiro-cli exit non-zero")
             failed += 1
             failed_names.append(agent)

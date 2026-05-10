@@ -69,22 +69,7 @@ END_UTC="{対象日}T14:59:59Z"
 
 ### Drive APIクエリの取得方針
 
-各種別のファイル取得では、以下の条件で検索する:
-
-**取得条件（OR）:**
-- `modifiedTime` が対象日の範囲内（開始〜終了）
-- **または** `createdTime` が対象日の範囲内（開始〜終了）
-
-これにより、対象日に「更新された」ファイルだけでなく「新規作成された」ファイルも漏れなく取得できる。
-
-**クエリテンプレート:**
-```
-(modifiedTime > "{開始UTC}" and modifiedTime < "{終了UTC}") or (createdTime > "{開始UTC}" and createdTime < "{終了UTC}")
-```
-
-加えて共通条件:
-- `trashed = false`（ゴミ箱除外）
-- MIME type フィルタ（種別ごと）
+`readFile: ~/.shared-ai/interfaces/gws-trend-scout-output.md` の「Drive APIクエリの取得方針」セクションを参照すること。
 
 ### Step 1: 中間出力ディレクトリの準備
 
@@ -106,78 +91,27 @@ mkdir -p Documents/works/scout_histories/gws_trends/daily/tmp
 3. 上位N件の深掘り（種別に応じたコマンドで内容取得）
 4. 中間ファイルに出力
 
-#### 2-1. Google Docs 収集
+#### 共通クエリテンプレート
 
 ```bash
-gws drive files list --page-all --params '{"q": "mimeType=\"application/vnd.google-apps.document\" and ((modifiedTime > \"{開始UTC}\" and modifiedTime < \"{終了UTC}\") or (createdTime > \"{開始UTC}\" and createdTime < \"{終了UTC}\")) and trashed = false", "fields": "files(id,name,mimeType,modifiedTime,createdTime,owners,lastModifyingUser,webViewLink)", "orderBy": "modifiedTime desc", "pageSize": 50}'
-```
-- 深掘り: `gws docs documents get --params '{"documentId": "{ID}"}'`（上位5件）
-- 中間出力: `Documents/works/scout_histories/gws_trends/daily/tmp/docs.md`
-
-##### ミーティング議事録の特別処理
-
-Google Docsの中には、Google Meetの文字起こしやGeminiによる要約が自動生成されたミーティング議事録が含まれる。これらは通常のドキュメントとは別に特別扱いする。
-
-**識別方法:**
-- ファイル名に「議事録」「Meeting notes」「文字起こし」「Transcript」を含む
-- オーナーが「Google Meet」または自動生成系のサービスアカウント
-- ファイル名が日付+会議名のパターン（例: `2026-05-04 週次定例`）
-
-**議事録から抽出すべき情報:**
-1. **会議名**: ファイル名から抽出
-2. **参加者**: ドキュメント内の参加者リスト
-3. **日時**: ファイル名またはドキュメント内の日時情報
-4. **議題**: 主要な議題を箇条書きで列挙
-5. **結論・決定事項**: 会議で決まったことを明確に記載
-6. **ネクストアクション**: 誰が・何を・いつまでに行うかを明記
-7. **未決事項**: 結論が出なかった議題があれば記載
-
-**出力フォーマット（議事録セクション）:**
-```markdown
-### 🗓️ ミーティング議事録
-
-#### {会議名}（{日時}）
-- **参加者**: {参加者リスト}
-- **議題**: {主要議題}
-- **結論・決定事項**:
-  - {決定事項1}
-  - {決定事項2}
-- **ネクストアクション**:
-  - [ ] {担当者}: {アクション内容}（期限: {日付}）
-- **未決事項**: {あれば記載}
+gws drive files list --page-all --params '{"q": "mimeType=\"{MIME}\" and ((modifiedTime > \"{開始UTC}\" and modifiedTime < \"{終了UTC}\") or (createdTime > \"{開始UTC}\" and createdTime < \"{終了UTC}\")) and trashed = false", "fields": "files(id,name,mimeType,modifiedTime,createdTime,owners,lastModifyingUser,webViewLink)", "orderBy": "modifiedTime desc", "pageSize": 50}'
 ```
 
-#### 2-2. Google Slides 収集
+#### 種別パラメータ
 
-```bash
-gws drive files list --page-all --params '{"q": "mimeType=\"application/vnd.google-apps.presentation\" and ((modifiedTime > \"{開始UTC}\" and modifiedTime < \"{終了UTC}\") or (createdTime > \"{開始UTC}\" and createdTime < \"{終了UTC}\")) and trashed = false", "fields": "files(id,name,mimeType,modifiedTime,createdTime,owners,lastModifyingUser,webViewLink)", "orderBy": "modifiedTime desc", "pageSize": 50}'
-```
-- 深掘り: `gws slides presentations get --params '{"presentationId": "{ID}"}'`（上位5件）
-- 中間出力: `Documents/works/scout_histories/gws_trends/daily/tmp/slides.md`
+| # | 種別 | MIME type | 深掘りコマンド | 上位件数 | 中間出力 |
+|---|------|-----------|---------------|---------|---------|
+| 2-1 | Docs | `application/vnd.google-apps.document` | `gws docs documents get --params '{"documentId": "{ID}"}'` | 5 | `tmp/docs.md` |
+| 2-2 | Slides | `application/vnd.google-apps.presentation` | `gws slides presentations get --params '{"presentationId": "{ID}"}'` | 5 | `tmp/slides.md` |
+| 2-3 | Sheets | `application/vnd.google-apps.spreadsheet` | `gws sheets spreadsheets get --params '{"spreadsheetId": "{ID}"}'` | 3 | `tmp/sheets.md` |
+| 2-4 | Forms | `application/vnd.google-apps.form` | `gws forms forms get --params '{"formId": "{ID}"}'` | 2 | `tmp/forms.md` |
+| 2-5 | PDF | `application/pdf` | なし（メタデータのみ） | 0 | `tmp/pdf.md` |
 
-#### 2-3. Google Sheets 収集
+中間出力のベースパス: `Documents/works/scout_histories/gws_trends/daily/`
 
-```bash
-gws drive files list --page-all --params '{"q": "mimeType=\"application/vnd.google-apps.spreadsheet\" and ((modifiedTime > \"{開始UTC}\" and modifiedTime < \"{終了UTC}\") or (createdTime > \"{開始UTC}\" and createdTime < \"{終了UTC}\")) and trashed = false", "fields": "files(id,name,mimeType,modifiedTime,createdTime,owners,lastModifyingUser,webViewLink)", "orderBy": "modifiedTime desc", "pageSize": 50}'
-```
-- 深掘り: `gws sheets spreadsheets get --params '{"spreadsheetId": "{ID}"}'`（上位3件）
-- 中間出力: `Documents/works/scout_histories/gws_trends/daily/tmp/sheets.md`
+#### Docs: ミーティング議事録の特別処理
 
-#### 2-4. Google Forms 収集
-
-```bash
-gws drive files list --page-all --params '{"q": "mimeType=\"application/vnd.google-apps.form\" and ((modifiedTime > \"{開始UTC}\" and modifiedTime < \"{終了UTC}\") or (createdTime > \"{開始UTC}\" and createdTime < \"{終了UTC}\")) and trashed = false", "fields": "files(id,name,mimeType,modifiedTime,createdTime,owners,lastModifyingUser,webViewLink)", "orderBy": "modifiedTime desc", "pageSize": 50}'
-```
-- 深掘り: `gws forms forms get --params '{"formId": "{ID}"}'`（上位2件）
-- 中間出力: `Documents/works/scout_histories/gws_trends/daily/tmp/forms.md`
-
-#### 2-5. PDF 収集
-
-```bash
-gws drive files list --page-all --params '{"q": "mimeType=\"application/pdf\" and ((modifiedTime > \"{開始UTC}\" and modifiedTime < \"{終了UTC}\") or (createdTime > \"{開始UTC}\" and createdTime < \"{終了UTC}\")) and trashed = false", "fields": "files(id,name,mimeType,modifiedTime,createdTime,owners,lastModifyingUser,webViewLink)", "orderBy": "modifiedTime desc", "pageSize": 50}'
-```
-- 深掘り: なし（メタデータのみ）
-- 中間出力: `Documents/works/scout_histories/gws_trends/daily/tmp/pdf.md`
+Google Docsの中にはミーティング議事録が含まれる。識別方法・抽出情報・出力フォーマットは `readFile: ~/.shared-ai/interfaces/gws-trend-scout-output.md` の「ミーティング議事録の特別処理」セクションを参照。
 
 ### Step 3: 統合レポート作成（サブエージェント委譲）
 
