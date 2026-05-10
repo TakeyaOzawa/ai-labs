@@ -201,5 +201,9 @@ def main() -> None:
     print("\nDone!")
 
 
+
+from _version_check import check_python_version
+
 if __name__ == "__main__":
+    check_python_version()
     main()

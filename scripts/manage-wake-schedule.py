@@ -93,5 +93,9 @@ def run_platform_command(command: str, *args: str) -> None:
         print(output)
 
 
+
+from _version_check import check_python_version
+
 if __name__ == "__main__":
+    check_python_version()
     main()

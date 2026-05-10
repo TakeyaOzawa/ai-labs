@@ -237,5 +237,9 @@ def main():
         setup(dry_run=args.dry_run)
 
 
+
+from _version_check import check_python_version
+
 if __name__ == "__main__":
+    check_python_version()
     main()

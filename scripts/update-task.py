@@ -139,5 +139,9 @@ def update_child(data: dict, updates: dict, task_id: str, task_file: Path) -> di
     }
 
 
+
+from _version_check import check_python_version
+
 if __name__ == "__main__":
+    check_python_version()
     main()

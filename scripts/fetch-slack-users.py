@@ -114,5 +114,9 @@ def main() -> None:
     fetch_all_users(token, output_dir)
 
 
+
+from _version_check import check_python_version
+
 if __name__ == "__main__":
+    check_python_version()
     main()

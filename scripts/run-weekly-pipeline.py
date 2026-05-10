@@ -518,5 +518,9 @@ def update_task(task_file: Path, task_id: str = "", scope: str = "child",
     subprocess.run(cmd, capture_output=True, text=True)
 
 
+
+from _version_check import check_python_version
+
 if __name__ == "__main__":
+    check_python_version()
     main()

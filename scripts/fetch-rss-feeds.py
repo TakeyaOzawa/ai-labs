@@ -432,5 +432,9 @@ def main() -> None:
     print(f"   {success_count}/{len(feeds)} フィード取得成功")
 
 
+
+from _version_check import check_python_version
+
 if __name__ == "__main__":
+    check_python_version()
     main()
