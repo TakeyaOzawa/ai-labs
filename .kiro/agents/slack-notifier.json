@@ -8,6 +8,7 @@
         "read": {
             "allowedPaths": [
                 "Documents/works/scout_histories/**",
+                "Documents/works/research_materials/**",
                 "Documents/works/jobs/**"
             ]
         }

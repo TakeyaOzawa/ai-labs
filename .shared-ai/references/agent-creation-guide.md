@@ -5,7 +5,7 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 
 詳細な実装パターンは以下の参照ファイルを参照:
 - `agent-prompt-guide.md` — プロンプト設計、コンテキスト節約、2段階実行、テーマ分割、コマンド抽象化
-- `agent-pipeline-guide.md` — hook連携、パイプライン組み込み、kiro-cli実行、低頻度更新データ設計
+- `agent-pipeline-guide.md` — hook連携、パイプライン組み込み、ヘッドレス実行、低頻度更新データ設計
 
 ## 命名規則
 
@@ -202,6 +202,6 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 ### パイプライン組み込み（詳細は `agent-pipeline-guide.md` 参照）
 
 - [ ] `scripts/create-{frequency}-jobs.py` に子ジョブ追加
-- [ ] `scripts/run-{frequency}-pipeline.py` の `AGENTS` 配列に追加（kiro-cli方式）
+- [ ] `scripts/run-{frequency}-pipeline.py` の `AGENTS` 配列に追加
 - [ ] `scripts/run-{frequency}-pipeline.py` の `NOTIFY_FILE_MAP` に追加（通知対象の場合）
 - [ ] `scripts/fetch-rss-feeds.py` にカテゴリ追加（RSS必要な場合）

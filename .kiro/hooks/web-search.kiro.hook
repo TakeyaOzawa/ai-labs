@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Web Search",
+  "description": "ユーザー指定のテーマ・トピックを深掘り調査し、構造化された調査素材を作成するエージェントを起動する。",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "web-searcher エージェントとして動作してください。`~/.shared-ai/prompts/web-searcher.md` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。ユーザーに「調べたいテーマ・キーワード、trend/digestレポートのパス、またはURLを教えてください」と確認してください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "web-search"
+}

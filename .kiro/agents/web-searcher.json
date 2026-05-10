@@ -1,0 +1,24 @@
+{
+    "name": "web-searcher",
+    "description": "Web調査エージェント。ユーザー指定のテーマ・トピックを多角的に深掘り調査し、PoC計画・社内提案・技術選定等に使える構造化された調査素材を作成する。",
+    "prompt": "file://../../.shared-ai/prompts/web-searcher.md",
+    "tools": ["read", "write", "web", "shell"],
+    "allowedTools": ["web"],
+    "toolsSettings": {
+        "read": {
+            "allowedPaths": [
+                "Documents/works/scout_histories/**",
+                "Documents/works/research_materials/**",
+                ".shared-ai/prompts/**",
+                ".shared-ai/interfaces/**",
+                ".shared-ai/references/**"
+            ]
+        },
+        "write": {
+            "allowedPaths": ["Documents/works/research_materials/**"]
+        }
+    },
+    "resources": [],
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "Web調査を開始します。調べたいテーマ・キーワード、trend/digestレポートのパス、またはURLを教えてください。"
+}

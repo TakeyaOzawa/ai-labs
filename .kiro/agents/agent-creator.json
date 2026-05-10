@@ -5,8 +5,21 @@
     "tools": ["read", "write", "shell"],
     "allowedTools": ["read"],
     "toolsSettings": {
+        "read": {
+            "allowedPaths": [
+                ".shared-ai/**",
+                ".kiro/agents/**",
+                ".kiro/hooks/**",
+                ".kiro/steering/**",
+                "scripts/**",
+                "Documents/works/**"
+            ]
+        },
         "write": {
             "allowedPaths": [
+                ".shared-ai/prompts/**",
+                ".shared-ai/interfaces/**",
+                ".shared-ai/references/**",
                 ".kiro/agents/**",
                 ".kiro/hooks/**",
                 ".kiro/steering/**",
