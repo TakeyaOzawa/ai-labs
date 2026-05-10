@@ -39,7 +39,6 @@ AGENTS = [
     "github-org-digest-scout",
     "github-public-digest-scout",
     "tech-event-scout",
-    "lifestyle-event-scout",
     "tech-blog-material-scout",
     "tech-poc-planner",
 ]
@@ -47,7 +46,6 @@ AGENTS = [
 # 週次パイプラインモード対象エージェント
 WEEKLY_PIPELINE_MODE_AGENTS = {
     "tech-event-scout",
-    "lifestyle-event-scout",
     "tech-blog-material-scout",
     "tech-poc-planner",
 }
@@ -59,7 +57,6 @@ NOTIFY_FILE_MAP: dict[str, str] = {
     "github-org-digest-scout": "scout_histories/github_org_trends/weekly/{date}_github-org_weekly_digest.md",
     "github-public-digest-scout": "scout_histories/github_public_trends/weekly/{date}_github-public_weekly_digest.md",
     "tech-event-scout": "scout_histories/tech_events/weekly/{date}_tech_events.md",
-    "lifestyle-event-scout": "scout_histories/lifestyle_events/weekly/{date}_lifestyle_events.md",
 }
 
 MAX_LOG_LINES = 1000

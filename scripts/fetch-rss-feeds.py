@@ -375,7 +375,7 @@ def main() -> None:
         "biz": "Documents/works/scout_histories/biz_car_trends/daily",
         "academic": "Documents/works/scout_histories/academic_trends/daily",
         "tech_events": "Documents/works/scout_histories/tech_events/weekly",
-        "lifestyle_events": "Documents/works/scout_histories/lifestyle_events/weekly",
+        "lifestyle_events": "Documents/works/scout_histories/lifestyle_events/daily",
     }
     if args.output:
         output_path = Path(args.output)

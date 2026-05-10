@@ -1,15 +1,18 @@
 {
     "name": "lifestyle-event-scout",
-    "description": "ライフスタイルイベントスカウト。国内旅行・海外旅行・アクティビティ・芸術・フード・教養・マネー・健康・国際・キャリア・暮らし・結婚の12カテゴリのイベント・キャンペーン情報をWeb検索で収集し、開催時期別・カテゴリ別にサマリーを自動生成する。",
+    "description": "ライフスタイルイベントスカウト。曜日別ローテーションで12カテゴリのイベント情報を日次収集する。月:お出かけ、火:体験、水:文化、木:学び、金:食と暮らし、土:マネーと人生、日:週次サマリー。",
     "prompt": "file://../../.shared-ai/prompts/lifestyle-event-scout.md",
     "tools": ["read", "write", "web"],
     "allowedTools": ["web"],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_histories/lifestyle_events/weekly/**"]
+            "allowedPaths": [
+                "Documents/works/scout_histories/lifestyle_events/daily/**",
+                "Documents/works/scout_histories/lifestyle_events/weekly/**"
+            ]
         }
     },
     "resources": [],
     "model": "claude-sonnet-4",
-    "welcomeMessage": "ライフスタイルイベントの収集を開始します。国内旅行・海外旅行・アクティビティ・芸術・フード・教養・マネー・健康・国際・キャリア・暮らし・結婚の12カテゴリからイベントを検索してレポートを作成します。"
+    "welcomeMessage": "ライフスタイルイベントの収集を開始します。曜日テーマを判定し、該当カテゴリのイベントを検索してレポートを作成します。"
 }

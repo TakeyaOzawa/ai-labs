@@ -30,7 +30,6 @@ CHILD_JOBS = [
     {"job_name": "slack-digest-scout", "timeout": 600, "retry_delay": 60, "depends_on": None},
     {"job_name": "gws-digest-scout", "timeout": 900, "retry_delay": 60, "depends_on": None},
     {"job_name": "tech-event-scout", "timeout": 300, "retry_delay": 30, "depends_on": None},
-    {"job_name": "lifestyle-event-scout", "timeout": 300, "retry_delay": 30, "depends_on": None},
     {"job_name": "tech-blog-material-scout", "timeout": 600, "retry_delay": 60, "depends_on": None},
     {"job_name": "tech-poc-planner", "timeout": 900, "retry_delay": 60, "depends_on": "tech-blog-material-scout"},
     {"job_name": "github-org-digest-scout", "timeout": 600, "retry_delay": 60, "depends_on": None},
