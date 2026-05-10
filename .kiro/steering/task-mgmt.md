@@ -1,6 +1,6 @@
 ---
 inclusion: auto
-description: scoutパイプラインのタスク管理スクリプト（find-task.sh / update-task.sh）のインターフェース仕様
+description: scoutパイプラインのタスク管理スクリプト（find-task.py / update-task.py）のインターフェース仕様
 ---
 
 # タスク管理スクリプトガイド

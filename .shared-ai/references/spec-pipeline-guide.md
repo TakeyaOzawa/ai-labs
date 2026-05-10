@@ -210,7 +210,7 @@ Documents/works/agent_histories/spec/{TASK_ID}_spec.json
 | 子タスクの実行順序 | 並列（`depends_on: null`） | 直列（`depends_on: "{前のエージェント}"`) |
 | 子タスクの `status` 初期値 | 全て `starting` | 最初のみ `starting`、残りは `pending` |
 | 親タスクの `args` | `base_date` | `spec_path`, `spec_type` |
-| タスク管理スクリプト | `find-task.sh --pipeline daily\|weekly` | 将来対応（現時点は手動管理） |
+| タスク管理スクリプト | `find-task.py --pipeline daily\|weekly` | 将来対応（現時点は手動管理） |
 
 ### ステータス遷移
 

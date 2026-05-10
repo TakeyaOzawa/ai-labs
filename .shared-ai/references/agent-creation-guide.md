@@ -16,7 +16,7 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 | エージェント名 | ケバブケース | `-` | `tech-trend-scout` |
 | プロンプトファイル名 | ケバブケース | `-` | `tech-trend-scout.md` |
 | hookファイル名 | ケバブケース | `-` | `scouts-weekly-watcher.kiro.hook` |
-| スクリプトファイル名 | ケバブケース | `-` | `find-task.sh` |
+| スクリプトファイル名 | ケバブケース | `-` | `find-task.py` |
 | referencesファイル名 | ケバブケース | `-` | `tech-trend-sources.md` |
 | steeringファイル名 | ケバブケース | `-` | `agent-creation-guide.md` |
 | 出力ディレクトリ名 | スネークケース | `_` | `tech_trends`, `slack_trends` |
@@ -34,7 +34,7 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 | エージェント名 | **名詞（役割）** | `{領域}-{機能}-{役割}` | `tech-trend-scout` | `scout-tech-trends` |
 | hookファイル名 | **名詞（イベント/動作名）** | `{対象}-{動作名}` | `reference-data-refresh` | `refresh-reference-data` |
 | steeringファイル名 | **名詞（文書種別）** | `{対象}-{種別}` | `dev-env`, `py-standards`, `kiro-arch` | `guide-for-creating-agents` |
-| スクリプトファイル名 | **動詞始まり（コマンド）** | `{動詞}-{対象}` | `find-task.sh`, `create-weekly-tasks.sh` | `task-finder.sh` |
+| スクリプトファイル名 | **動詞始まり（コマンド）** | `{動詞}-{対象}` | `find-task.py`, `create-weekly-tasks.py` | `task-finder.sh` |
 | referencesファイル名 | **名詞（データ種別）** | `{トピック}-{文書種別}` or `{エージェント名}-sources` | `agent-prompt-guide`, `tech-trend-sources.md` | `sources-for-tech-trend.md` |
 
 ### 詳細ルール
@@ -92,11 +92,11 @@ referencesは省略せず、内容が明確に分かる名前にする。
 
 | 動詞 | 意味 | 例 |
 |------|------|-----|
-| `find-` | 検索・取得 | `find-task.sh` |
-| `update-` | 更新 | `update-task.sh` |
-| `create-` | 生成 | `create-weekly-tasks.sh` |
+| `find-` | 検索・取得 | `find-task.py` |
+| `update-` | 更新 | `update-task.py` |
+| `create-` | 生成 | `create-weekly-tasks.py` |
 | `fetch-` | 外部取得 | `fetch-rss-feeds.py` |
-| `check-` | 検証・判定 | `check-directory-freshness.sh` |
+| `check-` | 検証・判定 | `check-directory-freshness.py` |
 
 ## trend / digest の棲み分け（日次収集 vs 週次集約）
 
@@ -187,9 +187,9 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 
 ### パイプライン組み込み（詳細は `agent-pipeline-guide.md` 参照）
 
-- [ ] `scripts/create-{frequency}-tasks.sh` に子タスク追加（IDE hook方式）
-- [ ] `scripts/run-{frequency}-pipeline.sh` の `AGENTS` 配列に追加（kiro-cli方式）
-- [ ] `scripts/run-{frequency}-pipeline.sh` の `NOTIFY_FILES` に追加（通知対象の場合）
+- [ ] `scripts/create-{frequency}-tasks.py` に子タスク追加（IDE hook方式）
+- [ ] `scripts/run-{frequency}-pipeline.py` の `AGENTS` 配列に追加（kiro-cli方式）
+- [ ] `scripts/run-{frequency}-pipeline.py` の `NOTIFY_FILE_MAP` に追加（通知対象の場合）
 - [ ] `pipeline-executor.md` の対象タスクリスト更新（週次モード対象の場合）
 - [ ] `pipeline-executor.md` Step 5.1 のSlack通知マッピングに追加（通知対象の場合）
 - [ ] `scripts/fetch-rss-feeds.py` にカテゴリ追加（RSS必要な場合）

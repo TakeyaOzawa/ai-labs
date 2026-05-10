@@ -8,7 +8,7 @@
   },
   "then": {
     "type": "runCommand",
-    "command": "bash ~/scripts/free-notion-mcp-port.sh"
+    "command": "python3.12 ~/scripts/free-notion-mcp-port.py"
   },
   "workspaceFolderName": "takeya_ozawa",
   "shortName": "free-notion-mcp-port"

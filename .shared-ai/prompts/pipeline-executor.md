@@ -6,7 +6,7 @@ postToolUse(write) hookから呼び出される共通実行手順。
 ## Step 1: startingタスクの検索
 
 ```bash
-~/scripts/find-task.sh --pipeline {pipeline} --status starting --limit 1
+python3.12 ~/scripts/find-task.py --pipeline {pipeline} --status starting --limit 1
 ```
 
 `found: false` → 何もせず終了。
@@ -18,16 +18,16 @@ postToolUse(write) hookから呼び出される共通実行手順。
 
 `depends_on` が null でない場合:
 ```bash
-~/scripts/find-task.sh --pipeline {pipeline} --task-name {depends_on} --limit 1
+python3.12 ~/scripts/find-task.py --pipeline {pipeline} --task-name {depends_on} --limit 1
 ```
 - `completed` → Step 3へ
 - `pending`/`starting`/`running` → pendingに戻して終了:
   ```bash
-  ~/scripts/update-task.sh --task-file {task_file} --task-id {task_id} --set '{"status": "pending", "status_detail": "依存先 {depends_on} の完了待ち"}'
+  python3.12 ~/scripts/update-task.py --task-file {task_file} --task-id {task_id} --set '{"status": "pending", "status_detail": "依存先 {depends_on} の完了待ち"}'
   ```
 - `failed` → failedにして終了:
   ```bash
-  ~/scripts/update-task.sh --task-file {task_file} --task-id {task_id} --set '{"status": "failed", "error": "依存先 {depends_on} が失敗"}'
+  python3.12 ~/scripts/update-task.py --task-file {task_file} --task-id {task_id} --set '{"status": "failed", "error": "依存先 {depends_on} が失敗"}'
   ```
 
 ## Step 3: エージェント実行
@@ -37,8 +37,8 @@ postToolUse(write) hookから呼び出される共通実行手順。
 現在時刻: `TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S+09:00`
 
 ```bash
-~/scripts/update-task.sh --task-file {task_file} --task-id {task_id} --set '{"status": "running", "started_at": "{現在時刻}"}'
-~/scripts/update-task.sh --task-file {task_file} --scope parent --set '{"status_detail": "{task_name} 実行中"}'
+python3.12 ~/scripts/update-task.py --task-file {task_file} --task-id {task_id} --set '{"status": "running", "started_at": "{現在時刻}"}'
+python3.12 ~/scripts/update-task.py --task-file {task_file} --scope parent --set '{"status_detail": "{task_name} 実行中"}'
 ```
 ※ 親タスクの `status` が既に `running` の場合は `status` と `started_at` は省略可。
 
@@ -88,34 +88,34 @@ contextFiles: .shared-ai/prompts/{task_name}.md
 
 正常完了:
 ```bash
-~/scripts/update-task.sh --task-file {task_file} --task-id {task_id} --set '{"status": "completed", "completed_at": "{現在時刻}"}'
+python3.12 ~/scripts/update-task.py --task-file {task_file} --task-id {task_id} --set '{"status": "completed", "completed_at": "{現在時刻}"}'
 ```
 失敗:
 ```bash
-~/scripts/update-task.sh --task-file {task_file} --task-id {task_id} --set '{"status": "failed", "error": "{エラー内容}"}'
+python3.12 ~/scripts/update-task.py --task-file {task_file} --task-id {task_id} --set '{"status": "failed", "error": "{エラー内容}"}'
 ```
 
 ### 3.4 後続タスクの起動
 
 ```bash
-~/scripts/find-task.sh --pipeline {pipeline} --status pending --limit 10
+python3.12 ~/scripts/find-task.py --pipeline {pipeline} --status pending --limit 10
 ```
 `depends_on` が完了したタスクの `task_name` と一致するものがあれば:
 ```bash
-~/scripts/update-task.sh --task-file {task_file} --task-id {該当task_id} --set '{"status": "starting"}'
+python3.12 ~/scripts/update-task.py --task-file {task_file} --task-id {該当task_id} --set '{"status": "starting"}'
 ```
 
 ### 3.5 全子タスク完了チェック
 
 ```bash
-~/scripts/find-task.sh --pipeline {pipeline} --status starting --limit 1
-~/scripts/find-task.sh --pipeline {pipeline} --status running --limit 1
-~/scripts/find-task.sh --pipeline {pipeline} --status pending --limit 1
+python3.12 ~/scripts/find-task.py --pipeline {pipeline} --status starting --limit 1
+python3.12 ~/scripts/find-task.py --pipeline {pipeline} --status running --limit 1
+python3.12 ~/scripts/find-task.py --pipeline {pipeline} --status pending --limit 1
 ```
 
 全て `found: false` の場合:
 ```bash
-~/scripts/find-task.sh --pipeline {pipeline} --status failed --limit 10
+python3.12 ~/scripts/find-task.py --pipeline {pipeline} --status failed --limit 10
 ```
 - 全completed → 親タスクを completed に
 - 1つでもfailed → 親タスクを failed に
@@ -212,5 +212,5 @@ contextFiles: .shared-ai/prompts/slack-notifier.md
 1. タスクファイルをreadFileで読み、親タスクの現在の `status_detail` を確認
 2. strReplace で `"status_detail": "{現在値}"` → `"status_detail": "全子タスク完了"` または `"status_detail": "{N}件失敗"` に更新
 
-※ Step 3.5 で update-task.sh により既に更新済みの値と同一になるが、strReplace による write 発火が目的。
+※ Step 3.5 で update-task.py により既に更新済みの値と同一になるが、strReplace による write 発火が目的。
 ※ Slack通知（Step 5）は完了マーカーの前に実行する。通知失敗はパイプライン全体の成否に影響しない。

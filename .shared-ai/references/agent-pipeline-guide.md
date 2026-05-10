@@ -35,7 +35,7 @@
 
 #### タスク生成スクリプトへの追加
 
-`scripts/create-{frequency}-tasks.sh` に子タスクを追加:
+`scripts/create-{frequency}-tasks.py` に子タスクを追加:
 
 ```json
 {
@@ -91,7 +91,7 @@ export SLACK_BOT_TOKEN="${MY_SLACK_OAUTH_TOKEN:-}"  # 通知フェーズ
 
 #### エージェント追加手順
 
-`scripts/run-{frequency}-pipeline.sh` の `AGENTS` 配列に追加:
+`scripts/run-{frequency}-pipeline.py` の `AGENTS` 配列に追加:
 
 ```bash
 AGENTS=(
@@ -134,14 +134,14 @@ esac
 
 ```
 ~/Library/LaunchAgents/com.takeya.scout-daily-pipeline.plist
-  → /bin/zsh -l -c ~/scripts/run-daily-pipeline.sh
+  → python3.12 ~/scripts/run-daily-pipeline.py
   → 毎日指定時刻に実行
 ```
 
 管理コマンド:
 ```bash
-~/scripts/manage-launchd.sh status scout-daily-pipeline
-~/scripts/manage-launchd.sh reload scout-daily-pipeline
+python3.12 ~/scripts/manage-launchd.py status scout-daily-pipeline
+python3.12 ~/scripts/manage-launchd.py reload scout-daily-pipeline
 ```
 
 ## 低頻度更新データの事前取得エージェント設計
@@ -172,7 +172,7 @@ esac
 
 | コンポーネント | 役割 | 例 |
 |---|---|---|
-| `scripts/check-directory-freshness.sh` | 最終更新日からの経過日数で鮮度判定 | `--type slack --max-age-days 7` |
+| `scripts/check-directory-freshness.py` | 最終更新日からの経過日数で鮮度判定 | `--type slack --max-age-days 7` |
 | `.kiro/agents/{name}-updater.json` | 更新エージェント定義 | `slack-user-directory-updater` |
 | `.shared-ai/prompts/{name}-updater.md` | 更新手順プロンプト | API呼び出し→分類→ファイル出力 |
 | `.kiro/hooks/{name}-update.kiro.hook` | 手動トリガー（`userTriggered`） | 任意のタイミングで手動実行 |
@@ -186,14 +186,14 @@ esac
   → postToolUse(write) hook が発火
   → reference-data-refresh hook が検知
   → 親タスク status == "completed" を確認
-  → check-directory-freshness.sh で鮮度チェック
+  → check-directory-freshness.py で鮮度チェック
   → stale なら invokeSubAgent で更新実行
 ```
 
 ### 鮮度チェックの設計
 
 ```bash
-~/scripts/check-directory-freshness.sh --type {type} --max-age-days {N}
+python3.12 ~/scripts/check-directory-freshness.py --type {type} --max-age-days {N}
 # 出力: {"stale": true/false, "type": "...", "last_updated": "YYYY-MM-DD", "age_days": N}
 ```
 
@@ -214,7 +214,7 @@ esac
 ### 新規追加時のチェックリスト
 
 - [ ] 更新頻度の決定（`max-age-days`）
-- [ ] `check-directory-freshness.sh` の `--type` に対応追加（必要な場合）
+- [ ] `check-directory-freshness.py` の `--type` に対応追加（必要な場合）
 - [ ] 更新エージェント（JSON + プロンプト）作成
 - [ ] 手動トリガーhook作成（`userTriggered`）
 - [ ] `reference-data-refresh.kiro.hook` のStep 1に鮮度チェックコマンド追加
