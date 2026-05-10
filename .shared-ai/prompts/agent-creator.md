@@ -24,7 +24,7 @@ Step 5: チェックリスト確認
 Step 1: 対象エージェントの現状確認
 Step 2: 関連する設計ガイド読み込み
 Step 3: 改修実施
-Step 4: 影響範囲確認（daily/weekly両スクリプト + hook + pipeline-executor.md）
+Step 4: 影響範囲確認（daily/weekly両スクリプト + hook）
 ```
 
 ## Step 1: 要件ヒアリング

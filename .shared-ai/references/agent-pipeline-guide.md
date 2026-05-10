@@ -1,111 +1,66 @@
 # パイプライン統合ガイド
 
-エージェントのパイプラインへの組み込み、hook連携、低頻度更新データの設計指針。
-`pipeline-executor.md` やwatcher hookを読み込んだ際に自動ロードされる。
-
-## hook連携の設計
-
-### watcher hookの構造（軽量版）
-
-```json
-{
-  "when": { "type": "postToolUse", "toolTypes": ["write"] },
-  "then": {
-    "type": "askAgent",
-    "prompt": "直前のwrite操作が{対象}への書き込みか判定し、該当する場合のみ処理を実行。\n\n## Step 0: 対象ファイル判定\n\n- パスが `{対象ディレクトリ}` 配下の `.json` ファイル **でない** 場合 → 何もせず終了\n- 該当する場合 → `.shared-ai/prompts/pipeline-executor.md` をreadFileで読み込み、`{pipeline}` を `{frequency}` として手順に従い実行してください。"
-  }
-}
-```
-
-### 設計ポイント
-- hookのプロンプトは**ファイル判定 + executor参照**の最小形（~300B）
-- 詳細な実行手順は `pipeline-executor.md` に集約（DRY原則）
-- 対象外のwrite操作では即座に終了（コンテキスト消費を最小化）
-
-### pipeline-executor.md への追加
-
-新しいパイプラインを追加する場合:
-1. `pipeline-executor.md` の「週次パイプラインモード対象タスク」リストに追加
-2. 「その他のタスク」として扱うか、「週次パイプラインモード」として扱うかを決定
-3. 週次パイプラインモード = プロンプトに「## 週次パイプラインモード」セクションがあるタスク
+エージェントのパイプラインへの組み込み、低頻度更新データの設計指針。
 
 ## パイプラインへの組み込み
 
-### IDE hook方式
+### エージェント追加手順（kiro-cli方式）
 
-#### タスク生成スクリプトへの追加
+`kiro-cli chat --trust-all-tools --no-interactive` でエージェントをヘッドレス実行する方式。
+`scripts/run-{frequency}-pipeline.py` から直接各エージェントを順次実行する。
 
-`scripts/create-{frequency}-tasks.py` に子タスクを追加:
+#### 1. タスク生成スクリプトへの追加
 
-```json
-{
-  "task_id": "${CHILD_IDS[N]}",
-  "task_name": "{agent-name}",
-  "args": { "base_date": "${BASE_DATE}" },
-  "options": { "async": true, "timeout_seconds": 300, "max_retries": 1, "retry_delay_seconds": 30 },
-  "status": "starting",
-  "depends_on": null,
-  "child_tasks": []
+`scripts/create-{frequency}-tasks.py` の `CHILD_TASKS` に子タスク定義を追加:
+
+```python
+{"task_name": "{agent-name}", "timeout": 300, "retry_delay": 30, "depends_on": None},
+```
+
+- `depends_on`: 他タスクの完了を待つ場合はそのタスク名を指定（例: `"tech-blog-material-scout"`）
+- `timeout`: Web検索系は300〜600、API系は600〜900が目安
+
+#### 2. パイプラインスクリプトへの追加
+
+`scripts/run-{frequency}-pipeline.py` の `AGENTS` リストに追加:
+
+```python
+AGENTS = [
+    ...
+    "{new-agent-name}",  # ← 追加
+]
+```
+
+週次パイプラインモード対象の場合は `WEEKLY_PIPELINE_MODE_AGENTS` にも追加:
+
+```python
+WEEKLY_PIPELINE_MODE_AGENTS = {
+    ...
+    "{new-agent-name}",  # ← 追加
 }
 ```
 
-- `depends_on`: 他タスクの完了を待つ場合はそのタスク名を指定
-- `status`: `depends_on` が null なら `"starting"`、null でなければ `"pending"`
-- `timeout_seconds`: Web検索系は300〜600、API系は600〜900が目安
+#### 3. Slack通知対象の場合
 
-#### その他のIDE hook方式更新
+`NOTIFY_FILE_MAP` にマッピングを追加:
 
-1. `pipeline-executor.md` の対象タスクリスト更新（週次パイプラインモード対象の場合）
-2. `pipeline-executor.md` Step 5.1 のSlack通知マッピングテーブルに追加（通知対象の場合）
-3. RSS事前取得が必要なら:
-   - `scripts/fetch-rss-feeds.py` にカテゴリ追加
-   - `scouts-{frequency}-trigger.kiro.hook` のRSS事前取得ステップに追加
+```python
+NOTIFY_FILE_MAP = {
+    ...
+    "{new-agent-name}": "scout_histories/{output_dir}/{frequency}/{date}_{output_file}.md",
+}
+```
 
-### kiro-cli シェルスクリプト方式
+#### 4. RSS事前取得が必要な場合
 
-`kiro-cli chat --trust-all-tools --no-interactive` でエージェントをヘッドレス実行する方式。
-IDE hookのpostToolUse連鎖に依存せず、シェルスクリプトから直接各エージェントを順次実行する。
+- `scripts/fetch-rss-feeds.py` の `FEEDS` にカテゴリ追加
+- `run-{frequency}-pipeline.py` のStep 1にカテゴリ追加
 
 #### 実行コマンド
 
 ```bash
 kiro-cli chat --trust-all-tools --no-interactive \
   "{agent-name} エージェントとして動作してください。\`~/.shared-ai/prompts/{agent-name}.md\` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。基準日は {BASE_DATE} です。日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
-```
-
-#### 環境変数の設定
-
-```bash
-# .zshrc からsource（未設定時のみ）
-if [[ -z "${MY_SLACK_OAUTH_TOKEN:-}" ]]; then
-  [[ -f "$HOME/.zshrc" ]] && source "$HOME/.zshrc" 2>/dev/null || true
-fi
-
-# MCPサーバーが直接参照する環境変数をexport
-export SLACK_BOT_TOKEN="${SLACK_REFERENCE_BOT_TOKEN:-}"  # 収集フェーズ
-export SLACK_TEAM_ID="${SLACK_REFERENCE_TEAM_ID:-}"
-
-# 通知フェーズ前に切り替え
-export SLACK_BOT_TOKEN="${MY_SLACK_OAUTH_TOKEN:-}"  # 通知フェーズ
-```
-
-#### エージェント追加手順
-
-`scripts/run-{frequency}-pipeline.py` の `AGENTS` 配列に追加:
-
-```bash
-AGENTS=(
-  "tech-trend-scout"
-  "biz-car-trend-scout"
-  ...
-  "{new-agent-name}"  # ← 追加
-)
-```
-
-Slack通知対象の場合は `NOTIFY_FILES` マッピングにも追加:
-
-```bash
-NOTIFY_FILES[{new-agent-name}]="$HOME/Documents/works/scout_histories/{output_dir}/{frequency}/${BASE_DATE}_{output_file}.md"
 ```
 
 週次パイプラインモード対象の場合は `case` 文にも追加:
@@ -176,16 +131,15 @@ python3.12 ~/scripts/manage-launchd.py reload scout-daily-pipeline
 | `.kiro/agents/{name}-updater.json` | 更新エージェント定義 | `slack-user-directory-updater` |
 | `.shared-ai/prompts/{name}-updater.md` | 更新手順プロンプト | API呼び出し→分類→ファイル出力 |
 | `.kiro/hooks/{name}-update.kiro.hook` | 手動トリガー（`userTriggered`） | 任意のタイミングで手動実行 |
-| `.kiro/hooks/reference-data-refresh.kiro.hook` | 自動トリガー（パイプライン完了後） | 週次scout完了時に鮮度チェック→必要なら更新 |
+
+> **Note**: 週次パイプライン完了後の鮮度チェック・自動更新は `run-weekly-pipeline.py` の Step 5 で実行される。
 
 ### 自動更新hookの発火条件
 
 ```
 週次scoutパイプライン完了
-  → pipeline-executor.md の完了マーカーで strReplace 発火
-  → postToolUse(write) hook が発火
-  → reference-data-refresh hook が検知
-  → 親タスク status == "completed" を確認
+  → `run-weekly-pipeline.py` の Step 3 で親タスクを completed に更新
+  → `run-weekly-pipeline.py` の Step 5 で鮮度チェック・更新を実行
   → check-directory-freshness.py で鮮度チェック
   → stale なら invokeSubAgent で更新実行
 ```
@@ -217,6 +171,6 @@ python3.12 ~/scripts/check-directory-freshness.py --type {type} --max-age-days {
 - [ ] `check-directory-freshness.py` の `--type` に対応追加（必要な場合）
 - [ ] 更新エージェント（JSON + プロンプト）作成
 - [ ] 手動トリガーhook作成（`userTriggered`）
-- [ ] `reference-data-refresh.kiro.hook` のStep 1に鮮度チェックコマンド追加
-- [ ] `reference-data-refresh.kiro.hook` のStep 2にinvokeSubAgent追加
+- [ ] `run-weekly-pipeline.py` の `run_freshness_check()` に鮮度チェック対象を追加
+- [ ] `run-weekly-pipeline.py` の `run_freshness_check()` に更新プロンプトを追加
 - [ ] steeringのlookupガイド作成（他エージェントからの参照方法を定義）

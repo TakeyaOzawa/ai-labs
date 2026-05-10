@@ -15,7 +15,7 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 |------|------|--------|-----|
 | エージェント名 | ケバブケース | `-` | `tech-trend-scout` |
 | プロンプトファイル名 | ケバブケース | `-` | `tech-trend-scout.md` |
-| hookファイル名 | ケバブケース | `-` | `scouts-weekly-watcher.kiro.hook` |
+| hookファイル名 | ケバブケース | `-` | `agent-output-review.kiro.hook` |
 | スクリプトファイル名 | ケバブケース | `-` | `find-task.py` |
 | referencesファイル名 | ケバブケース | `-` | `tech-trend-sources.md` |
 | steeringファイル名 | ケバブケース | `-` | `agent-creation-guide.md` |
@@ -32,7 +32,7 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 | 対象 | 語形 | パターン | 良い例 | 悪い例 |
 |------|------|----------|--------|--------|
 | エージェント名 | **名詞（役割）** | `{領域}-{機能}-{役割}` | `tech-trend-scout` | `scout-tech-trends` |
-| hookファイル名 | **名詞（イベント/動作名）** | `{対象}-{動作名}` | `reference-data-refresh` | `refresh-reference-data` |
+| hookファイル名 | **名詞（イベント/動作名）** | `{対象}-{動作名}` | `agent-output-review` | `refresh-reference-data` |
 | steeringファイル名 | **名詞（文書種別）** | `{対象}-{種別}` | `dev-env`, `py-standards`, `kiro-arch` | `guide-for-creating-agents` |
 | スクリプトファイル名 | **動詞始まり（コマンド）** | `{動詞}-{対象}` | `find-task.py`, `create-weekly-tasks.py` | `task-finder.sh` |
 | referencesファイル名 | **名詞（データ種別）** | `{トピック}-{文書種別}` or `{エージェント名}-sources` | `agent-prompt-guide`, `tech-trend-sources.md` | `sources-for-tech-trend.md` |
@@ -64,9 +64,9 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 
 | パターン | 例 | 説明 |
 |----------|-----|------|
-| `{対象}-{動作}` | `reference-data-refresh` | 参照データの更新 |
-| `{対象}-{動作}` | `scouts-weekly-watcher` | 週次scoutの監視 |
-| `{対象}-{動作}` | `scouts-daily-trigger` | 日次scoutの起動 |
+| `{対象}-{動作}` | `agent-output-review` | エージェント出力のレビュー |
+| `{対象}-{動作}` | `free-notion-mcp-port` | Notion MCPポート解放 |
+| `{対象}-{動作}` | `tech-poc-plan` | PoC計画の実行 |
 | `{対象}-{検証名}` | `domain-frontmatter-check` | ドメインファイルのfrontmatter検証 |
 
 #### steering ファイル名: `{対象}-{種別}`（コンパクト）
@@ -187,10 +187,7 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 
 ### パイプライン組み込み（詳細は `agent-pipeline-guide.md` 参照）
 
-- [ ] `scripts/create-{frequency}-tasks.py` に子タスク追加（IDE hook方式）
+- [ ] `scripts/create-{frequency}-tasks.py` に子タスク追加
 - [ ] `scripts/run-{frequency}-pipeline.py` の `AGENTS` 配列に追加（kiro-cli方式）
 - [ ] `scripts/run-{frequency}-pipeline.py` の `NOTIFY_FILE_MAP` に追加（通知対象の場合）
-- [ ] `pipeline-executor.md` の対象タスクリスト更新（週次モード対象の場合）
-- [ ] `pipeline-executor.md` Step 5.1 のSlack通知マッピングに追加（通知対象の場合）
 - [ ] `scripts/fetch-rss-feeds.py` にカテゴリ追加（RSS必要な場合）
-- [ ] `scouts-{frequency}-trigger.kiro.hook` のRSS事前取得に追加（RSS必要な場合）
