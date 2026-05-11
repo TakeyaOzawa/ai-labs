@@ -52,6 +52,7 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 | `reviewer` | レビュー・検証 | `agent-output-reviewer`, `code-reviewer` |
 | `architect` | 設計・構造化 | `spec-architect` |
 | `tester` | テスト実行 | `integration-tester` |
+| `analyst` | 分析・調査報告 | `github-repo-analyst` |
 | `creator` | 成果物生成 | `slide-creator` |
 
 サブエージェント（親エージェントから委譲される）は親名にサフィックスを付ける:

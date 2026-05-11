@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "GitHub Repo Analysis",
+  "description": "GitHubリポジトリを徹底調査し、開発者・メンテナー視点の技術ドキュメントを生成する。リポジトリURLを引数に取る。",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "github-repo-analyst エージェントとして動作してください。`.shared-ai/prompts/github-repo-analyst.md` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。ユーザーに「調査対象のリポジトリURLを指定してください（例: https://github.com/owner/repo）」と確認してください。"
+  },
+  "workspaceFolderName": "takeya_ozawa",
+  "shortName": "github-repo-analysis"
+}

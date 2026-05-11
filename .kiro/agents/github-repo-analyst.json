@@ -1,0 +1,27 @@
+{
+    "name": "github-repo-analyst",
+    "description": "GitHubリポジトリを徹底調査し、開発者・メンテナー視点の技術ドキュメントを生成する。サブエージェント4つを順次実行し、最終レポートを統合する親エージェント。",
+    "prompt": "file://../../.shared-ai/prompts/github-repo-analyst.md",
+    "tools": ["read", "write", "shell", "web"],
+    "allowedTools": ["web", "shell"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/github_repo_analysis/**"]
+        },
+        "shell": {
+            "allowedCommands": [
+                "gh api *",
+                "gh repo view *",
+                "gh issue list *",
+                "gh pr list *",
+                "gh release list *",
+                "python3.12 ~/scripts/get-jst-date.py *",
+                "date *"
+            ]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "GitHub リポジトリ調査エージェントです。調査対象のリポジトリURLを指定してください。\n例: https://github.com/owner/repo"
+}

@@ -1,0 +1,22 @@
+{
+    "name": "github-repo-analyst-history",
+    "description": "GitHubリポジトリの開発履歴・コントリビューター変遷を調査するサブエージェント。コミット履歴、リリース、開発者の参加/離脱を時系列で整理する。",
+    "prompt": "file://../../.shared-ai/prompts/github-repo-analyst-history.md",
+    "tools": ["read", "write", "shell", "web"],
+    "allowedTools": ["web", "shell"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/github_repo_analysis/**"]
+        },
+        "shell": {
+            "allowedCommands": [
+                "gh api *",
+                "gh release list *"
+            ]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "リポジトリの開発履歴を調査します。"
+}
