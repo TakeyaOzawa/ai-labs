@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Notion MCP Auto Approver",
+  "version": "1.0.0",
+  "description": "Auto-checks checkbox and clicks 続行 button on Notion integration install page",
+  "permissions": ["tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.notion.so/install-integration*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://mcp.notion.com/callback*"],
+      "js": ["callback.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
