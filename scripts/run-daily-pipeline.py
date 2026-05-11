@@ -35,13 +35,13 @@ AGENTS = [
     "tech-trend-scout",
     "biz-car-trend-scout",
     "academic-trend-scout",
+    "lifestyle-event-scout",
+    "rss-source-updater",
+    "github-public-trend-scout",
+    "github-org-trend-scout",
     "gws-trend-scout",
     "slack-trend-scout",
-    "github-org-trend-scout",
-    "github-public-trend-scout",
-    "rss-source-updater",
     "notion-trend-scout",
-    "lifestyle-event-scout",
 ]
 
 NOTIFY_FILE_MAP: dict[str, str] = {

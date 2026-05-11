@@ -33,14 +33,14 @@ SCRIPTS_DIR = Path(__file__).parent
 PLATFORM_CMD = SCRIPTS_DIR / "platform-commands.sh"
 
 AGENTS = [
-    "slack-digest-scout",
-    "gws-digest-scout",
-    "notion-digest-scout",
-    "github-org-digest-scout",
-    "github-public-digest-scout",
     "tech-event-scout",
+    "github-public-digest-scout",
+    "github-org-digest-scout",
     "tech-blog-material-scout",
     "tech-poc-planner",
+    "gws-digest-scout",
+    "slack-digest-scout",
+    "notion-digest-scout",
 ]
 
 # 週次パイプラインモード対象エージェント
