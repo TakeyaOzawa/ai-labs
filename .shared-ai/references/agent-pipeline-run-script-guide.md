@@ -5,22 +5,30 @@
 ## 実行コマンド（kiro-cli）
 
 ```bash
-kiro-cli chat --trust-all-tools --no-interactive \
-  "{agent-name} エージェントとして動作してください。\`~/.shared-ai/prompts/{agent-name}.md\` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。基準日は {BASE_DATE} です。日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
+kiro-cli chat --agent {agent-name} --trust-all-tools --no-interactive \
+  "基準日は {BASE_DATE} です。日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
 ```
 
 週次パイプラインモード対象の場合:
 ```bash
-"{agent-name} エージェントとして「週次パイプラインモード」で動作してください。..."
+kiro-cli chat --agent {agent-name} --trust-all-tools --no-interactive \
+  "「週次パイプラインモード」で実行してください。基準日は {BASE_DATE} です。日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
 ```
+
+`--agent` フラグにより、エージェント定義（`.kiro/agents/{agent-name}.json`）の以下が自動適用される:
+- `prompt`: プロンプトファイル（`file://...`）の自動ロード
+- `tools` / `allowedTools`: ツール制限
+- `includeMcpJson`: MCPサーバーのロード制御
+- `model`: 使用モデル
 
 ## 制約と注意事項
 
 | 項目 | 内容 |
 |------|------|
+| --agent フラグ | 必ず `--agent {agent-name}` を指定する。エージェント定義（`.kiro/agents/{name}.json`）の `prompt`, `tools`, `includeMcpJson`, `model` が自動適用される |
 | MCP環境変数 | `.zshrc` で定義された環境変数をsourceして解決。`kiro-cli` はmcp.jsonの `${...}` をプロセス環境変数から展開する |
 | SLACK_BOT_TOKEN | 収集フェーズでは `SLACK_REFERENCE_BOT_TOKEN` を、通知フェーズでは `MY_SLACK_OAUTH_TOKEN` を `SLACK_BOT_TOKEN` にexportして切り替える |
-| Notion MCP | SSE接続でブラウザ認証が必要。初回は手動で認証を完了させる。トークンはキャッシュされる |
+| Notion MCP | SSE接続でブラウザ認証が必要。初回は手動で認証を完了させる。トークンはキャッシュされる。`includeMcpJson: false` のエージェントではMCPサーバーはロードされない |
 | ツール承認 | `--trust-all-tools` で全ツールを自動承認。`--no-interactive` と併用必須 |
 | セッション独立性 | 各エージェントは独立したセッションで実行される。コンテキスト共有なし |
 | 実行完了待ち | ブロッキング動作。エージェント完了までプロセスが待機する |
@@ -102,9 +110,6 @@ python3.12 ~/scripts/manage-scheduler.py list
 
 ```python
 prompt = (
-    f"{agent} エージェントとして動作してください。"
-    f" ~/.shared-ai/prompts/{agent}.md をreadFileで読み込み、"
-    f"そこに記載されたワークフローに従って実行してください。"
     f"基準日は {base_date} です。"
     f"日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
 )
@@ -114,20 +119,27 @@ prompt = (
 
 ```python
 prompt = (
-    f"{agent} エージェントとして「週次パイプラインモード」で動作してください。"
-    f" ~/.shared-ai/prompts/{agent}.md をreadFileで読み込み、"
-    f"そこに記載された週次パイプラインモードのワークフローに従って実行してください。"
+    f"「週次パイプラインモード」で実行してください。"
     f"基準日は {base_date} です。"
     f"日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
 )
 ```
+
+### run_kiro_cli 呼び出し
+
+```python
+run_kiro_cli(prompt, agent_log, agent_name=agent)
+```
+
+`--agent` によりエージェント定義の `prompt` フィールド（`file://...`）が自動ロードされるため、
+プロンプト内でのロール宣言やreadFile指示は不要。パラメータ（基準日、ファイルパス等）のみ渡す。
 
 ## 失敗時のリトライコマンド表示
 
 エージェント実行が失敗した場合、ユーザーが手動で再実行できるよう kiro-cli コマンドを表示する:
 
 ```python
-print(f"[{agent_end}]    💡 再実行: kiro-cli chat --trust-all-tools --no-interactive \"{prompt}\"")
+print(f"[{agent_end}]    💡 再実行: kiro-cli chat --agent {agent} --trust-all-tools --no-interactive \"{prompt}\"")
 ```
 
 - ❌ 行の直後に出力する
