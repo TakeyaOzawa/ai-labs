@@ -57,6 +57,7 @@
         }
     },
     "resources": [],
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "技術検証PoCの実行をお手伝いします。Tech Blog Planのファイルパス、または検証したい技術テーマ・内容を教えてください。"
 }

@@ -36,7 +36,7 @@
         "file://docs/development/ai-agent-shared.md",
         "file://docs/development/coding-guidelines.md"
     ],
-    "includeMcpJson": true,
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "コードレビューを開始します。対象のブランチまたはspecを教えてください。"
 }

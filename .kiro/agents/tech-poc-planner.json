@@ -19,6 +19,7 @@
         }
     },
     "resources": [],
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "技術検証（PoC）の企画・計画作成をお手伝いします。素材シートのパス、または検証したいテーマ・草案を教えてください。"
 }

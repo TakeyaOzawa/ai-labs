@@ -184,10 +184,31 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
     }
   },
   "resources": [],
+  "includeMcpJson": false,
   "model": "claude-sonnet-4",
   "welcomeMessage": "{起動時メッセージ}"
 }
 ```
+
+### `includeMcpJson` 設定ルール（必須）
+
+全エージェントで `includeMcpJson` を明示的に設定すること（暗黙のデフォルトに頼らない）。
+
+| 設定値 | 条件 |
+|--------|------|
+| `true` | Slack MCP、Notion MCP、Playwright MCP、DBHub MCPのいずれかを使用する場合 |
+| `false` | 上記MCPを使用しない場合（Web検索、shell、ファイル操作のみ） |
+
+**背景:** `true` にすると全MCPサーバー（Notion含む）が一括ロードされ、OAuth認証フローが発生する。MCPを使わないエージェントでは不要な認証画面の表示やリソース消費を避けるため、`false` を明示する。
+
+**判定基準:**
+- Web検索（`web` ツール）のみ → `false`
+- `gws` CLI（shell経由）のみ → `false`
+- `gh` CLI（shell経由）のみ → `false`
+- Slack MCPでメッセージ投稿・取得 → `true`
+- Notion MCPでページ検索・取得 → `true`
+- Playwright MCPでブラウザ操作 → `true`
+- DBHub MCPでSQL実行 → `true`
 
 ## チェックリスト（新規エージェント作成時）
 

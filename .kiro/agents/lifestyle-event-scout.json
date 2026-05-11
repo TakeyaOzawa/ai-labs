@@ -13,6 +13,7 @@
         }
     },
     "resources": [],
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "ライフスタイルイベントの収集を開始します。曜日テーマを判定し、該当カテゴリのイベントを検索してレポートを作成します。"
 }

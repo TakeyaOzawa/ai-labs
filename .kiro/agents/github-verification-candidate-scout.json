@@ -16,6 +16,7 @@
         }
     },
     "resources": [],
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "GitHub Trending から技術検証候補を抽出します。週次ダイジェストのパスを指定するか、最新のダイジェストから自動抽出します。"
 }

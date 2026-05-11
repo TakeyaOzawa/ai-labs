@@ -24,6 +24,7 @@
             "autoUpdate": false
         }
     ],
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "Spec設計を開始します。要件や機能の概要を教えてください。"
 }

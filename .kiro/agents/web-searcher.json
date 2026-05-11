@@ -19,6 +19,7 @@
         }
     },
     "resources": [],
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "Web調査を開始します。調べたいテーマ・キーワード、trend/digestレポートのパス、またはURLを教えてください。"
 }

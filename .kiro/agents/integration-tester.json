@@ -29,6 +29,7 @@
         "skill://.agents/skills/epsilon-testing/SKILL.md",
         "skill://.agents/skills/local-docker-testing/SKILL.md"
     ],
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "結合テストを開始します。対象のspecと検証環境を教えてください。"
 }

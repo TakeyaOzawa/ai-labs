@@ -13,6 +13,7 @@
         }
     },
     "resources": [],
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "勉強会資料の作成をお手伝いします。まずテーマを教えてください。対象者・発表時間・トーンなどもあればお知らせください。"
 }

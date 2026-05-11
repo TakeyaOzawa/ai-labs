@@ -16,6 +16,7 @@
         }
     },
     "resources": [],
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "ブログ素材の調査を開始します。テーマを指定するか、tech-trend-scoutのレポートファイルパスを教えてください。最新のトレンドレポートから候補を提示することもできます。"
 }

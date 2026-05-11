@@ -10,6 +10,7 @@
         }
     },
     "resources": [],
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "テックイベントスカウトを開始します。関東近郊のIT・ビジネス系イベントを検索してサマリーを作成します。"
 }
