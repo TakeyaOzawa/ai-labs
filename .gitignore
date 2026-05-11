@@ -8,6 +8,7 @@
 /Downloads/*
 /Documents/*
 !/Documents/works
+/tools
 /Desktop/*
 /Library/*
 !/Library/Application Support/
@@ -21,18 +22,18 @@
 /Movies/*
 /Pictures/*
 /Public/*
-*.pem
-*.ca
-*credentials
-*.log
+**/*.pem
+**/*.ca
+**/*credentials
+**/*.log
 /.aws/amazonq/*
 /.cmake-js/*
 /.nodebrew/*
 /.npm/*
 /.zsh_sessions/*
 /.bash_sessions/*
-*/bin/*
-*/cache/*
+**/bin/*
+**/*cache*
 /.mcp-auth/*
 /.semantic_search/*
 /.dbclient/*
@@ -49,6 +50,7 @@
 /.codex/rules/*
 /.gemini/*
 !.gemini/GEMINI.md
+/.ollama/*
 /.vim/*
 /.gk/*
 /.th-client/*
@@ -71,7 +73,7 @@
 /.aws-sam/*
 /bk_ssh_bk
 /bk_aws_bk
-**.DS_Store
+**/*.DS_Store
 .carmo-basic-auth
 .gitconfig
 .zshrc
@@ -84,7 +86,7 @@
 .CFUserTextEncoding
 .yarnrc
 .lesshst*
-**_history
-**.backup
+**/*_history
+**/*.backup
 /.config/*
 /.playwright-mcp/*
