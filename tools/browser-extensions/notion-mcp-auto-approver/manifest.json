@@ -14,7 +14,7 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://mcp.notion.com/callback*"],
+      "matches": ["https://mcp.notion.com/callback*", "http://localhost:9553/oauth/callback?code=*"],
       "js": ["callback.js"],
       "run_at": "document_idle"
     }
