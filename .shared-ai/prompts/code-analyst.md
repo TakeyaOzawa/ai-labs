@@ -239,21 +239,7 @@ rm -rf /tmp/repo-analyst/{owner}-{repo}
 
 ## ファイル書き込み戦略
 
-IDEのfs_write/fs_appendツールは大きなコンテンツを一度に書き込むと失敗することがある（`text` パラメータが undefined になるエラー）。以下の方式で対処すること。
-
-**推奨方式: fs_write + fs_append 分割追記**
-
-1. `fs_write` で先頭セクション（タイトル〜プロジェクト規模）を書き込む（ファイル新規作成）
-2. `fs_append` で残りのセクションを分割して追記する
-
-**ルール:**
-- 1回の書き込みあたり概ね2000文字以内に抑える
-- 分割単位はセクション境界（`## `見出し）で区切る
-
-**禁止事項（シェルのクォート問題でハングする）:**
-- heredoc (`<< 'EOF'`) でのコンテンツ渡し
-- `echo` への長文直接渡し
-- `python3.12 -c` に長い文字列リテラルを渡す
+`readFile: ~/.shared-ai/references/file-write-strategy-guide.md` の手順に従うこと。
 
 ## 行動原則
 
