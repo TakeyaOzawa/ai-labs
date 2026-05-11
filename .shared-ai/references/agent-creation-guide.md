@@ -58,8 +58,8 @@ scoutパイプライン等のエージェントを新規作成・改修する際
 サブエージェント（親エージェントから委譲される）は親名にサフィックスを付ける:
 - `slack-trend-scout-channel`（チャンネル別収集）
 - `slack-trend-scout-merge`（統合）
-- `gws-trend-scout-collector`（収集フェーズ）
-- `gws-trend-scout-aggregator`（集約フェーズ）
+- `gws-trend-extractor`（抽出フェーズ）
+- `markdown-reporter`（汎用統合レポート作成）
 
 #### hookファイル名: `{対象}-{動作名}`
 

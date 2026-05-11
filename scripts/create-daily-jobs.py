@@ -34,7 +34,7 @@ CHILD_JOBS = [
     {"job_name": "rss-source-updater", "timeout": 180, "retry_delay": 30},
     {"job_name": "github-public-trend-scout", "timeout": 600, "retry_delay": 60},
     {"job_name": "github-org-trend-scout", "timeout": 600, "retry_delay": 60},
-    {"job_name": "gws-trend-scout", "timeout": 900, "retry_delay": 60},
+    {"job_name": "run-gws-trend-scout-pipeline", "timeout": 900, "retry_delay": 60},
     {"job_name": "slack-trend-scout", "timeout": 600, "retry_delay": 60},
     {"job_name": "notion-trend-scout", "timeout": 900, "retry_delay": 60},
 ]

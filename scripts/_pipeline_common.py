@@ -40,7 +40,7 @@ class PipelineConfig:
 
     name: str                                # "daily" | "weekly"
     log_dir: Path                            # ログ出力ディレクトリ
-    agents: list[str]                        # エージェントリスト
+    agents: list[str]                        # エージェント名 or パイプラインスクリプト名（.py）
     notify_file_map: dict[str, str]          # エージェント名 → 通知ファイルテンプレート
     create_jobs_script: str                  # ジョブファイル生成スクリプト名
     default_base_date: Callable[[], str]     # 基準日デフォルト計算
@@ -55,9 +55,12 @@ class PipelineConfig:
     # Noneを返すとNOTIFY_FILE_MAPのテンプレートを使用、Pathを返すとそれを使用
     resolve_notify_path: Callable[[str, str], Path | None] | None = None
 
-    # エージェント実行前フック: (agent, base_date) -> skip_reason | None
-    # 文字列を返すとスキップ（理由表示）、Noneを返すと通常実行
-    pre_agent_hook: Callable[[str, str], str | None] | None = None
+    # エージェント実行前フック: (agent, base_date) -> HookResult | None
+    # None → 通常実行（kiro-cliでエージェントを実行）
+    # str → スキップ（成功扱い、理由表示）— 後方互換
+    # (str, True) → 委譲成功（パイプライン等で処理完了）
+    # (str, False) → 委譲失敗（パイプライン等で処理失敗）
+    pre_agent_hook: Callable[[str, str], "tuple[str, bool] | str | None"] | None = None
 
     # 全エージェント実行後の追加ステップ
     post_agents_hook: Callable[[str], None] | None = None
@@ -107,6 +110,19 @@ def run_kiro_cli(prompt: str, log_file: Path, agent_name: str = "") -> bool:
     with open(log_file, "a", encoding="utf-8") as f:
         result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
     return result.returncode == 0
+
+
+def run_sub_pipeline(script: Path, base_date: str, log_file: Path) -> bool:
+    """サブパイプラインスクリプトを実行し、成功/失敗を返す。"""
+    cmd = ["python3.12", str(script), base_date]
+    with open(log_file, "a", encoding="utf-8") as f:
+        result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
+    return result.returncode == 0
+
+
+def is_pipeline_entry(entry: str) -> bool:
+    """AGENTSリストのエントリがパイプラインスクリプトか判定する。"""
+    return entry.endswith(".py")
 
 
 def log_error(pipeline: str, agent: str, message: str) -> None:
@@ -257,35 +273,77 @@ def run_pipeline(config: PipelineConfig) -> None:
 
     for agent in config.agents:
         agent_start = now_jst()
-        print(f"[{agent_start}] 🔄 {agent} 実行中...")
+        # パイプラインエントリの場合、表示名をスクリプト名から生成
+        entry_name = Path(agent).stem if is_pipeline_entry(agent) else agent
+        print(f"[{agent_start}] 🔄 {entry_name} 実行中...")
 
-        agent_log = config.log_dir / f"{agent}.log"
+        agent_log = config.log_dir / f"{entry_name}.log"
         rotate_log(agent_log, MAX_AGENT_LOG_LINES, keep_lines=100)
 
         # ジョブファイル: running に更新
         child_job_id = ""
         if use_job_file and job_file:
-            child_job_id = get_child_job_id(job_file, agent)
+            child_job_id = get_child_job_id(job_file, entry_name)
             if child_job_id:
                 update_job(job_file, job_id=child_job_id,
                            updates={"status": "running", "started_at": agent_start})
                 update_job(job_file, scope="parent",
-                           updates={"status_detail": f"{agent} 実行中"})
+                           updates={"status_detail": f"{entry_name} 実行中"})
 
-        # pre_agent_hook でスキップ判定
+        # pre_agent_hook でスキップ/委譲判定
         if config.pre_agent_hook:
-            skip_reason = config.pre_agent_hook(agent, base_date)
-            if skip_reason is not None:
-                print(f"[{agent_start}]    ⏭️  {agent}: {skip_reason}")
-                success += 1
-                if use_job_file and child_job_id:
-                    update_job(job_file, job_id=child_job_id, updates={
-                        "status": "completed", "completed_at": agent_start,
-                        "status_detail": skip_reason,
-                    })
+            hook_result = config.pre_agent_hook(agent, base_date)
+            if hook_result is not None:
+                # 戻り値の正規化: str → (str, True)（後方互換）
+                if isinstance(hook_result, str):
+                    reason, hook_success = hook_result, True
+                else:
+                    reason, hook_success = hook_result
+
+                if hook_success:
+                    print(f"[{agent_start}]    ✅ {entry_name}: {reason}")
+                    success += 1
+                    if use_job_file and child_job_id:
+                        update_job(job_file, job_id=child_job_id, updates={
+                            "status": "completed", "completed_at": now_jst(),
+                            "status_detail": reason,
+                        })
+                else:
+                    print(f"[{agent_start}]    ❌ {entry_name}: {reason}")
+                    failed += 1
+                    failed_names.append(entry_name)
+                    if use_job_file and child_job_id:
+                        update_job(job_file, job_id=child_job_id, updates={
+                            "status": "failed", "completed_at": now_jst(),
+                            "error": reason,
+                        })
                 continue
 
-        # プロンプト構築
+        # パイプラインスクリプトの場合
+        if is_pipeline_entry(agent):
+            script_path = SCRIPTS_DIR / agent
+            if run_sub_pipeline(script_path, base_date, agent_log):
+                agent_end = now_jst()
+                print(f"[{agent_end}]    ✅ {entry_name} 完了")
+                success += 1
+                if use_job_file and child_job_id:
+                    update_job(job_file, job_id=child_job_id,
+                               updates={"status": "completed", "completed_at": agent_end})
+            else:
+                agent_end = now_jst()
+                print(f"[{agent_end}]    ❌ {entry_name} 失敗（ログ: {agent_log}）")
+                print(f"[{agent_end}]    💡 再実行: python3.12 {script_path} {base_date}")
+                log_error(f"{config.name}-pipeline", entry_name, "sub-pipeline exit non-zero")
+                failed += 1
+                failed_names.append(entry_name)
+                if use_job_file and child_job_id:
+                    update_job(job_file, job_id=child_job_id, updates={
+                        "status": "failed", "error": "sub-pipeline exit non-zero",
+                        "completed_at": agent_end,
+                    })
+            continue
+
+        # kiro-cliエージェント実行
         prompt = config.build_prompt(agent, base_date)
 
         if run_kiro_cli(prompt, agent_log, agent_name=agent):
@@ -342,6 +400,9 @@ def run_pipeline(config: PipelineConfig) -> None:
     rotate_log(notify_log, MAX_AGENT_LOG_LINES, keep_lines=100)
 
     for agent in config.agents:
+        # パイプラインエントリの場合、表示名をスクリプト名から生成
+        entry_name = Path(agent).stem if is_pipeline_entry(agent) else agent
+
         # 通知ファイルパス解決
         file_path: Path | None = None
 
@@ -351,26 +412,26 @@ def run_pipeline(config: PipelineConfig) -> None:
 
         # フックがNoneを返した場合、テンプレートマップから解決
         if file_path is None:
-            template = config.notify_file_map.get(agent, "")
+            template = config.notify_file_map.get(entry_name, "")
             if not template:
                 notify_skipped += 1
                 continue
             file_path = HOME / "Documents" / "works" / template.format(date=base_date)
 
         if not file_path.exists():
-            print(f"   ⏭️  {agent}: 出力ファイルなし（スキップ）")
+            print(f"   ⏭️  {entry_name}: 出力ファイルなし（スキップ）")
             notify_skipped += 1
             continue
 
-        print(f"[{now_jst()}]    📨 {agent} 通知中...")
+        print(f"[{now_jst()}]    📨 {entry_name} 通知中...")
         notify_prompt = f"file_path={file_path}"
 
         if run_kiro_cli(notify_prompt, notify_log, agent_name="slack-notifier"):
-            print(f"[{now_jst()}]    ✅ {agent} 通知完了")
+            print(f"[{now_jst()}]    ✅ {entry_name} 通知完了")
             notify_success += 1
         else:
-            print(f"[{now_jst()}]    ⚠️  {agent} 通知失敗（レポート作成は成功扱い）")
-            log_error(f"{config.name}-pipeline", f"slack-notify:{agent}", "通知失敗")
+            print(f"[{now_jst()}]    ⚠️  {entry_name} 通知失敗（レポート作成は成功扱い）")
+            log_error(f"{config.name}-pipeline", f"slack-notify:{entry_name}", "通知失敗")
 
     notify_end = now_jst()
     print(f"[{notify_end}] 📨 通知完了: ✅{notify_success}件 / ⏭️{notify_skipped}件スキップ")

@@ -20,7 +20,7 @@ refactor
 |----------|---------|------|-------------|
 | `prompts/tech-poc-planner.md` | 24KB | ~8KB | 出力テンプレート（記事骨格 + 検証計画フォーマット） |
 | `prompts/notion-trend-scout.md` | 12KB | ~8KB | 出力フォーマット + 既知Notionリソース |
-| `prompts/gws-trend-scout-collector.md` | 12KB | ~8KB | 議事録テンプレート |
+| `prompts/gws-trend-extractor.md` | 12KB | ~8KB | 議事録テンプレート |
 | `prompts/gws-trend-scout.md` | 12KB | ~8KB | Drive APIクエリ方針 + 議事録テンプレート |
 | `prompts/slack-trend-scout-channel.md` | 10KB | ~8KB | 出力フォーマット |
 | `prompts/notion-digest-scout.md` | 10KB | ~8KB | 出力フォーマット |
@@ -40,10 +40,10 @@ refactor
 - **生成ファイル:** `interfaces/notion-trend-scout-output.md`, `interfaces/notion-trend-scout-resources.md`
 - **変更内容:** 出力フォーマット + 「既知のNotionリソース」（DB ID等）を分離
 
-### Task 3: gws-trend-scout.md / gws-trend-scout-collector.md
+### Task 3: gws-trend-scout.md / gws-trend-extractor.md
 
-- **対象ファイル:** `prompts/gws-trend-scout.md`, `prompts/gws-trend-scout-collector.md`
-- **生成ファイル:** `interfaces/gws-trend-scout-output.md`
+- **対象ファイル:** `prompts/gws-trend-scout.md`, `prompts/gws-trend-extractor.md`
+- **生成ファイル:** `interfaces/gws-trend-extractor-output.md`
 - **変更内容:** 議事録テンプレート・Drive APIクエリ方針を分離（2ファイルで共有）
 
 ### Task 4: slack-trend-scout-channel.md

@@ -39,7 +39,7 @@ AGENTS = [
     "rss-source-updater",
     "github-public-trend-scout",
     "github-org-trend-scout",
-    "gws-trend-scout",
+    "run-gws-trend-scout-pipeline.py",
     "slack-trend-scout",
     "notion-trend-scout",
 ]
@@ -48,7 +48,7 @@ NOTIFY_FILE_MAP: dict[str, str] = {
     "tech-trend-scout": "scout_histories/tech_trends/daily/{date}_tech_trends.md",
     "biz-car-trend-scout": "scout_histories/biz_car_trends/daily/{date}_biz_car_trends.md",
     "academic-trend-scout": "scout_histories/academic_trends/daily/{date}_academic_trends.md",
-    "gws-trend-scout": "scout_histories/gws_trends/daily/{date}_gws_daily.md",
+    "run-gws-trend-scout-pipeline": "scout_histories/gws_trends/daily/{date}_gws_daily.md",
     "slack-trend-scout": "scout_histories/slack_trends/daily/{date}_slack_daily.md",
     "github-org-trend-scout": "scout_histories/github_org_trends/daily/{date}_github-org_daily.md",
     "github-public-trend-scout": "scout_histories/github_public_trends/daily/{date}_github-public_daily.md",

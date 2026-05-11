@@ -1,0 +1,18 @@
+{
+    "name": "gws-trend-extractor",
+    "description": "GWSトレンド Extractor。種別ごとのドキュメントの関連度判定・カテゴリ分類・深掘り・中間ファイル出力を担当する。",
+    "prompt": "file://../../.shared-ai/prompts/gws-trend-extractor.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": ["shell"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": [
+                "Documents/works/scout_histories/gws_trends/**"
+            ]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "GWSトレンド Extractor を開始します。"
+}
