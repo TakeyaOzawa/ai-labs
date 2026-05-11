@@ -7,7 +7,7 @@ Google Scholar, Semantic Scholar, arXiv, SSRN, ResearchGate, DBLP, ACM DL, IEEE 
 J-STAGE, CiNii Research, IRDB, KAKEN, NDL Search
 
 ## ビジネス・経営学
-HBR, Academy of Management Journal, Strategic Management Journal, Journal of Marketing, Management Science
+HBR, Academy of Management Journal, Strategic Management Journal, Journal of Marketing, Management Science, BCG Insights
 
 ## 行動心理学・経済心理学
 J. Behavioral and Experimental Economics, J. Economic Psychology, Psychological Science, Cognition

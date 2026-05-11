@@ -190,6 +190,31 @@ FEEDS = {
             "url": "https://www.infoq.com/feed",
             "type": "rss",
         },
+        {
+            "name": "Krebs on Security",
+            "url": "https://krebsonsecurity.com/feed",
+            "type": "rss",
+        },
+        {
+            "name": "It's FOSS",
+            "url": "https://itsfoss.com/feed",
+            "type": "atom",
+        },
+        {
+            "name": "The Next Web",
+            "url": "https://thenextweb.com/feed",
+            "type": "rss",
+        },
+        {
+            "name": "Zed Blog",
+            "url": "https://zed.dev/blog.rss",
+            "type": "rss",
+        },
+        {
+            "name": "Help Net Security",
+            "url": "https://www.helpnetsecurity.com/feed",
+            "type": "rss",
+        },
     ],
     "biz_car": [
         {
@@ -235,6 +260,11 @@ FEEDS = {
         {
             "name": "Automotive World",
             "url": "https://www.automotiveworld.com/feed",
+            "type": "rss",
+        },
+        {
+            "name": "TeslaNorth",
+            "url": "https://teslanorth.com/feed",
             "type": "rss",
         },
     ],
