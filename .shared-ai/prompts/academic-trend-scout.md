@@ -25,7 +25,7 @@ Tier 3: ワーキングペーパー、研究者ブログ
 `.tmp_{YYYY-MM-DD}_feeds.md` に格納済み。Phase 1ではこれらと重複しないソースに集中すること。
 事前取得済み: arXiv (cs.AI, cs.LG, cs.CV, cs.SE, cs.RO, econ.GN), Hugging Face Blog, NBER Working Papers, J-STAGE
 
-RSSでカバーできないサイト（検索で補完）: Google Scholar, Semantic Scholar, SSRN, ACM DL, IEEE Xplore, PubMed, Papers With Code, ResearchGate, CiNii Research
+RSSでカバーできないサイト（検索で補完）: Google Scholar, Semantic Scholar, SSRN, ACM DL, IEEE Xplore, PubMed, Papers With Code, ResearchGate, CiNii Research, Stanford HAI, Frontiers
 
 ## 収集手順
 

@@ -19,7 +19,7 @@ AER, QJE, Econometrica, NBER Working Papers
 ACM Computing Surveys, IEEE TSE, ICSE, WWW, CHI
 
 ## 機械学習・AI
-NeurIPS, ICML, ICLR, AAAI, CVPR/ICCV/ECCV, ACL/EMNLP, JMLR, Nature Machine Intelligence, Papers With Code, Hugging Face Papers
+NeurIPS, ICML, ICLR, AAAI, CVPR/ICCV/ECCV, ACL/EMNLP, JMLR, Nature Machine Intelligence, Papers With Code, Hugging Face Papers, Stanford HAI, Frontiers
 
 ## IoT・カーモビリティ・ドローン
 IEEE IoT Journal, IEEE Trans. ITS, IEEE Trans. Vehicular Technology, ICRA, IROS, SenSys

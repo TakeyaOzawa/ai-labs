@@ -18,7 +18,7 @@ python3.12 ~/scripts/get-jst-date.py --yesterday
 ## 事前取得済み情報（検索不要）
 
 `.tmp_{YYYY-MM-DD}_feeds.md` に格納済み。Phase 1ではこれらと重複しないソースに集中すること。
-事前取得済み: Qiita, Zenn, Hacker News, Laravel News, AWS Blog, GitHub Blog, Node.js Blog, TypeScript Blog, .NET Blog, Publickey, The Hacker News, Lobsters, DEV Community, Vercel Blog, Google Developers Blog, SecurityWeek, Gihyo.jp
+事前取得済み: Qiita, Zenn, Hacker News, Laravel News, AWS Blog, GitHub Blog, Node.js Blog, TypeScript Blog, .NET Blog, Publickey, The Hacker News, Lobsters, DEV Community, Vercel Blog, Google Developers Blog, SecurityWeek, Gihyo.jp, Ars Technica, The Register, Simon Willison's Weblog, OpenAI Blog, Docker Blog, Kubernetes Blog, Hackaday, InfoQ
 
 RSSでカバーできないサイト（検索で補完）: Medium, Hashnode, HackerNoon, Stack Overflow Blog, DZone, Reddit (r/programming等), はてなブックマーク テクノロジー, The Verge, 各OSS公式リリースノート
 

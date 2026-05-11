@@ -150,6 +150,46 @@ FEEDS = {
             "url": "https://gihyo.jp/feed/rss2",
             "type": "rss",
         },
+        {
+            "name": "Ars Technica",
+            "url": "https://arstechnica.com/feed",
+            "type": "rss",
+        },
+        {
+            "name": "The Register",
+            "url": "https://www.theregister.com/feed",
+            "type": "rss",
+        },
+        {
+            "name": "Simon Willison's Weblog",
+            "url": "https://simonwillison.net/atom/everything/",
+            "type": "atom",
+        },
+        {
+            "name": "OpenAI Blog",
+            "url": "https://openai.com/blog/rss.xml",
+            "type": "rss",
+        },
+        {
+            "name": "Docker Blog",
+            "url": "https://www.docker.com/feed",
+            "type": "rss",
+        },
+        {
+            "name": "Kubernetes Blog",
+            "url": "https://kubernetes.io/feed.xml",
+            "type": "rss",
+        },
+        {
+            "name": "Hackaday",
+            "url": "https://hackaday.com/feed",
+            "type": "rss",
+        },
+        {
+            "name": "InfoQ",
+            "url": "https://www.infoq.com/feed",
+            "type": "rss",
+        },
     ],
     "biz_car": [
         {
@@ -185,6 +225,16 @@ FEEDS = {
         {
             "name": "東洋経済オンライン",
             "url": "https://toyokeizai.net/list/feed/rss",
+            "type": "rss",
+        },
+        {
+            "name": "Electrek",
+            "url": "https://electrek.co/feed",
+            "type": "rss",
+        },
+        {
+            "name": "Automotive World",
+            "url": "https://www.automotiveworld.com/feed",
             "type": "rss",
         },
     ],

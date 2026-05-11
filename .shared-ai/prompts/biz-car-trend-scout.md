@@ -18,7 +18,7 @@ python3.12 ~/scripts/get-jst-date.py --yesterday
 ## 事前取得済み情報（検索不要）
 
 `.tmp_{YYYY-MM-DD}_feeds.md` に格納済み。Phase 1ではこれらと重複しないソースに集中すること。
-事前取得済み: Response, Car Watch, くるまのニュース, TechCrunch, BRIDGE, ITmedia ビジネス, 東洋経済オンライン
+事前取得済み: Response, Car Watch, くるまのニュース, TechCrunch, BRIDGE, ITmedia ビジネス, 東洋経済オンライン, Electrek, Automotive World
 
 RSSでカバーできないサイト（検索で補完）: 日刊自動車新聞, MOBY, ベストカーWeb, カーセンサー, 日経クロステック, 業界団体(JALA/リース事業協会), 省庁(国交省/経産省), Automotive News, Bloomberg, Forbes
 
