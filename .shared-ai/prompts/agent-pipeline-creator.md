@@ -47,16 +47,20 @@
 #### 3.1 run-{name}-pipeline.py
 
 `~/.shared-ai/references/agent-pipeline-run-script-guide.md` のルールに準拠して作成する。
-既存パターン（`run-daily-pipeline.py`）を参考にする。
+`scripts/_pipeline_common.py` の `PipelineConfig` + `run_pipeline()` を使用する。
 
-含めるべき要素:
-- ログローテーション
-- caffeinate（スリープ防止）
-- 環境変数ロード
-- ジョブファイルベース進捗管理
-- 各エージェント順次実行（CLIヘッドレス）
-- Slack通知（要否に応じて）
-- 完了サマリー
+新規パイプラインファイルに定義すべき要素:
+- `AGENTS` リスト
+- `NOTIFY_FILE_MAP`（Slack通知対象マッピング）
+- `_default_base_date()` — 基準日デフォルト計算
+- `_rss_fetch_hook()` — RSS事前取得（不要ならNone）
+- `_build_prompt()` — エージェント実行プロンプト構築
+- `_resolve_notify_path()` — 通知ファイルパス動的解決（不要ならNone）
+- `_pre_agent_hook()` — エージェントスキップ判定（不要ならNone）
+- `_post_agents_hook()` — 全エージェント実行後の追加ステップ（不要ならNone）
+- `_post_notify_hook()` — 通知後の追加ステップ（不要ならNone）
+
+共通処理（ログローテーション、caffeinate、環境変数ロード、ジョブ管理、エージェント実行ループ、Slack通知、完了サマリー）は全て `run_pipeline()` が担当する。
 
 #### 3.2 ジョブ定義
 

@@ -2,6 +2,102 @@
 
 `scripts/run-*-pipeline.py` の実装・編集時に遵守すべきルールと参照情報。
 
+## アーキテクチャ
+
+### ファイル構成
+
+```
+scripts/
+├── _pipeline_common.py         # 共通ユーティリティ + PipelineConfig + run_pipeline()
+├── run-daily-pipeline.py       # daily固有の設定 + フック関数
+└── run-weekly-pipeline.py      # weekly固有の設定 + フック関数
+```
+
+### 設計方針: 設定dict + 共通runner関数
+
+各パイプラインファイルが `PipelineConfig` を定義し、共通の `run_pipeline()` に渡すフラットな構成。
+クラス継承は使わない（スクリプト規模に対して過剰、デバッグしやすさを優先）。
+
+### _pipeline_common.py が提供するもの
+
+| カテゴリ | 内容 |
+|---------|------|
+| 定数 | `JST`, `HOME`, `SCRIPTS_DIR`, `PLATFORM_CMD`, `MAX_LOG_LINES`, `MAX_AGENT_LOG_LINES` |
+| ユーティリティ | `now_jst()`, `rotate_log()`, `load_env()`, `run_kiro_cli()`, `log_error()` |
+| ヘルパー | `start_caffeinate()`, `stop_caffeinate()`, `get_child_job_id()`, `update_job()` |
+| 設定クラス | `PipelineConfig` dataclass |
+| runner | `run_pipeline(config)` — パイプライン共通実行フロー |
+
+### PipelineConfig フィールド
+
+```python
+@dataclass
+class PipelineConfig:
+    name: str                          # "daily" | "weekly"
+    log_dir: Path                      # ログ出力ディレクトリ
+    agents: list[str]                  # エージェントリスト
+    notify_file_map: dict[str, str]    # エージェント名 → 通知ファイルテンプレート
+    create_jobs_script: str            # ジョブファイル生成スクリプト名
+    default_base_date: Callable[[], str]  # 基準日デフォルト計算
+
+    # 以下はオプション（デフォルト: None or デフォルト関数）
+    rss_fetch_hook: Callable[[str, Path], None] | None          # RSS取得ステップ全体
+    build_prompt: Callable[[str, str], str]                      # (agent, base_date) -> prompt
+    resolve_notify_path: Callable[[str, str], Path | None] | None  # 通知ファイルパス動的解決
+    pre_agent_hook: Callable[[str, str], str | None] | None     # スキップ判定
+    post_agents_hook: Callable[[str], None] | None              # 全エージェント実行後
+    post_notify_hook: Callable[[str], None] | None              # 通知後の追加ステップ
+```
+
+### run_pipeline() の実行フロー
+
+1. オプション解析（`--no-job-file`, 基準日）
+2. 環境準備（caffeinate, load_env, SLACK_BOT_TOKEN設定）
+3. ログローテーション
+4. Step 0: ジョブファイル生成
+5. Step 1: `rss_fetch_hook` によるRSSフィード事前取得
+6. Step 2: エージェント実行ループ（`pre_agent_hook` → `build_prompt` → `run_kiro_cli`）
+7. Step 2.5: `post_agents_hook`
+8. Step 3: 親タスク完了処理
+9. Step 4: Slack通知（`resolve_notify_path` → `slack-notifier`）
+10. Step 5: `post_notify_hook`
+11. Step 6: 完了サマリー + caffeinate解除
+
+### 新規パイプライン作成テンプレート
+
+```python
+#!/usr/bin/env python3.12
+from pathlib import Path
+
+from _pipeline_common import HOME, JST, PipelineConfig, run_pipeline
+
+LOG_DIR = HOME / "logs" / "jobs" / "scout_{name}"
+AGENTS = [...]
+NOTIFY_FILE_MAP = {...}
+
+def _default_base_date() -> str: ...
+def _rss_fetch_hook(base_date: str, scripts_dir: Path) -> None: ...
+def _build_prompt(agent: str, base_date: str) -> str: ...
+
+def main() -> None:
+    config = PipelineConfig(
+        name="{name}",
+        log_dir=LOG_DIR,
+        agents=AGENTS,
+        notify_file_map=NOTIFY_FILE_MAP,
+        create_jobs_script="create-{name}-jobs.py",
+        default_base_date=_default_base_date,
+        rss_fetch_hook=_rss_fetch_hook,
+        build_prompt=_build_prompt,
+    )
+    run_pipeline(config)
+
+from _version_check import check_python_version
+if __name__ == "__main__":
+    check_python_version()
+    main()
+```
+
 ## 実行コマンド（kiro-cli）
 
 ```bash

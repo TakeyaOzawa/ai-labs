@@ -40,11 +40,11 @@ readFile: ${HOME}/Documents/works/slack_users/2026-05-01/active/mdx.md
 | `slack-users/{DATE}/active/ms.md` | MS（メディア＆ソリューション） | 41 | Appliv、ギルドロケット、TOPICS等 |
 | `slack-users/{DATE}/active/hr.md` | HR（人事本部） | 23 | 採用、労務、HRBP等 |
 | `slack-users/{DATE}/active/cp.md` | CP（コーポレート本部） | 21 | 経営管理、法務、ICT等 |
-| `slack-users/{DATE}/active/nyle-unset.md` | ナイル社員（title未設定） | 52 | title空のナイル社員 |
+| `slack-users/{DATE}/active/nyle-unset.md` | ナイル社員（title未設定） | 53 | title空のナイル社員 |
 | `slack-users/{DATE}/active/other.md` | その他 | 11 | 分類外のtitle設定あり |
-| `slack-users/{DATE}/active/guests.md` | 外部ゲスト | 445 | 外部パートナー・ゲスト |
+| `slack-users/{DATE}/active/guests.md` | 外部ゲスト | 452 | 外部パートナー・ゲスト |
 
-※ `{DATE}` は最新の日付ディレクトリ名（例: `2026-05-01`）。特定方法は後述の「日付ディレクトリのルール」を参照。
+※ `{DATE}` は最新の日付ディレクトリ名（例: `2026-05-11`）。特定方法は後述の「日付ディレクトリのルール」を参照。
 
 ## 非アクティブユーザー（退職・無効化済み: deleted=true）
 

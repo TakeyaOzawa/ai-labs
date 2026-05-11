@@ -61,6 +61,15 @@ WEEKLY_PIPELINE_MODE_AGENTS = {
 }
 ```
 
+エージェント固有のプロンプト構築が必要な場合は `_build_prompt()` 関数内に分岐を追加:
+
+```python
+def _build_prompt(agent: str, base_date: str) -> str:
+    if agent == "{new-agent-name}":
+        return f"固有のプロンプト。基準日は {base_date} です。..."
+    # ... 既存の分岐
+```
+
 #### 3. Slack通知対象の場合
 
 `NOTIFY_FILE_MAP` にマッピングを追加:
@@ -75,7 +84,7 @@ NOTIFY_FILE_MAP = {
 #### 4. RSS事前取得が必要な場合
 
 - `scripts/fetch-rss-feeds.py` の `FEEDS` にカテゴリ追加
-- `run-{frequency}-pipeline.py` のStep 1にカテゴリ追加
+- `run-{frequency}-pipeline.py` の `_rss_fetch_hook()` 関数内にカテゴリ追加
 
 #### 実行スクリプトの実装ルール
 
