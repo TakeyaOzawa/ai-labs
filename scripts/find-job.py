@@ -48,6 +48,58 @@ def resolve_pipeline_dir(pipeline: str) -> Path:
     return BASE_DIR / dir_name
 
 
+# ─── 再帰検索・ツリー表示 ────────────────────────────────────────
+
+STATUS_ICONS: dict[str, str] = {
+    "completed": "✅",
+    "running": "🔄",
+    "failed": "❌",
+    "starting": "⏳",
+    "pending": "⏸️",
+}
+
+
+def find_job_recursive(jobs: list[dict], job_id: str) -> dict | None:
+    """ジョブツリーを再帰的に探索し、指定IDのジョブを返す。"""
+    for job in jobs:
+        if job.get("job_id") == job_id:
+            return job
+        found = find_job_recursive(job.get("child_jobs", []), job_id)
+        if found is not None:
+            return found
+    return None
+
+
+def find_jobs_recursive(jobs: list[dict], job_name: str) -> list[dict]:
+    """ジョブツリーを再帰的に探索し、指定名のジョブを全て返す。"""
+    results: list[dict] = []
+    for job in jobs:
+        if job.get("job_name") == job_name:
+            results.append(job)
+        results.extend(find_jobs_recursive(job.get("child_jobs", []), job_name))
+    return results
+
+
+def print_job_tree(data: dict, indent: int = 0) -> None:
+    """ジョブツリーをインデント付きで標準出力に表示する。"""
+    prefix = "  " * indent
+    status = data.get("status", "unknown")
+    icon = STATUS_ICONS.get(status, "❓")
+    name = data.get("job_name", "unknown")
+    job_id = data.get("job_id", "")[:12]
+
+    detail = ""
+    if data.get("error"):
+        detail = f" error={data['error']}"
+    elif data.get("status_detail"):
+        detail = f" ({data['status_detail']})"
+
+    print(f"{prefix}{icon} {name} [{status}] id={job_id}...{detail}")
+
+    for child in data.get("child_jobs", []):
+        print_job_tree(child, indent + 1)
+
+
 # ─── メイン ──────────────────────────────────────────────────────
 
 def main() -> None:
@@ -62,6 +114,8 @@ def main() -> None:
                         help="検索スコープ（デフォルト: child）")
     parser.add_argument("--limit", type=int, default=1,
                         help="返す件数の上限（デフォルト: 1）")
+    parser.add_argument("--tree", action="store_true",
+                        help="ジョブツリーをインデント付きで表示")
     args = parser.parse_args()
 
     job_dir = resolve_pipeline_dir(args.pipeline)
@@ -82,6 +136,11 @@ def main() -> None:
     with open(job_file, encoding="utf-8") as f:
         data = json.load(f)
 
+    # --tree: ツリー表示モード
+    if args.tree:
+        print_job_tree(data)
+        return
+
     # 親ジョブ情報
     parent = {
         k: data.get(k)
@@ -99,17 +158,20 @@ def main() -> None:
         }, ensure_ascii=False))
         return
 
-    # 子ジョブのフィルタリング
-    jobs = data.get("child_jobs", [])
+    # --job-id / --job-name: ツリー全体を再帰検索
+    if args.job_id:
+        found = find_job_recursive(data.get("child_jobs", []), job_id=args.job_id)
+        jobs = [found] if found else []
+    elif args.job_name:
+        jobs = find_jobs_recursive(
+            data.get("child_jobs", []), job_name=args.job_name,
+        )
+    else:
+        # フラット検索（第一階層のみ、後方互換）
+        jobs = data.get("child_jobs", [])
 
     if args.status:
         jobs = [j for j in jobs if j.get("status") == args.status]
-
-    if args.job_id:
-        jobs = [j for j in jobs if j.get("job_id") == args.job_id]
-
-    if args.job_name:
-        jobs = [j for j in jobs if j.get("job_name") == args.job_name]
 
     jobs = jobs[:args.limit]
     found = len(jobs) > 0

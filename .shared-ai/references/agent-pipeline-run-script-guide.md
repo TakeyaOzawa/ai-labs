@@ -8,9 +8,10 @@
 
 ```
 scripts/
-├── _pipeline_common.py         # 共通ユーティリティ + PipelineConfig + run_pipeline()
-├── run-daily-pipeline.py       # daily固有の設定 + フック関数
-└── run-weekly-pipeline.py      # weekly固有の設定 + フック関数
+├── _pipeline_common.py              # 共通ユーティリティ + PipelineConfig + run_pipeline()
+├── run-daily-pipeline.py            # daily固有の設定 + フック関数
+├── run-weekly-pipeline.py           # weekly固有の設定 + フック関数
+└── run-gws-trend-scout-pipeline.py  # サブパイプライン（dailyから呼び出し）
 ```
 
 ### 設計方針: 設定dict + 共通runner関数
@@ -23,7 +24,7 @@ scripts/
 | カテゴリ | 内容 |
 |---------|------|
 | 定数 | `JST`, `HOME`, `SCRIPTS_DIR`, `PLATFORM_CMD`, `MAX_LOG_LINES`, `MAX_AGENT_LOG_LINES` |
-| ユーティリティ | `now_jst()`, `rotate_log()`, `load_env()`, `run_kiro_cli()`, `log_error()` |
+| ユーティリティ | `now_jst()`, `rotate_log()`, `load_env()`, `run_kiro_cli()`, `run_sub_pipeline()`, `log_error()` |
 | ヘルパー | `start_caffeinate()`, `stop_caffeinate()`, `get_child_job_id()`, `update_job()` |
 | 設定クラス | `PipelineConfig` dataclass |
 | runner | `run_pipeline(config)` — パイプライン共通実行フロー |
@@ -97,6 +98,67 @@ if __name__ == "__main__":
     check_python_version()
     main()
 ```
+
+## サブパイプライン連携
+
+### AGENTSリストでのサブパイプライン指定
+
+`AGENTS` リストに `.py` で終わるエントリを含めると、`run_pipeline()` はそれをサブパイプラインスクリプトとして `run_sub_pipeline()` で実行する。
+
+```python
+AGENTS = [
+    "tech-trend-scout",              # kiro-cliエージェント
+    "run-gws-trend-scout-pipeline.py",  # サブパイプライン
+]
+```
+
+### ジョブファイル連携（三階層以上）
+
+`run_pipeline()` がサブパイプラインを実行する際、以下の環境変数を自動設定する:
+
+| 環境変数 | 内容 |
+|---|---|
+| `PIPELINE_JOB_FILE` | ジョブファイルの絶対パス |
+| `PIPELINE_PARENT_JOB_ID` | サブパイプライン自身のchild job ID |
+
+サブパイプライン側はこれらを読み込み、内部ステップ（grandchild）の進捗を `update-job.py` で更新する。
+
+### サブパイプライン実装パターン
+
+```python
+import os
+from pathlib import Path
+
+def load_job_context():
+    job_file_str = os.environ.get("PIPELINE_JOB_FILE", "")
+    parent_job_id = os.environ.get("PIPELINE_PARENT_JOB_ID", "")
+    job_file = Path(job_file_str) if job_file_str and Path(job_file_str).exists() else None
+    return job_file, parent_job_id
+
+# 単独実行時（環境変数なし）はジョブ管理をスキップ
+job_file, parent_job_id = load_job_context()
+if job_file:
+    # grandchildジョブを更新
+    subprocess.run(["python3.12", "scripts/update-job.py",
+                    "--job-file", str(job_file),
+                    "--job-id", grandchild_id,
+                    "--set", '{"status": "running"}'])
+```
+
+### create-*-jobs.py でのgrandchild定義
+
+サブパイプラインのジョブ定義に `child_jobs` を含めることで、grandchildジョブが自動生成される:
+
+```python
+CHILD_JOBS = [
+    {"job_name": "run-gws-trend-scout-pipeline", "timeout": 900, "child_jobs": [
+        {"job_name": "gws-extractor-docs", "timeout": 300},
+        {"job_name": "gws-extractor-slides", "timeout": 300},
+    ]},
+]
+```
+
+詳細は `job-management-guide.md` を参照。
 
 ## 制約と注意事項
 

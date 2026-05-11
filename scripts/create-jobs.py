@@ -64,6 +64,47 @@ def load_jobs(args: argparse.Namespace) -> list[dict]:
         sys.exit(1)
 
 
+# ─── ジョブツリー構築 ─────────────────────────────────────────────
+
+def build_child_jobs(job_defs: list[dict], base_date: str, now_str: str) -> list[dict]:
+    """ジョブ定義リストから子ジョブツリーを再帰的に構築する。"""
+    children = []
+    for job_def in job_defs:
+        job_name = job_def.get("job_name")
+        if not job_name:
+            print("❌ job_name が未指定のジョブ定義があります", file=sys.stderr)
+            sys.exit(1)
+
+        depends_on = job_def.get("depends_on")
+        status = "pending" if depends_on else "starting"
+
+        # 再帰: child_jobs が定義されていれば子ジョブを生成
+        nested_defs = job_def.get("child_jobs", [])
+        nested_children = build_child_jobs(nested_defs, base_date, now_str) if nested_defs else []
+
+        children.append({
+            "job_id": generate_sortable_id(),
+            "job_name": job_name,
+            "args": {"base_date": base_date},
+            "options": {
+                "async": True,
+                "timeout_seconds": job_def.get("timeout", 300),
+                "max_retries": job_def.get("max_retries", 1),
+                "retry_delay_seconds": job_def.get("retry_delay", 30),
+            },
+            "status": status,
+            "status_detail": None,
+            "depends_on": depends_on,
+            "child_jobs": nested_children,
+            "created_at": now_str,
+            "updated_at": now_str,
+            "started_at": None,
+            "completed_at": None,
+            "error": None,
+        })
+    return children
+
+
 # ─── メイン ──────────────────────────────────────────────────────
 
 def main() -> None:
@@ -98,37 +139,8 @@ def main() -> None:
     output_dir = BASE_DIR / args.pipeline
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 子ジョブ生成
-    children = []
-    for job_def in job_defs:
-        job_name = job_def.get("job_name")
-        if not job_name:
-            print("❌ job_name が未指定のジョブ定義があります", file=sys.stderr)
-            sys.exit(1)
-
-        depends_on = job_def.get("depends_on")
-        status = "pending" if depends_on else "starting"
-
-        children.append({
-            "job_id": generate_sortable_id(),
-            "job_name": job_name,
-            "args": {"base_date": base_date},
-            "options": {
-                "async": True,
-                "timeout_seconds": job_def.get("timeout", 300),
-                "max_retries": job_def.get("max_retries", 1),
-                "retry_delay_seconds": job_def.get("retry_delay", 30),
-            },
-            "status": status,
-            "status_detail": None,
-            "depends_on": depends_on,
-            "child_jobs": [],
-            "created_at": now_str,
-            "updated_at": now_str,
-            "started_at": None,
-            "completed_at": None,
-            "error": None,
-        })
+    # 子ジョブ生成（再帰）
+    children = build_child_jobs(job_defs, base_date, now_str)
 
     # 親ジョブ
     job_data = {

@@ -10,6 +10,23 @@
 | find-job.py | `python3.12 ~/scripts/find-job.py` | ジョブ検索・取得 |
 | update-job.py | `python3.12 ~/scripts/update-job.py` | ジョブステータス更新 |
 
+## ジョブツリー構造
+
+ジョブは任意の深さでネスト可能。典型的な三階層構造:
+
+```
+parent (scout_daily)
+├── child (tech-trend-scout)
+├── child (run-gws-trend-scout-pipeline)
+│   ├── grandchild (gws-extractor-docs)
+│   ├── grandchild (gws-extractor-slides)
+│   ├── grandchild (gws-extractor-sheets)
+│   ├── grandchild (gws-extractor-forms)
+│   ├── grandchild (gws-extractor-pdf)
+│   └── grandchild (markdown-reporter)
+└── child (slack-trend-scout)
+```
+
 ## create-jobs.py
 
 ### オプション
@@ -29,20 +46,26 @@
 ```json
 [
   {"job_name": "agent-a", "timeout": 300, "retry_delay": 30, "depends_on": null},
-  {"job_name": "agent-b", "timeout": 600, "retry_delay": 60, "depends_on": "agent-a"}
+  {
+    "job_name": "sub-pipeline",
+    "timeout": 900,
+    "retry_delay": 60,
+    "child_jobs": [
+      {"job_name": "step-1", "timeout": 300, "retry_delay": 30},
+      {"job_name": "step-2", "timeout": 300, "retry_delay": 30}
+    ]
+  }
 ]
 ```
+
+`child_jobs` フィールドは再帰的に処理される。未指定の場合は空配列（後方互換）。
 
 ### 使用例
 
 ```bash
-# ファイル指定（推奨）
-python3.12 ~/scripts/create-jobs.py --pipeline my_pipeline --base-date 2026-05-10 \
-  --jobs-file ~/jobs-def.json
-
-# インライン指定
-python3.12 ~/scripts/create-jobs.py --pipeline my_pipeline --base-date 2026-05-10 \
-  --jobs '[{"job_name":"agent-a","timeout":300,"retry_delay":30,"depends_on":null}]'
+# ネストされたジョブ定義
+python3.12 ~/scripts/create-jobs.py --pipeline scout_daily --base-date 2026-05-10 \
+  --jobs '[{"job_name":"agent-a","timeout":300},{"job_name":"sub-pipe","timeout":900,"child_jobs":[{"job_name":"step-1","timeout":300}]}]'
 ```
 
 ### 出力
@@ -65,10 +88,11 @@ python3.12 ~/scripts/create-jobs.py --pipeline my_pipeline --base-date 2026-05-1
 | `--pipeline` | ✅ | - | パイプライン名（`daily`, `weekly`, または任意のパイプライン名） |
 | `--date` | - | 最新ファイル | 基準日（YYYY-MM-DD） |
 | `--status` | - | - | フィルタするステータス |
-| `--job-id` | - | - | 特定のjob_idで検索 |
-| `--job-name` | - | - | 特定のjob_nameで検索 |
+| `--job-id` | - | - | 特定のjob_idで検索（ツリー全体を再帰検索） |
+| `--job-name` | - | - | 特定のjob_nameで検索（ツリー全体を再帰検索） |
 | `--scope` | - | `child` | `parent`: 親ジョブのみ / `child`: 子ジョブのみ |
 | `--limit` | - | `1` | 返す件数の上限 |
+| `--tree` | - | - | ジョブツリーをインデント付きで表示 |
 
 ### パイプライン名の解決
 
@@ -88,25 +112,40 @@ python3.12 ~/scripts/create-jobs.py --pipeline my_pipeline --base-date 2026-05-1
 {
   "found": true,
   "job_file": "/path/to/file.json",
-  "jobs": [ { "job_id": "...", "job_name": "...", "status": "...", ... } ],
+  "jobs": [ { "job_id": "...", "job_name": "...", "status": "...", "child_jobs": [...] } ],
   "parent": { "job_id": "...", "job_name": "...", "status": "...", ... }
 }
+```
+
+### --tree 出力例
+
+```
+✅ scout_daily [completed] id=019746a1b2c3...
+  ✅ tech-trend-scout [completed] id=019746a1b2c4...
+  ✅ run-gws-trend-scout-pipeline [completed] id=019746a1b2c5...
+    ✅ gws-extractor-docs [completed] id=019746a1b2c6...
+    ✅ gws-extractor-slides [completed] id=019746a1b2c7...
+    ❌ gws-extractor-sheets [failed] id=019746a1b2c8... error=kiro-cli exit non-zero
+    ✅ gws-extractor-forms [completed] id=019746a1b2c9...
+    ✅ gws-extractor-pdf [completed] id=019746a1b2ca...
+    ✅ markdown-reporter [completed] id=019746a1b2cb...
+  🔄 slack-trend-scout [running] id=019746a1b2cc...
 ```
 
 ### 使用例
 
 ```bash
-# startingの子ジョブを1件取得
-python3.12 ~/scripts/find-job.py --pipeline daily --status starting --limit 1
+# ツリー表示
+python3.12 ~/scripts/find-job.py --pipeline daily --tree
+
+# grandchildジョブを名前で検索
+python3.12 ~/scripts/find-job.py --pipeline daily --job-name gws-extractor-docs
+
+# 全failedジョブを取得（第一階層のみ）
+python3.12 ~/scripts/find-job.py --pipeline daily --status failed --limit 10
 
 # 親ジョブの状態確認
 python3.12 ~/scripts/find-job.py --pipeline daily --scope parent
-
-# 特定ジョブの状態確認
-python3.12 ~/scripts/find-job.py --pipeline weekly --job-name slack-digest-scout
-
-# 全failedジョブを取得
-python3.12 ~/scripts/find-job.py --pipeline daily --status failed --limit 10
 ```
 
 ## update-job.py
@@ -116,7 +155,7 @@ python3.12 ~/scripts/find-job.py --pipeline daily --status failed --limit 10
 | オプション | 必須 | デフォルト | 説明 |
 |---|---|---|---|
 | `--job-file` | ✅ | - | 対象ジョブファイルのパス |
-| `--job-id` | scope=child時 | - | 更新対象の子ジョブID |
+| `--job-id` | scope=child時 | - | 更新対象のジョブID（ツリー全体を再帰検索） |
 | `--scope` | - | `child` | `parent`: 親ジョブを更新 / `child`: 子ジョブを更新 |
 | `--set` | ✅ | - | 更新するフィールドのJSON |
 
@@ -130,6 +169,17 @@ python3.12 ~/scripts/find-job.py --pipeline daily --status failed --limit 10
 | `updated_at` | string | ISO 8601（省略時は自動付与） |
 | `completed_at` | string | ISO 8601 タイムスタンプ |
 | `error` | string | エラーメッセージ |
+
+### 深層ノード更新
+
+`--job-id` はジョブツリー全体を再帰検索する。grandchild以下のノードも直接IDを指定して更新可能。
+
+```bash
+# grandchildジョブを直接更新
+python3.12 ~/scripts/update-job.py --job-file /path/to/file.json \
+  --job-id 019746a1b2c6-abcd1234 \
+  --set '{"status": "running", "started_at": "2026-05-10T10:00:00+09:00"}'
+```
 
 ### 出力形式
 
@@ -164,15 +214,32 @@ python3.12 ~/scripts/update-job.py --job-file /path/to/file.json \
   --set '{"status": "starting", "error": null, "started_at": null, "completed_at": null}'
 ```
 
+## サブパイプライン連携
+
+### 仕組み
+
+親パイプライン（`_pipeline_common.py`）がサブパイプラインを実行する際、以下の環境変数を設定する:
+
+| 環境変数 | 内容 |
+|---|---|
+| `PIPELINE_JOB_FILE` | ジョブファイルの絶対パス |
+| `PIPELINE_PARENT_JOB_ID` | サブパイプライン自身のjob_id |
+
+サブパイプライン側はこれらを読み込み、内部ステップ実行時に `update-job.py` でgrandchildジョブを更新する。
+
+### 後方互換
+
+環境変数が未設定の場合（単独実行時）、ジョブ管理はスキップされ従来通り動作する。
+
 ## 手動リカバリ手順
 
 ### 失敗ジョブのリトライ
 
 ```bash
-# 1. 失敗ジョブを確認
-python3.12 ~/scripts/find-job.py --pipeline daily --status failed --limit 10
+# 1. 失敗ジョブを確認（ツリー表示で全体把握）
+python3.12 ~/scripts/find-job.py --pipeline daily --tree
 
-# 2. 対象ジョブをstartingに戻す
+# 2. 対象ジョブをstartingに戻す（grandchildも直接指定可能）
 JOB_FILE=$(python3.12 ~/scripts/find-job.py --pipeline daily --status failed --limit 1 | jq -r '.job_file')
 JOB_ID=$(python3.12 ~/scripts/find-job.py --pipeline daily --status failed --limit 1 | jq -r '.jobs[0].job_id')
 python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --job-id "$JOB_ID" \
@@ -183,12 +250,22 @@ python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --scope parent \
   --set '{"status": "running", "status_detail": "リトライ中"}'
 ```
 
+### grandchildジョブのリトライ
+
+```bash
+# grandchildジョブを名前で検索してリセット
+JOB_FILE=$(python3.12 ~/scripts/find-job.py --pipeline daily --scope parent | jq -r '.job_file')
+GC_ID=$(python3.12 ~/scripts/find-job.py --pipeline daily --job-name gws-extractor-sheets | jq -r '.jobs[0].job_id')
+python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --job-id "$GC_ID" \
+  --set '{"status": "starting", "error": null, "started_at": null, "completed_at": null}'
+```
+
 ### パイプライン全体のリセット
 
 ```bash
 # 全子ジョブをstartingに戻す（注意: 全ジョブが再実行される）
 JOB_FILE=$(python3.12 ~/scripts/find-job.py --pipeline daily --scope parent | jq -r '.job_file')
-for JOB_ID in $(jq -r '.child_jobs[].job_id' "$JOB_FILE"); do
+for JOB_ID in $(jq -r '.. | .job_id? // empty' "$JOB_FILE" | tail -n +2); do
   python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --job-id "$JOB_ID" \
     --set '{"status": "starting", "error": null, "started_at": null, "completed_at": null}'
 done
@@ -200,6 +277,9 @@ python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --scope parent \
 
 - **抽象レイヤー**: Watcherはスクリプトのインターフェース（引数と出力JSON）のみに依存する
 - **バックエンド非依存**: 内部実装をDB/APIに差し替えても、出力形式を維持すればWatcher変更不要
+- **再帰構造**: `child_jobs` は任意の深さでネスト可能。全検索・更新操作は再帰的に動作する
+- **環境変数連携**: サブパイプラインへのジョブ情報伝達は環境変数経由（CLIインターフェースを汚さない）
+- **後方互換**: ネスト未使用の既存ジョブファイルはそのまま動作する
 - **循環発火防止**: `executeBash` 経由のため postToolUse(write) が発火しない
 - **アトミック書き込み**: `mktemp` + `mv` パターンで中間状態を防止
 - **自動updated_at**: `--set` に `updated_at` を含めなければ現在時刻が自動付与される

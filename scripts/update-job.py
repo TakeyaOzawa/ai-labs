@@ -107,15 +107,8 @@ def update_parent(data: dict, updates: dict, job_file: Path) -> dict:
 
 
 def update_child(data: dict, updates: dict, job_id: str, job_file: Path) -> dict:
-    """子ジョブを更新する。"""
-    child_jobs = data.get("child_jobs", [])
-
-    # 対象ジョブを検索
-    target = None
-    for job in child_jobs:
-        if job.get("job_id") == job_id:
-            target = job
-            break
+    """子ジョブを再帰検索して更新する。"""
+    target = find_job_recursive(data.get("child_jobs", []), job_id)
 
     if target is None:
         return {"success": False, "error": f"Child job not found: {job_id}"}
@@ -137,6 +130,17 @@ def update_child(data: dict, updates: dict, job_id: str, job_file: Path) -> dict
         "after": after,
         "message": f"Job {job_id} updated: {before.get('status')} → {after.get('status')}",
     }
+
+
+def find_job_recursive(jobs: list[dict], job_id: str) -> dict | None:
+    """ジョブツリーを再帰的に探索し、指定IDのジョブを返す。"""
+    for job in jobs:
+        if job.get("job_id") == job_id:
+            return job
+        found = find_job_recursive(job.get("child_jobs", []), job_id)
+        if found is not None:
+            return found
+    return None
 
 
 from _version_check import check_python_version

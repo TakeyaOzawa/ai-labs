@@ -15,7 +15,10 @@
             ]
         },
         "write": {
-            "allowedPaths": ["Documents/works/research_materials/**"]
+            "allowedPaths": [
+                "Documents/works/research_materials/**",
+                "Documents/works/scout_histories/github_repo_analysis/**"
+            ]
         }
     },
     "resources": [],

@@ -8,7 +8,7 @@
   },
   "then": {
     "type": "askAgent",
-    "prompt": "github-repo-analyst エージェントとして動作してください。`.shared-ai/prompts/github-repo-analyst.md` をreadFileで読み込み、そこに記載されたワークフローに従って実行してください。ユーザーに「調査対象のリポジトリURLを指定してください（例: https://github.com/owner/repo）」と確認してください。"
+    "prompt": "ユーザーに「調査対象のリポジトリURLを指定してください（例: https://github.com/owner/repo）」と確認し、URLを受け取ったら以下のコマンドを実行してください:\n\npython3.12 ~/scripts/run-github-repo-analysis-pipeline.py {URL}\n\nオプション:\n- --skip-web: Web調査をスキップ\n- --skip-codebase: コードベース分析をスキップ\n- --skip-refs: 参照先リポジトリ調査をスキップ\n- --skip-review: 品質レビューをスキップ\n- --skip-notify: Slack通知をスキップ\n\nユーザーがオプションを指定した場合はそれも含めてコマンドを実行してください。"
   },
   "workspaceFolderName": "takeya_ozawa",
   "shortName": "github-repo-analysis"

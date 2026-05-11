@@ -1,55 +1,63 @@
-# github-repo-analyst-deep-dive: ローカルクローンによる技術的深掘り調査サブエージェントの追加
+# github-repo-analyst-consolidation: サブエージェント統合とdeepdive追加
 
 ## 変更種別
 
-feat
+refactor / feat
 
 ## 概要
 
-- `github-repo-analyst` に5番目のサブエージェント `github-repo-analyst-deepdive` を追加する
-- git cloneしてソースコードを直接読み、実装パターン・アーキテクチャ・デザインパターン・共通シーケンスを深掘り調査する
-- 最終レポートに「技術的深掘り（実装パターン分析）」セクションを追加する
+- `github-repo-analyst` のサブエージェントを5つ → 3つに統合
+- current + history + future → `github-repo-analyst-github.md`（GitHub API統合版）
+- web → 既存維持
+- deepdive → テスト戦略Stepを追加
 
 ## 問題・背景
 
-- 現在のサブエージェント（current/history/future/web）はGitHub APIとWeb検索に依存しており、ソースコードの中身を直接読んでいない
-- 実装パターン、デザインパターン、共通シーケンス、アーキテクチャの詳細はコードを読まないと把握できない
-- ユーザーから「プロジェクトで共通している、または特徴的なシーケンスや実装方法、アーキテクチャ、デザインパターン、実装パターンも深掘りして調査するように」との要望
+- 旧構成（current, history, future）はデータソースが同じ（GitHub API）で、相互参照できないため断片的な分析になっていた
+- コントリビューター情報とPR作成者を突き合わせる等、統合することで一貫した分析が可能に
+- サブエージェント呼び出しのオーバーヘッド削減（5回 → 3回）
+- 一時ファイル管理の簡素化（5ファイル → 3ファイル）
 
 ## 修正対象
 
-- `.shared-ai/prompts/github-repo-analyst.md`（親エージェント: サブエージェント追加、レポート構成追加）
-- `.shared-ai/prompts/github-repo-analyst-deepdive.md`（新規: 深掘り調査サブエージェント）
+- `.shared-ai/prompts/github-repo-analyst.md`（親エージェント: 全面書き換え）
+- `.shared-ai/prompts/github-repo-analyst-github.md`（新規: 統合版）
+- `.shared-ai/prompts/github-repo-analyst-deepdive.md`（更新: テスト戦略Step追加）
+- `.shared-ai/prompts/github-repo-analyst-current.md`（削除）
+- `.shared-ai/prompts/github-repo-analyst-history.md`（削除）
+- `.shared-ai/prompts/github-repo-analyst-future.md`（削除）
 
 ## タスク分解
 
-### Task 1: サブエージェントプロンプト作成
+### Task 1: 統合版サブエージェント作成
+
+- **対象ファイル:** `.shared-ai/prompts/github-repo-analyst-github.md`
+- **変更内容:** current + history + future の全Stepを統合。API呼び出し上限30回。セキュリティ（Dependabotアラート）追加。
+
+### Task 2: deepdiveにテスト戦略Step追加
 
 - **対象ファイル:** `.shared-ai/prompts/github-repo-analyst-deepdive.md`
-- **変更内容:** 新規作成。git cloneしてソースコードを直接読み、以下を調査するサブエージェント:
-  - 共通の実装パターン（イベントハンドラ登録、API呼び出し、エラーハンドリング等）
-  - デザインパターン（Factory, Observer, Strategy等）
-  - アーキテクチャパターン（レイヤー構成、依存関係の方向）
-  - 共通シーケンス（データフロー、状態遷移）
-  - コード品質指標（重複度、関数の長さ、複雑度の傾向）
-  - 特徴的な実装（独自のユーティリティ、ドメイン固有のパターン）
+- **変更内容:** Step 9にテスト戦略の詳細分析を追加。出力テンプレートにテスト戦略セクション追加。
 
-### Task 2: 親エージェントプロンプト更新
+### Task 3: 親エージェント更新
 
 - **対象ファイル:** `.shared-ai/prompts/github-repo-analyst.md`
-- **変更内容:**
-  - Phase 1に `1-5. github-repo-analyst-deepdive` を追加
-  - Phase 2のレポート統合で5つの一時ファイルを読み込むよう変更
-  - 最終レポート構成に「技術的深掘り（実装パターン分析）」セクションを追加
+- **変更内容:** 5サブエージェント → 3サブエージェント。レポート構成にテスト戦略・メンテナンス健全性セクション追加。
+
+### Task 4: 旧ファイル削除
+
+- **対象ファイル:** current.md, history.md, future.md
+- **変更内容:** 削除
 
 ## 影響範囲
 
-- 既存の4つのサブエージェントには影響なし
-- 最終レポートのセクション数が増える
-- git cloneを行うため、実行時間が増加する（クローン先は一時ディレクトリ）
+- 次回以降の `github-repo-analyst` 実行時に新構成が適用される
+- 既存の生成済みレポートには影響なし
+- webサブエージェントには変更なし
 
 ## テスト計画
 
-- [ ] 新しいサブエージェントプロンプトが正しいMarkdown構文であること
-- [ ] 親エージェントプロンプトの整合性（Phase番号、ファイル数等）
+- [x] 新しいサブエージェントプロンプトが正しいMarkdown構文であること
+- [x] 親エージェントプロンプトの整合性（サブエージェント数、ファイル名、レポート構成）
+- [x] 旧ファイルが削除されていること
 - [ ] 実際のリポジトリで実行して結果を確認（別途）

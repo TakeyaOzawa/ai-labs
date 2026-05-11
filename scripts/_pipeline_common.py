@@ -112,11 +112,18 @@ def run_kiro_cli(prompt: str, log_file: Path, agent_name: str = "") -> bool:
     return result.returncode == 0
 
 
-def run_sub_pipeline(script: Path, base_date: str, log_file: Path) -> bool:
+def run_sub_pipeline(script: Path, base_date: str, log_file: Path,
+                     job_file: Path | None = None,
+                     parent_job_id: str = "") -> bool:
     """サブパイプラインスクリプトを実行し、成功/失敗を返す。"""
     cmd = ["python3.12", str(script), base_date]
+    env = os.environ.copy()
+    if job_file:
+        env["PIPELINE_JOB_FILE"] = str(job_file)
+    if parent_job_id:
+        env["PIPELINE_PARENT_JOB_ID"] = parent_job_id
     with open(log_file, "a", encoding="utf-8") as f:
-        result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
+        result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, env=env)
     return result.returncode == 0
 
 
@@ -153,12 +160,20 @@ def stop_caffeinate(cafe_pid: str) -> None:
 
 
 def get_child_job_id(job_file: Path, job_name: str) -> str:
-    """ジョブファイルから指定ジョブ名のIDを取得する。"""
+    """ジョブファイルから指定ジョブ名のIDを再帰検索で取得する。"""
     with open(job_file, encoding="utf-8") as f:
         data = json.load(f)
-    for child in data.get("child_jobs", []):
-        if child.get("job_name") == job_name:
-            return child.get("job_id", "")
+    return _find_job_id_by_name(data.get("child_jobs", []), job_name)
+
+
+def _find_job_id_by_name(jobs: list[dict], job_name: str) -> str:
+    """ジョブツリーを再帰的に探索し、指定名のジョブIDを返す。"""
+    for job in jobs:
+        if job.get("job_name") == job_name:
+            return job.get("job_id", "")
+        found = _find_job_id_by_name(job.get("child_jobs", []), job_name)
+        if found:
+            return found
     return ""
 
 
@@ -264,11 +279,15 @@ def _run_hook(config: PipelineConfig, agent: str, base_date: str) -> _EntryResul
 
 
 def _run_entry(config: PipelineConfig, agent: str, base_date: str,
-               log_file: Path) -> _EntryResult:
+               log_file: Path, job_file: Path | None = None,
+               child_job_id: str = "") -> _EntryResult:
     """エージェントまたはパイプラインスクリプトを実行する。"""
     if is_pipeline_entry(agent):
         script_path = SCRIPTS_DIR / agent
-        ok = run_sub_pipeline(script_path, base_date, log_file)
+        ok = run_sub_pipeline(
+            script_path, base_date, log_file,
+            job_file=job_file, parent_job_id=child_job_id,
+        )
         if ok:
             return _EntryResult(success=True)
         return _EntryResult(success=False, reason="sub-pipeline exit non-zero")
@@ -375,7 +394,8 @@ def run_pipeline(config: PipelineConfig) -> None:
         if hook_result is not None:
             result = hook_result
         else:
-            result = _run_entry(config, agent, base_date, agent_log)
+            result = _run_entry(config, agent, base_date, agent_log,
+                                job_file=job_file, child_job_id=child_job_id)
 
         # 結果処理
         if result.success:

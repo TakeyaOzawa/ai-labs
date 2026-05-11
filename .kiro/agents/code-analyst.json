@@ -1,0 +1,28 @@
+{
+    "name": "code-analyst",
+    "description": "リポジトリをローカルにクローンし、ソースコードを直接読んで実装パターン・アーキテクチャ・デザインパターン・テスト戦略を分析するエージェント。",
+    "prompt": "file://../../.shared-ai/prompts/code-analyst.md",
+    "tools": ["read", "write", "shell"],
+    "allowedTools": ["shell"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/github_repo_analysis/**"]
+        },
+        "shell": {
+            "allowedCommands": [
+                "gh repo clone *",
+                "find *",
+                "wc *",
+                "grep *",
+                "head *",
+                "tail *",
+                "rm -rf /tmp/repo-analyst/*",
+                "mkdir -p /tmp/repo-analyst"
+            ]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "リポジトリのコードベースを分析します。"
+}
