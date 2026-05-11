@@ -202,6 +202,96 @@ def _create_job_file(config: PipelineConfig, base_date: str) -> Path | None:
 
 # ─── 共通runner関数 ──────────────────────────────────────────────
 
+@dataclass
+class _EntryResult:
+    """エージェント/パイプライン実行結果。"""
+
+    success: bool
+    reason: str = ""
+
+
+def _resolve_entry_name(agent: str) -> str:
+    """AGENTSリストのエントリから表示名を生成する。"""
+    return Path(agent).stem if is_pipeline_entry(agent) else agent
+
+
+def _mark_job_running(
+    job_file: Path | None, use_job_file: bool, entry_name: str,
+) -> str:
+    """ジョブファイルを running に更新し、child_job_id を返す。"""
+    if not use_job_file or not job_file:
+        return ""
+    child_job_id = get_child_job_id(job_file, entry_name)
+    if child_job_id:
+        update_job(job_file, job_id=child_job_id,
+                   updates={"status": "running", "started_at": now_jst()})
+        update_job(job_file, scope="parent",
+                   updates={"status_detail": f"{entry_name} 実行中"})
+    return child_job_id
+
+
+def _mark_job_done(
+    job_file: Path | None, use_job_file: bool,
+    child_job_id: str, success: bool, detail: str,
+) -> None:
+    """ジョブファイルを completed/failed に更新する。"""
+    if not use_job_file or not job_file or not child_job_id:
+        return
+    if success:
+        update_job(job_file, job_id=child_job_id, updates={
+            "status": "completed", "completed_at": now_jst(),
+            "status_detail": detail,
+        })
+    else:
+        update_job(job_file, job_id=child_job_id, updates={
+            "status": "failed", "completed_at": now_jst(),
+            "error": detail,
+        })
+
+
+def _run_hook(config: PipelineConfig, agent: str, base_date: str) -> _EntryResult | None:
+    """pre_agent_hook を実行する。None=通常実行に進む、_EntryResult=処理済み。"""
+    if not config.pre_agent_hook:
+        return None
+    hook_result = config.pre_agent_hook(agent, base_date)
+    if hook_result is None:
+        return None
+    # 戻り値の正規化: str → (str, True)（後方互換）
+    if isinstance(hook_result, str):
+        return _EntryResult(success=True, reason=hook_result)
+    reason, hook_success = hook_result
+    return _EntryResult(success=hook_success, reason=reason)
+
+
+def _run_entry(config: PipelineConfig, agent: str, base_date: str,
+               log_file: Path) -> _EntryResult:
+    """エージェントまたはパイプラインスクリプトを実行する。"""
+    if is_pipeline_entry(agent):
+        script_path = SCRIPTS_DIR / agent
+        ok = run_sub_pipeline(script_path, base_date, log_file)
+        if ok:
+            return _EntryResult(success=True)
+        return _EntryResult(success=False, reason="sub-pipeline exit non-zero")
+
+    prompt = config.build_prompt(agent, base_date)
+    ok = run_kiro_cli(prompt, log_file, agent_name=agent)
+    if ok:
+        return _EntryResult(success=True)
+    return _EntryResult(success=False, reason="kiro-cli exit non-zero")
+
+
+def _print_retry_hint(agent: str, entry_name: str, base_date: str,
+                      config: PipelineConfig) -> None:
+    """失敗時の再実行ヒントを表示する。"""
+    if is_pipeline_entry(agent):
+        script_path = SCRIPTS_DIR / agent
+        print(f"[{now_jst()}]    💡 再実行: python3.12 {script_path} {base_date}")
+    else:
+        prompt = config.build_prompt(agent, base_date)
+        print(f"[{now_jst()}]    💡 再実行: kiro-cli chat --agent {agent}"
+              f" --trust-all-tools --no-interactive \"{prompt}\"")
+
+
 def run_pipeline(config: PipelineConfig) -> None:
     """パイプラインの共通実行フロー。"""
 
@@ -264,7 +354,7 @@ def run_pipeline(config: PipelineConfig) -> None:
     else:
         print("   ⏭️  RSSフック未定義（スキップ）")
 
-    # ─── Step 2: エージェント実行ループ ──────────────────────────
+    # ─── Step 2: エージェント/パイプライン実行ループ ──────────────
     print(f"[{now_jst()}] Step 2: scoutエージェント実行開始...")
 
     success = 0
@@ -272,99 +362,35 @@ def run_pipeline(config: PipelineConfig) -> None:
     failed_names: list[str] = []
 
     for agent in config.agents:
-        agent_start = now_jst()
-        # パイプラインエントリの場合、表示名をスクリプト名から生成
-        entry_name = Path(agent).stem if is_pipeline_entry(agent) else agent
-        print(f"[{agent_start}] 🔄 {entry_name} 実行中...")
+        entry_name = _resolve_entry_name(agent)
+        print(f"[{now_jst()}] 🔄 {entry_name} 実行中...")
 
         agent_log = config.log_dir / f"{entry_name}.log"
         rotate_log(agent_log, MAX_AGENT_LOG_LINES, keep_lines=100)
 
-        # ジョブファイル: running に更新
-        child_job_id = ""
-        if use_job_file and job_file:
-            child_job_id = get_child_job_id(job_file, entry_name)
-            if child_job_id:
-                update_job(job_file, job_id=child_job_id,
-                           updates={"status": "running", "started_at": agent_start})
-                update_job(job_file, scope="parent",
-                           updates={"status_detail": f"{entry_name} 実行中"})
+        child_job_id = _mark_job_running(job_file, use_job_file, entry_name)
 
-        # pre_agent_hook でスキップ/委譲判定
-        if config.pre_agent_hook:
-            hook_result = config.pre_agent_hook(agent, base_date)
-            if hook_result is not None:
-                # 戻り値の正規化: str → (str, True)（後方互換）
-                if isinstance(hook_result, str):
-                    reason, hook_success = hook_result, True
-                else:
-                    reason, hook_success = hook_result
-
-                if hook_success:
-                    print(f"[{agent_start}]    ✅ {entry_name}: {reason}")
-                    success += 1
-                    if use_job_file and child_job_id:
-                        update_job(job_file, job_id=child_job_id, updates={
-                            "status": "completed", "completed_at": now_jst(),
-                            "status_detail": reason,
-                        })
-                else:
-                    print(f"[{agent_start}]    ❌ {entry_name}: {reason}")
-                    failed += 1
-                    failed_names.append(entry_name)
-                    if use_job_file and child_job_id:
-                        update_job(job_file, job_id=child_job_id, updates={
-                            "status": "failed", "completed_at": now_jst(),
-                            "error": reason,
-                        })
-                continue
-
-        # パイプラインスクリプトの場合
-        if is_pipeline_entry(agent):
-            script_path = SCRIPTS_DIR / agent
-            if run_sub_pipeline(script_path, base_date, agent_log):
-                agent_end = now_jst()
-                print(f"[{agent_end}]    ✅ {entry_name} 完了")
-                success += 1
-                if use_job_file and child_job_id:
-                    update_job(job_file, job_id=child_job_id,
-                               updates={"status": "completed", "completed_at": agent_end})
-            else:
-                agent_end = now_jst()
-                print(f"[{agent_end}]    ❌ {entry_name} 失敗（ログ: {agent_log}）")
-                print(f"[{agent_end}]    💡 再実行: python3.12 {script_path} {base_date}")
-                log_error(f"{config.name}-pipeline", entry_name, "sub-pipeline exit non-zero")
-                failed += 1
-                failed_names.append(entry_name)
-                if use_job_file and child_job_id:
-                    update_job(job_file, job_id=child_job_id, updates={
-                        "status": "failed", "error": "sub-pipeline exit non-zero",
-                        "completed_at": agent_end,
-                    })
-            continue
-
-        # kiro-cliエージェント実行
-        prompt = config.build_prompt(agent, base_date)
-
-        if run_kiro_cli(prompt, agent_log, agent_name=agent):
-            agent_end = now_jst()
-            print(f"[{agent_end}]    ✅ {agent} 完了")
-            success += 1
-            if use_job_file and child_job_id:
-                update_job(job_file, job_id=child_job_id,
-                           updates={"status": "completed", "completed_at": agent_end})
+        # pre_agent_hook
+        hook_result = _run_hook(config, agent, base_date)
+        if hook_result is not None:
+            result = hook_result
         else:
-            agent_end = now_jst()
-            print(f"[{agent_end}]    ❌ {agent} 失敗（ログ: {agent_log}）")
-            print(f"[{agent_end}]    💡 再実行: kiro-cli chat --agent {agent} --trust-all-tools --no-interactive \"{prompt}\"")
-            log_error(f"{config.name}-pipeline", agent, "kiro-cli exit non-zero")
+            result = _run_entry(config, agent, base_date, agent_log)
+
+        # 結果処理
+        if result.success:
+            print(f"[{now_jst()}]    ✅ {entry_name} 完了")
+            success += 1
+            _mark_job_done(job_file, use_job_file, child_job_id, True,
+                           result.reason or "完了")
+        else:
+            print(f"[{now_jst()}]    ❌ {entry_name} 失敗（ログ: {agent_log}）")
+            _print_retry_hint(agent, entry_name, base_date, config)
+            log_error(f"{config.name}-pipeline", entry_name, result.reason)
             failed += 1
-            failed_names.append(agent)
-            if use_job_file and child_job_id:
-                update_job(job_file, job_id=child_job_id, updates={
-                    "status": "failed", "error": "kiro-cli exit non-zero",
-                    "completed_at": agent_end,
-                })
+            failed_names.append(entry_name)
+            _mark_job_done(job_file, use_job_file, child_job_id, False,
+                           result.reason)
 
     # ─── Step 2.5: post_agents_hook ──────────────────────────────
     if config.post_agents_hook:
@@ -400,17 +426,14 @@ def run_pipeline(config: PipelineConfig) -> None:
     rotate_log(notify_log, MAX_AGENT_LOG_LINES, keep_lines=100)
 
     for agent in config.agents:
-        # パイプラインエントリの場合、表示名をスクリプト名から生成
-        entry_name = Path(agent).stem if is_pipeline_entry(agent) else agent
+        entry_name = _resolve_entry_name(agent)
 
         # 通知ファイルパス解決
         file_path: Path | None = None
 
-        # resolve_notify_path フックがあれば優先
         if config.resolve_notify_path:
             file_path = config.resolve_notify_path(agent, base_date)
 
-        # フックがNoneを返した場合、テンプレートマップから解決
         if file_path is None:
             template = config.notify_file_map.get(entry_name, "")
             if not template:
