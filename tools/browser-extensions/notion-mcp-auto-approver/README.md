@@ -22,15 +22,14 @@ Notion MCP 連携時の承認フローを自動化するChrome拡張機能。
 3. 1秒待機
 4. 「続行」ボタンをクリック
 
-### 2. 無効なコールバックタブの自動クローズ
+### 2. コールバックタブの自動クローズ
 
-対象: `https://mcp.notion.com/callback*`
+対象: `https://mcp.notion.com/callback*`, `http://localhost:9553/oauth/callback?code=*`
 
-ページに「Invalid MCP state. Please enable browser cookies and try again.」が表示された場合:
+ページのテキストをポーリング（500ms間隔、最大10秒）し、以下のいずれかを検知した場合にタブを自動クローズ:
 
-1. テキストが表示されるまでポーリング（500ms間隔、最大10秒）
-2. 検知後1秒待機
-3. タブを自動クローズ
+- **認証成功時**: 「Authorization successful! You may close this window and return to the CLI.」を検知 → 3秒後にクローズ
+- **エラー時**: 「Invalid MCP state. Please enable browser cookies and try again.」を検知 → 1秒後にクローズ
 
 ## ファイル構成
 
@@ -38,5 +37,5 @@ Notion MCP 連携時の承認フローを自動化するChrome拡張機能。
 |---|---|
 | `manifest.json` | 拡張機能定義（Manifest V3） |
 | `content.js` | インテグレーション承認ページの自動操作 |
-| `callback.js` | コールバックページのエラー検知・タブクローズ |
+| `callback.js` | コールバックページの認証成功/エラー検知・タブクローズ |
 | `background.js` | Service Worker（タブクローズAPI呼び出し） |
