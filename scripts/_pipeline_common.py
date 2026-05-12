@@ -226,8 +226,17 @@ class _EntryResult:
 
 
 def _resolve_entry_name(agent: str) -> str:
-    """AGENTSリストのエントリから表示名を生成する。"""
-    return Path(agent).stem if is_pipeline_entry(agent) else agent
+    """AGENTSリストのエントリから表示名を生成する。
+
+    パイプラインスクリプト（.py）の場合、拡張子を除去し、
+    さらに 'run-' プレフィックスがあれば除去する。
+    """
+    if is_pipeline_entry(agent):
+        name = Path(agent).stem
+        if name.startswith("run-"):
+            name = name[4:]
+        return name
+    return agent
 
 
 def _mark_job_running(

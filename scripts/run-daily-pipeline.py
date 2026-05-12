@@ -34,7 +34,7 @@ LOG_DIR = HOME / "logs" / "jobs" / "scout_daily"
 AGENTS = [
     "tech-trend-scout",
     "biz-car-trend-scout",
-    "academic-trend-scout",
+    "run-academic-trend-scout-pipeline.py",
     "lifestyle-event-scout",
     "rss-source-updater",
     "github-public-trend-scout",
@@ -47,8 +47,8 @@ AGENTS = [
 NOTIFY_FILE_MAP: dict[str, str] = {
     "tech-trend-scout": "scout_histories/tech_trends/daily/{date}_tech_trends.md",
     "biz-car-trend-scout": "scout_histories/biz_car_trends/daily/{date}_biz_car_trends.md",
-    "academic-trend-scout": "scout_histories/academic_trends/daily/{date}_academic_trends.md",
-    "run-gws-trend-scout-pipeline": "scout_histories/gws_trends/daily/{date}_gws_daily.md",
+    "academic-trend-scout-pipeline": "scout_histories/academic_trends/daily/{date}_academic_trends.md",
+    "gws-trend-scout-pipeline": "scout_histories/gws_trends/daily/{date}_gws_daily.md",
     "slack-trend-scout": "scout_histories/slack_trends/daily/{date}_slack_daily.md",
     "github-org-trend-scout": "scout_histories/github_org_trends/daily/{date}_github-org_daily.md",
     "github-public-trend-scout": "scout_histories/github_public_trends/daily/{date}_github-public_daily.md",

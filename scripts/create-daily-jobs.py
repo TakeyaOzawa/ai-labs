@@ -29,13 +29,26 @@ SCRIPTS_DIR = Path(__file__).parent
 CHILD_JOBS = [
     {"job_name": "tech-trend-scout", "timeout": 300, "retry_delay": 30},
     {"job_name": "biz-car-trend-scout", "timeout": 300, "retry_delay": 30},
-    {"job_name": "academic-trend-scout", "timeout": 300, "retry_delay": 30},
+    {
+        "job_name": "academic-trend-scout-pipeline",
+        "timeout": 900,
+        "retry_delay": 60,
+        "child_jobs": [
+            {"job_name": "academic-searcher-ml_ai", "timeout": 300, "retry_delay": 30},
+            {"job_name": "academic-searcher-cv_robotics", "timeout": 300, "retry_delay": 30},
+            {"job_name": "academic-searcher-se_it", "timeout": 300, "retry_delay": 30},
+            {"job_name": "academic-searcher-economics", "timeout": 300, "retry_delay": 30},
+            {"job_name": "academic-searcher-behavioral_biz", "timeout": 300, "retry_delay": 30},
+            {"job_name": "academic-searcher-interdisciplinary", "timeout": 300, "retry_delay": 30},
+            {"job_name": "academic-reporter", "timeout": 300, "retry_delay": 30},
+        ],
+    },
     {"job_name": "lifestyle-event-scout", "timeout": 300, "retry_delay": 30},
     {"job_name": "rss-source-updater", "timeout": 180, "retry_delay": 30},
     {"job_name": "github-public-trend-scout", "timeout": 600, "retry_delay": 60},
     {"job_name": "github-org-trend-scout", "timeout": 600, "retry_delay": 60},
     {
-        "job_name": "run-gws-trend-scout-pipeline",
+        "job_name": "gws-trend-scout-pipeline",
         "timeout": 900,
         "retry_delay": 60,
         "child_jobs": [

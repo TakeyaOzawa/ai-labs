@@ -1,0 +1,16 @@
+{
+    "name": "academic-trend-searcher",
+    "description": "アカデミックトレンドサーチャー。分野別の学術論文検索・要約を行い、中間ファイルを出力する。パイプラインから呼び出される。",
+    "prompt": "file://../../.shared-ai/prompts/academic-trend-searcher.md",
+    "tools": ["read", "write", "web"],
+    "allowedTools": ["web"],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["Documents/works/scout_histories/academic_trends/daily/**"]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "アカデミックトレンド検索を開始します。指定された分野のフィードを読み込み、Web検索で補完して中間ファイルを出力します。"
+}
