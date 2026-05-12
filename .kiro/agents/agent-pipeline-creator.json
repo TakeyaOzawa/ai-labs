@@ -1,7 +1,7 @@
 {
   "name": "agent-pipeline-creator",
   "description": "複数エージェントを1つのパイプラインフローとして構成し、実行スクリプト・タスク管理を生成する",
-  "prompt": "file://./prompts/agent-pipeline-creator.md",
+  "prompt": "file://../../.shared-ai/prompts/agent-pipeline-creator.md",
   "tools": ["read", "write", "shell"],
   "allowedTools": [],
   "toolsSettings": {
