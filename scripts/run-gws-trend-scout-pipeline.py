@@ -31,6 +31,7 @@ SCRIPTS_DIR = Path(__file__).parent
 TMP_DIR = HOME / "Documents" / "works" / "scout_histories" / "gws_trends" / "daily" / "tmp"
 OUTPUT_BASE = HOME / "Documents" / "works" / "scout_histories" / "gws_trends" / "daily"
 FILTER_SCRIPT = SCRIPTS_DIR / "filter-gws-drive-metadata.py"
+SUMMARIZE_SCRIPT = SCRIPTS_DIR / "summarize-filtered-metadata.py"
 OWNER_EMAIL = "takeya_ozawa@nyle.co.jp"
 INTERFACES_FILE = "~/.shared-ai/interfaces/gws-trend-report-output.md"
 
@@ -63,8 +64,8 @@ TYPE_CONFIGS = [
     ),
     TypeConfig(
         "sheets", "📈", "application/vnd.google-apps.spreadsheet",
-        "gws sheets spreadsheets get --params '{\"spreadsheetId\": \"{ID}\"}'"
-        " | head -c 8000",
+        "gws sheets spreadsheets values get --params '{\"spreadsheetId\": \"{ID}\", \"range\": \"A1:Z5\"}'"
+        " 2>/dev/null | python3.12 ~/scripts/extract-gws-sheets-header.py",
         10,
     ),
     TypeConfig(
@@ -290,6 +291,48 @@ def step2_filter(
     return filtered_paths
 
 
+# ─── Step 2.5: Extractor向け軽量化 ──────────────────────────────
+
+def step2_5_summarize(
+    type_configs: list[TypeConfig], filtered_paths: dict[str, Path],
+) -> dict[str, Path]:
+    """フィルタ結果をextractor向けに軽量化する。
+
+    top_files + 低関連度の集計のみを含む軽量JSONを生成する。
+    extractorはこの軽量ファイルのみをreadFileで読み込む。
+
+    Returns:
+        種別名 → 軽量化済みJSONファイルパスのマッピング
+    """
+    print(f"[{now_jst()}] Step 2.5: Extractor向け軽量化...")
+    summarized_paths: dict[str, Path] = {}
+
+    for tc in type_configs:
+        filtered_path = filtered_paths.get(tc.name)
+        if not filtered_path or not filtered_path.exists():
+            continue
+
+        summarized_path = TMP_DIR / f"{tc.name}_for_extractor.json"
+
+        cmd = [
+            "python3.12", str(SUMMARIZE_SCRIPT),
+            "--input", str(filtered_path),
+            "--output", str(summarized_path),
+            "--top", str(tc.top_count),
+        ]
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            summarized_paths[tc.name] = summarized_path
+            print(f"   ✅ {tc.name}: {summarized_path}")
+        else:
+            # フォールバック: 軽量化失敗時は元のフィルタ結果を使用
+            summarized_paths[tc.name] = filtered_path
+            print(f"   ⚠️  {tc.name}: 軽量化失敗（元ファイル使用）")
+
+    return summarized_paths
+
+
 # ─── Step 3: 種別ごとの深掘り＋中間ファイル作成 ─────────────────
 
 def step3_collect(
@@ -394,7 +437,7 @@ def step4_report(
     log_dir: Path,
     job_ctx: JobContext | None = None,
 ) -> bool:
-    """markdown-reporterで統合レポートを作成する。"""
+    """中間ファイルを統合レポートに結合する。"""
     print(f"[{now_jst()}] Step 4: 統合レポート作成...")
 
     if not intermediate_paths:
@@ -402,13 +445,11 @@ def step4_report(
         return False
 
     output_path = OUTPUT_BASE / f"{base_date}_gws_daily.md"
-    input_files = ", ".join(str(p) for p in intermediate_paths.values() if p.exists())
+    input_files = ",".join(str(p) for p in intermediate_paths.values() if p.exists())
 
     if not input_files:
         print(f"[{now_jst()}]    ⚠️  有効な中間ファイルなし（スキップ）")
         return False
-
-    log_file = log_dir / "reporter.log"
 
     # ジョブ: running に更新
     if job_ctx:
@@ -416,34 +457,34 @@ def step4_report(
             "status": "running", "started_at": now_jst(),
         })
 
-    prompt = (
-        f"入力ファイル: {input_files}\n"
-        f"出力先: {output_path}\n"
-        f"フォーマット指示ファイル: {INTERFACES_FILE}\n"
-        f"\n"
-        f"対象期間: {base_date}\n"
-        f"\n"
-        f"【重要: コンテキスト節約ルール】\n"
-        f"完了時は以下の形式のみで報告すること。"
-        f"レポート全文やファイル内容は絶対に返さないこと:\n"
-        f"✅ 統合レポート完了\n"
-        f"- 出力: {{ファイルパス}}\n"
-        f"- ドキュメント総数: {{N}}件"
-    )
+    merge_script = SCRIPTS_DIR / "merge-gws-intermediate-files.py"
+    cmd = [
+        "python3.12", str(merge_script),
+        "--input", input_files,
+        "--output", str(output_path),
+        "--date", base_date,
+    ]
 
-    if run_kiro_cli(prompt, log_file, agent_name="markdown-reporter"):
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode == 0 and output_path.exists():
         print(f"[{now_jst()}]    ✅ 統合レポート完了: {output_path}")
+        if result.stdout:
+            for line in result.stdout.strip().split("\n"):
+                print(f"[{now_jst()}]    {line}")
         if job_ctx:
             update_grandchild_job(job_ctx, "markdown-reporter", {
                 "status": "completed", "completed_at": now_jst(),
             })
         return True
     else:
-        print(f"[{now_jst()}]    ❌ 統合レポート失敗（ログ: {log_file}）")
+        print(f"[{now_jst()}]    ❌ 統合レポート失敗")
+        if result.stderr:
+            print(f"[{now_jst()}]    stderr: {result.stderr.strip()}")
         if job_ctx:
             update_grandchild_job(job_ctx, "markdown-reporter", {
                 "status": "failed", "completed_at": now_jst(),
-                "error": "kiro-cli exit non-zero",
+                "error": result.stderr.strip() or "merge script exit non-zero",
             })
         return False
 
@@ -476,9 +517,12 @@ def main() -> None:
     # Step 2: フィルタリング
     filtered_paths = step2_filter(TYPE_CONFIGS, ndjson_paths)
 
+    # Step 2.5: Extractor向け軽量化
+    summarized_paths = step2_5_summarize(TYPE_CONFIGS, filtered_paths)
+
     # Step 3: 種別ごとの深掘り＋中間ファイル作成
     intermediate_paths = step3_collect(
-        TYPE_CONFIGS, filtered_paths, base_date, log_dir,
+        TYPE_CONFIGS, summarized_paths, base_date, log_dir,
         job_ctx=job_ctx if job_ctx.enabled else None,
     )
 

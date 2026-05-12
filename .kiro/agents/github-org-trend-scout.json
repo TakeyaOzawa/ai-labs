@@ -1,6 +1,6 @@
 {
     "name": "github-org-trend-scout",
-    "description": "自社GitHub org（環境変数 GITHUB_ORG_NAME で指定）の前日のPR活動をリポジトリ単位で収集し、コミット単位の変更内容を含む日次レポートを作成する。",
+    "description": "自社GitHub org（環境変数 GITHUB_ORG_NAME で指定）の前日のPR活動をリポジトリ単位で収集し、PRの目的・変更内容・コミット情報を含む日次レポートを作成する。",
     "prompt": "file://../../.shared-ai/prompts/github-org-trend-scout.md",
     "tools": ["read", "write", "shell"],
     "allowedTools": [],

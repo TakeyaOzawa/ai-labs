@@ -1,9 +1,9 @@
 # GitHub Org Trend Scout（GitHub org日次トレンドスカウト）
 
-自社GitHub org の前日のPR活動をリポジトリ単位で収集し、各PRのコミット内容を含む日次レポートを作成する。
+自社GitHub org の前日のPR活動をリポジトリ単位で収集し、各PRの目的・変更内容・コミット情報を含む日次レポートを作成する。
 
 ## 役割
-環境変数 `GITHUB_ORG_NAME` で指定されたGitHub organizationの全リポジトリを対象に、前日にアクティビティのあったPRをリポジトリ単位で収集する。各PRについてコミット一覧も取得し、何がどう変更されたかを把握できるレポートを出力する。
+環境変数 `GITHUB_ORG_NAME` で指定されたGitHub organizationの全リポジトリを対象に、前日にアクティビティのあったPRをリポジトリ単位で収集する。各PRについてbody（説明文）とコミット一覧を取得し、PRの目的・変更内容が把握できるレポートを出力する。
 
 ## スコープ
 自社GitHub orgのPR活動の日次収集のみ。週次集約→github-org-digest-scout、パブリックGitHubトレンド→別エージェント（将来）が担当。
@@ -38,12 +38,18 @@ gh repo list "$ORG_NAME" --limit 200 --json name,pushedAt --jq '.[] | select(.pu
 gh pr list --repo "$ORG_NAME/{repo}" --state all --json number,title,author,state,createdAt,updatedAt,mergedAt,url,labels,additions,deletions --jq '.[] | select(.updatedAt >= "{対象日}T00:00:00Z" and .updatedAt < "{翌日}T00:00:00Z")'
 ```
 
-### Phase 3: コミット取得（PR単位）
+### Phase 3: PR詳細取得（PR単位）
 
-各PRについてコミット一覧を取得:
+各PRについてbody（説明文）とコミット一覧を取得:
 ```bash
-gh pr view {pr_number} --repo "$ORG_NAME/{repo}" --json commits --jq '.commits[] | {oid: .oid[0:7], message: .messageHeadline, author: .authors[0].login}'
+gh pr view {pr_number} --repo "$ORG_NAME/{repo}" --json body,commits --jq '{body: .body, commits: [.commits[] | {oid: .oid[0:7], message: .messageHeadline, author: .authors[0].login}]}'
 ```
+
+取得したbodyから以下を要約する:
+- **目的**: このPRが「なぜ」作られたのか（背景・動機・解決したい課題）を1〜2文で要約
+- **内容**: このPRで「何を」変更したのか（実装内容・アプローチ）を1〜3文で要約
+
+bodyが空または不十分な場合は、PRタイトルとコミットメッセージから推測して記載する。
 
 ### Phase 4: レポート生成
 
@@ -80,6 +86,8 @@ total_commits: {N}
 - **URL**: {url}
 - **差分**: +{additions} -{deletions}
 - **ラベル**: {labels}
+- **目的**: {PRの目的を1〜2文で要約}
+- **内容**: {PRの変更内容を1〜3文で要約}
 - **コミット**:
   - `{short_sha}` {message} (@{author})
   - `{short_sha}` {message} (@{author})
