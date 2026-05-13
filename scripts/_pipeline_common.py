@@ -45,6 +45,10 @@ class PipelineConfig:
     create_jobs_script: str                  # ジョブファイル生成スクリプト名
     default_base_date: Callable[[], str]     # 基準日デフォルト計算
 
+    # パイプライン起動直後フック: (base_date, scripts_dir) -> None
+    # ジョブファイル生成より前に実行される。AIエージェント定義同期など。
+    pre_pipeline_hook: Callable[[str, Path], None] | None = None
+
     # RSS取得フック: 各パイプラインがRSS取得ステップ全体を定義
     rss_fetch_hook: Callable[[str, Path], None] | None = None
 
@@ -381,6 +385,10 @@ def run_pipeline(config: PipelineConfig) -> None:
 
     label = "日次" if config.name == "daily" else "週次"
     print(f"[{now_jst()}] 📋 {label}scoutパイプライン起動（基準日: {base_date}）")
+
+    # ─── Pre-pipeline: 起動直後フック ─────────────────────────────
+    if config.pre_pipeline_hook:
+        config.pre_pipeline_hook(base_date, SCRIPTS_DIR)
 
     # ─── Step 0: ジョブファイル生成 ───────────────────────────────
     job_file: Path | None = None

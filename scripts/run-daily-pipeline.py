@@ -24,6 +24,7 @@ from _pipeline_common import (
     HOME,
     JST,
     PipelineConfig,
+    now_jst,
     run_pipeline,
 )
 
@@ -73,6 +74,26 @@ def _default_base_date() -> str:
     """dailyのデフォルト基準日: 昨日。"""
     yesterday = datetime.now(tz=JST) - timedelta(days=1)
     return yesterday.strftime("%Y-%m-%d")
+
+
+def _sync_claude_agents(base_date: str, scripts_dir: Path) -> None:
+    """kiro→claudeエージェント定義を同期する(非致命的)。"""
+    sync_script = scripts_dir / "sync-claude-agents.py"
+    if not sync_script.exists():
+        print(f"[{now_jst()}] ⚠️  sync-claude-agents.py 未検出（スキップ）")
+        return
+
+    print(f"[{now_jst()}] 🔄 claude agent定義の同期...")
+    result = subprocess.run(
+        ["python3.12", str(sync_script)],
+        capture_output=True, text=True,
+    )
+    if result.returncode == 0:
+        for line in (result.stderr or "").strip().splitlines():
+            print(f"   {line}")
+    else:
+        print(f"[{now_jst()}]    ⚠️  同期失敗(続行): "
+              f"{(result.stderr or result.stdout).strip()[:200]}")
 
 
 def _rss_fetch_hook(base_date: str, scripts_dir: Path) -> None:
@@ -136,6 +157,7 @@ def main() -> None:
         notify_file_map=NOTIFY_FILE_MAP,
         create_jobs_script="create-daily-jobs.py",
         default_base_date=_default_base_date,
+        pre_pipeline_hook=_sync_claude_agents,
         rss_fetch_hook=_rss_fetch_hook,
         build_prompt=_build_prompt,
         resolve_notify_path=_resolve_notify_path,
