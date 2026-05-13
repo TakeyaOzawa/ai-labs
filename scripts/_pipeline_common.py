@@ -56,7 +56,7 @@ class PipelineConfig:
     resolve_notify_path: Callable[[str, str], Path | None] | None = None
 
     # エージェント実行前フック: (agent, base_date) -> HookResult | None
-    # None → 通常実行（kiro-cliでエージェントを実行）
+    # None → 通常実行（AI_COMMAND_TYPEに応じたCLIでエージェントを実行）
     # str → スキップ（成功扱い、理由表示）— 後方互換
     # (str, True) → 委譲成功（パイプライン等で処理完了）
     # (str, False) → 委譲失敗（パイプライン等で処理失敗）
@@ -101,12 +101,30 @@ def load_env() -> None:
                 os.environ[key] = value
 
 
-def run_kiro_cli(prompt: str, log_file: Path, agent_name: str = "") -> bool:
-    """kiro-cliを実行し、成功/失敗を返す。"""
-    cmd = ["kiro-cli", "chat", "--trust-all-tools", "--no-interactive"]
+def _build_ai_command(prompt: str, agent_name: str = "") -> list[str]:
+    """AI_COMMAND_TYPEに応じた実行コマンドを構築する。"""
+    ai_type = os.environ.get("AI_COMMAND_TYPE", "claude")
+    if ai_type == "kiro-cli":
+        cmd = ["kiro-cli", "chat", "--trust-all-tools", "--no-interactive"]
+        if agent_name:
+            cmd.extend(["--agent", agent_name])
+        cmd.append(prompt)
+        return cmd
+    # default: claude code
+    cmd = ["claude", "--print", "--dangerously-skip-permissions"]
     if agent_name:
         cmd.extend(["--agent", agent_name])
     cmd.append(prompt)
+    return cmd
+
+
+def run_ai_command(prompt: str, log_file: Path, agent_name: str = "") -> bool:
+    """AI_COMMAND_TYPE環境変数に応じてkiro-cliまたはclaude codeを実行し、成功/失敗を返す。
+
+    AI_COMMAND_TYPE=claude（既定）→ `claude --print --dangerously-skip-permissions`
+    AI_COMMAND_TYPE=kiro-cli       → `kiro-cli chat --trust-all-tools --no-interactive`
+    """
+    cmd = _build_ai_command(prompt, agent_name)
     with open(log_file, "a", encoding="utf-8") as f:
         result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
     return result.returncode == 0
@@ -302,10 +320,11 @@ def _run_entry(config: PipelineConfig, agent: str, base_date: str,
         return _EntryResult(success=False, reason="sub-pipeline exit non-zero")
 
     prompt = config.build_prompt(agent, base_date)
-    ok = run_kiro_cli(prompt, log_file, agent_name=agent)
+    ok = run_ai_command(prompt, log_file, agent_name=agent)
     if ok:
         return _EntryResult(success=True)
-    return _EntryResult(success=False, reason="kiro-cli exit non-zero")
+    ai_type = os.environ.get("AI_COMMAND_TYPE", "claude")
+    return _EntryResult(success=False, reason=f"{ai_type} exit non-zero")
 
 
 def _print_retry_hint(agent: str, entry_name: str, base_date: str,
@@ -316,8 +335,9 @@ def _print_retry_hint(agent: str, entry_name: str, base_date: str,
         print(f"[{now_jst()}]    💡 再実行: python3.12 {script_path} {base_date}")
     else:
         prompt = config.build_prompt(agent, base_date)
-        print(f"[{now_jst()}]    💡 再実行: kiro-cli chat --agent {agent}"
-              f" --trust-all-tools --no-interactive \"{prompt}\"")
+        cmd = _build_ai_command(prompt, agent_name=agent)
+        cmd_str = " ".join(cmd[:-1] + [f'"{cmd[-1]}"'])
+        print(f"[{now_jst()}]    💡 再実行: {cmd_str}")
 
 
 def run_pipeline(config: PipelineConfig) -> None:
@@ -478,7 +498,7 @@ def run_pipeline(config: PipelineConfig) -> None:
         print(f"[{now_jst()}]    📨 {entry_name} 通知中...")
         notify_prompt = f"file_path={file_path}"
 
-        if run_kiro_cli(notify_prompt, notify_log, agent_name="slack-notifier"):
+        if run_ai_command(notify_prompt, notify_log, agent_name="slack-notifier"):
             print(f"[{now_jst()}]    ✅ {entry_name} 通知完了")
             notify_success += 1
         else:

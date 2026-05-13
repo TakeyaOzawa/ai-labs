@@ -4,7 +4,7 @@ run-academic-trend-scout-pipeline: アカデミックトレンドスカウトの
 
 目的:
     academic-trend-scoutの単一コンテキスト実行を廃止し、分野ごとに独立した
-    kiro-cliプロセスで実行する。月曜日のarXivフィード1400件超でも
+    AIコマンドプロセスで実行する。月曜日のarXivフィード1400件超でも
     コンテキスト圧迫なく処理できるようにする。
 
 使い方:
@@ -12,7 +12,7 @@ run-academic-trend-scout-pipeline: アカデミックトレンドスカウトの
     python3.12 scripts/run-academic-trend-scout-pipeline.py 2026-05-11
 
 出力: Documents/works/scout_histories/academic_trends/daily/{date}_academic_trends.md
-依存: python3.12, kiro-cli, split-academic-feeds.py, merge-academic-intermediate-files.py
+依存: python3.12, kiro-cli または claude (AI_COMMAND_TYPE環境変数で切替), split-academic-feeds.py, merge-academic-intermediate-files.py
 """
 
 import json
@@ -22,6 +22,8 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+from _pipeline_common import run_ai_command
 
 # ─── 定数 ────────────────────────────────────────────────────────
 
@@ -115,19 +117,6 @@ def _find_job_id(jobs: list[dict], job_name: str) -> str:
     return ""
 
 
-def run_kiro_cli(prompt: str, log_file: Path, agent_name: str) -> bool:
-    """kiro-cliを実行し、成功/失敗を返す。"""
-    cmd = [
-        "kiro-cli", "chat",
-        "--trust-all-tools", "--no-interactive",
-        "--agent", agent_name,
-        prompt,
-    ]
-    with open(log_file, "a", encoding="utf-8") as f:
-        result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
-    return result.returncode == 0
-
-
 # ─── Step 0: 対象日決定 + ディレクトリ準備 ───────────────────────
 
 def step0_prepare(base_date_str: str | None) -> str:
@@ -211,7 +200,7 @@ def step2_extract(
     log_dir: Path,
     job_ctx: JobContext | None = None,
 ) -> dict[str, Path]:
-    """各分野のextractorをkiro-cliで実行する。
+    """各分野のextractorをAIコマンドで実行する。
 
     Returns:
         分野名 → 中間ファイルパスのマッピング
@@ -261,7 +250,7 @@ def step2_extract(
 
         print(f"[{now_jst()}]    🔄 {fc.name} ({fc.display_name}) searcher 実行中...")
 
-        if run_kiro_cli(prompt, log_file, agent_name="academic-trend-searcher"):
+        if run_ai_command(prompt, log_file, agent_name="academic-trend-searcher"):
             if output_path.exists():
                 print(f"[{now_jst()}]    ✅ {fc.name} searcher 完了")
                 intermediate_paths[fc.name] = output_path
@@ -284,7 +273,7 @@ def step2_extract(
             if job_ctx:
                 update_grandchild_job(job_ctx, grandchild_name, {
                     "status": "failed", "completed_at": now_jst(),
-                    "error": "kiro-cli exit non-zero",
+                    "error": "AI command exit non-zero",
                 })
 
     print(f"[{now_jst()}]    📊 searcher結果: ✅{success}件 / ❌{failed}件")
@@ -335,7 +324,7 @@ def step3_report(
             for line in result.stdout.strip().split("\n"):
                 print(f"[{now_jst()}]    {line}")
 
-        # 注目論文選定 + 応用可能性サマリをkiro-cliで生成
+        # 注目論文選定 + 応用可能性サマリをAIコマンドで生成
         _generate_highlights(output_path, base_date, log_dir)
 
         if job_ctx:
@@ -374,7 +363,7 @@ def _generate_highlights(report_path: Path, base_date: str, log_dir: Path) -> No
     )
 
     print(f"[{now_jst()}]    🔄 注目論文選定 + サマリ生成中...")
-    if run_kiro_cli(prompt, log_file, agent_name="academic-trend-searcher"):
+    if run_ai_command(prompt, log_file, agent_name="academic-trend-searcher"):
         print(f"[{now_jst()}]    ✅ 注目論文 + サマリ追加完了")
     else:
         print(f"[{now_jst()}]    ⚠️  注目論文選定失敗（レポート本体は生成済み）")

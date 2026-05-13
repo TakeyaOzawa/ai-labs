@@ -13,7 +13,7 @@ run-github-repo-analysis-pipeline: GitHubリポジトリ分析パイプライン
     python3.12 scripts/run-github-repo-analysis-pipeline.py https://github.com/owner/repo --skip-refs --skip-review
 
 出力: Documents/works/scout_histories/github_repo_analysis/{date}_{slug}_analysis.md
-依存: kiro-cli, python3.12, gh (GitHub CLI)
+依存: kiro-cli または claude (AI_COMMAND_TYPE環境変数で切替), python3.12, gh (GitHub CLI)
 """
 
 import argparse
@@ -24,6 +24,8 @@ import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+from _pipeline_common import run_ai_command
 
 # ─── 定数 ────────────────────────────────────────────────────────
 
@@ -107,22 +109,13 @@ def stop_caffeinate(cafe_pid: str) -> None:
         )
 
 
-def run_kiro_cli(prompt: str, agent_name: str, log_file: Path) -> bool:
-    """kiro-cliを実行し、成功/失敗を返す。"""
-    cmd = [
-        "kiro-cli", "chat",
-        "--agent", agent_name,
-        "--trust-all-tools",
-        "--no-interactive",
-        prompt,
-    ]
+def _log_agent_header(log_file: Path, agent_name: str, prompt: str) -> None:
+    """ログファイルにエージェント実行ヘッダを追記する。"""
     with open(log_file, "a", encoding="utf-8") as f:
         f.write(f"\n{'='*60}\n")
         f.write(f"[{now_jst()}] Agent: {agent_name}\n")
         f.write(f"Prompt: {prompt[:200]}...\n")
         f.write(f"{'='*60}\n")
-        result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
-    return result.returncode == 0
 
 
 def extract_machine_data(file_path: Path) -> dict:
@@ -154,7 +147,8 @@ def step1_github_analysis(
         f"対象リポジトリ: {owner}/{repo} "
         f"出力先: {output_path}"
     )
-    ok = run_kiro_cli(prompt, "github-repo-analyst", log_file)
+    _log_agent_header(log_file, "github-repo-analyst", prompt)
+    ok = run_ai_command(prompt, log_file, agent_name="github-repo-analyst")
     if ok and output_path.exists():
         return output_path
     return None
@@ -195,7 +189,8 @@ def step2_refs_analysis(
         f"{repos_text}\n"
         f"出力先: {output_path}"
     )
-    ok = run_kiro_cli(prompt, "github-repo-analyst", log_file)
+    _log_agent_header(log_file, "github-repo-analyst", prompt)
+    ok = run_ai_command(prompt, log_file, agent_name="github-repo-analyst")
     if ok and output_path.exists():
         return output_path
     return None
@@ -234,7 +229,8 @@ def step3_web_search(
         f"purpose: tech_selection\n"
         f"出力先: {output_path}"
     )
-    ok = run_kiro_cli(prompt, "web-searcher", log_file)
+    _log_agent_header(log_file, "web-searcher", prompt)
+    ok = run_ai_command(prompt, log_file, agent_name="web-searcher")
     if ok and output_path.exists():
         return output_path
     return None
@@ -275,7 +271,8 @@ def step4_code_analysis(
         f"{hints_text}"
         f"出力先: {output_path}"
     )
-    ok = run_kiro_cli(prompt, "code-analyst", log_file)
+    _log_agent_header(log_file, "code-analyst", prompt)
+    ok = run_ai_command(prompt, log_file, agent_name="code-analyst")
     if ok and output_path.exists():
         return output_path
     return None
@@ -298,7 +295,8 @@ def step5_report_integration(
         f"フォーマット指示ファイル: {format_file}\n"
         f"対象期間: {base_date}"
     )
-    ok = run_kiro_cli(prompt, "markdown-reporter", log_file)
+    _log_agent_header(log_file, "markdown-reporter", prompt)
+    ok = run_ai_command(prompt, log_file, agent_name="markdown-reporter")
     if ok and output_path.exists():
         return output_path
     return None
@@ -311,13 +309,15 @@ def step6_review(report_path: Path, log_file: Path) -> bool:
         f"レビュー: 1段階目から開始してください。"
         f"対象ファイル: {report_path}"
     )
-    return run_kiro_cli(prompt, "agent-output-reviewer", log_file)
+    _log_agent_header(log_file, "agent-output-reviewer", prompt)
+    return run_ai_command(prompt, log_file, agent_name="agent-output-reviewer")
 
 
 def step7_slack_notify(report_path: Path, log_file: Path) -> bool:
     """Step 7: Slack通知。"""
     prompt = f"file_path={report_path}"
-    return run_kiro_cli(prompt, "slack-notifier", log_file)
+    _log_agent_header(log_file, "slack-notifier", prompt)
+    return run_ai_command(prompt, log_file, agent_name="slack-notifier")
 
 
 # ─── 一時ファイルクリーンアップ ──────────────────────────────────
