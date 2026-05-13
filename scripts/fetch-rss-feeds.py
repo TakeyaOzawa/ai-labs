@@ -215,6 +215,71 @@ FEEDS = {
             "url": "https://www.helpnetsecurity.com/feed",
             "type": "rss",
         },
+        {
+            "name": "BleepingComputer",
+            "url": "https://www.bleepingcomputer.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "Python Insider",
+            "url": "https://blog.python.org/feeds/posts/default",
+            "type": "rss",
+        },
+        {
+            "name": "Cyberscoop",
+            "url": "https://cyberscoop.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "SANS Internet Storm Center",
+            "url": "https://isc.sans.edu/rssfeed_full.xml",
+            "type": "rss",
+        },
+        {
+            "name": "Snyk Blog",
+            "url": "https://snyk.io/blog/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "DuckDB Blog",
+            "url": "https://duckdb.org/feed.xml",
+            "type": "atom",
+        },
+        {
+            "name": "DeepMind Blog",
+            "url": "https://deepmind.google/blog/rss.xml",
+            "type": "rss",
+        },
+        {
+            "name": "Phoronix",
+            "url": "https://www.phoronix.com/rss.php",
+            "type": "rss",
+        },
+        {
+            "name": "Grafana Labs Blog",
+            "url": "https://grafana.com/blog/index.xml",
+            "type": "rss",
+        },
+        {
+            "name": "JetBrains Blog",
+            "url": "https://blog.jetbrains.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "Real Python",
+            "url": "https://realpython.com/atom.xml",
+            "type": "atom",
+        },
+        {
+            "name": "Elastic Security Labs",
+            "url": "https://www.elastic.co/security-labs/rss/feed.xml",
+            "type": "rss",
+        },
+        {
+            "name": "Android Authority",
+            "url": "https://www.androidauthority.com/feed/",
+            "type": "rss",
+        },
     ],
     "biz_car": [
         {
@@ -265,6 +330,16 @@ FEEDS = {
         {
             "name": "TeslaNorth",
             "url": "https://teslanorth.com/feed",
+            "type": "rss",
+        },
+        {
+            "name": "日産グローバルニュースルーム",
+            "url": "https://global.nissannews.com/ja-JP/rss",
+            "type": "rss",
+        },
+        {
+            "name": "Motor Finance Online",
+            "url": "https://www.motorfinanceonline.com/feed/",
             "type": "rss",
         },
     ],
@@ -318,6 +393,11 @@ FEEDS = {
             "name": "Papers With Code (trending)",
             "url": "https://paperswithcode.com/latest",
             "type": "html_fallback",
+        },
+        {
+            "name": "Nature",
+            "url": "http://feeds.nature.com/nature/rss/current",
+            "type": "rss",
         },
     ],
 }
