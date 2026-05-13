@@ -43,7 +43,7 @@
         button.focus();
         button.click();
       }
-    }, 3000);
+    }, 1500);
   }
 
   run();

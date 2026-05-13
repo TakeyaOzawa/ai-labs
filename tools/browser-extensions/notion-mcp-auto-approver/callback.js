@@ -9,8 +9,8 @@
     const text = document.body.textContent;
 
     if (text.includes('Authorization successful!') && text.includes('You may close this window and return to the CLI.')) {
-      console.log('[notion-mcp-auto-approver] authorization successful, closing tab in 3s');
-      setTimeout(() => chrome.runtime.sendMessage({ action: 'closeTab' }), 3000);
+      console.log('[notion-mcp-auto-approver] authorization successful, closing tab in 1.5s');
+      setTimeout(() => chrome.runtime.sendMessage({ action: 'closeTab' }), 1500);
       return;
     }
 
