@@ -44,6 +44,7 @@ AGENTS = [
     "github-public-digest-scout",
     "github-org-digest-scout",
     "tech-blog-material-scout",
+    "github-verification-candidate-scout",
     "tech-poc-planner",
     "gws-digest-scout",
     "slack-digest-scout",
@@ -54,6 +55,7 @@ AGENTS = [
 WEEKLY_PIPELINE_MODE_AGENTS = {
     "tech-event-scout",
     "tech-blog-material-scout",
+    "github-verification-candidate-scout",
     "tech-poc-planner",
 }
 

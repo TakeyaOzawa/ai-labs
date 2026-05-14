@@ -293,6 +293,53 @@ def _resolve_entry_name(agent: str) -> str:
     return agent
 
 
+def _get_child_job(job_file: Path, job_name: str) -> dict | None:
+    """ジョブファイルから指定ジョブ名のジョブ辞書を再帰検索で取得する。"""
+    with open(job_file, encoding="utf-8") as f:
+        data = json.load(f)
+    return _find_job_by_name(data.get("child_jobs", []), job_name)
+
+
+def _find_job_by_name(jobs: list[dict], job_name: str) -> dict | None:
+    """ジョブツリーを再帰的に探索し、指定名のジョブ辞書を返す。"""
+    for job in jobs:
+        if job.get("job_name") == job_name:
+            return job
+        found = _find_job_by_name(job.get("child_jobs", []), job_name)
+        if found:
+            return found
+    return None
+
+
+def _check_dependencies(
+    job_file: Path | None, use_job_file: bool, entry_name: str,
+    completed_names: set[str],
+) -> tuple[bool, list[str]]:
+    """依存先が全て完了しているか確認する。
+
+    Returns:
+        (satisfied, unmet_deps): 依存充足フラグと未完了の依存先リスト
+    """
+    if not use_job_file or not job_file:
+        return True, []
+
+    job = _get_child_job(job_file, entry_name)
+    if not job:
+        return True, []
+
+    depends_on = job.get("depends_on")
+    if not depends_on:
+        return True, []
+
+    # depends_on は配列（create-jobs.py で正規化済み）
+    # 後方互換: 古いジョブファイルで文字列が残っている場合も対応
+    if isinstance(depends_on, str):
+        depends_on = [depends_on]
+
+    unmet = [dep for dep in depends_on if dep not in completed_names]
+    return len(unmet) == 0, unmet
+
+
 def _mark_job_running(
     job_file: Path | None, use_job_file: bool, entry_name: str,
 ) -> str:
@@ -447,10 +494,23 @@ def run_pipeline(config: PipelineConfig) -> None:
 
     success = 0
     failed = 0
+    skipped = 0
     failed_names: list[str] = []
+    completed_names: set[str] = set()
 
     for agent in config.agents:
         entry_name = _resolve_entry_name(agent)
+
+        # 依存チェック: depends_on の全依存先が completed_names に含まれるか
+        deps_satisfied, unmet_deps = _check_dependencies(
+            job_file, use_job_file, entry_name, completed_names,
+        )
+        if not deps_satisfied:
+            print(f"[{now_jst()}] ⏭️  {entry_name} スキップ"
+                  f"（未完了の依存先: {', '.join(unmet_deps)}）")
+            skipped += 1
+            continue
+
         print(f"[{now_jst()}] 🔄 {entry_name} 実行中...")
 
         agent_log = config.log_dir / f"{entry_name}.log"
@@ -470,6 +530,7 @@ def run_pipeline(config: PipelineConfig) -> None:
         if result.success:
             print(f"[{now_jst()}]    ✅ {entry_name} 完了")
             success += 1
+            completed_names.add(entry_name)
             _mark_job_done(job_file, use_job_file, child_job_id, True,
                            result.reason or "完了")
         else:
@@ -487,14 +548,20 @@ def run_pipeline(config: PipelineConfig) -> None:
 
     # ─── Step 3: 親タスク完了処理 ────────────────────────────────
     end_now = now_jst()
-    total = success + failed
+    total = success + failed + skipped
 
     if use_job_file and job_file:
-        if failed > 0:
+        if failed > 0 or skipped > 0:
+            parts = []
+            if failed > 0:
+                parts.append(f"{failed}件失敗: {' '.join(failed_names)}")
+            if skipped > 0:
+                parts.append(f"{skipped}件スキップ（依存未充足）")
             update_job(job_file, scope="parent", updates={
-                "status": "failed", "completed_at": end_now,
-                "status_detail": f"{failed}件失敗: {' '.join(failed_names)}",
-                "error": f"{failed}/{total} jobs failed",
+                "status": "failed" if failed > 0 else "completed",
+                "completed_at": end_now,
+                "status_detail": " / ".join(parts),
+                "error": f"{failed}/{total} jobs failed" if failed > 0 else None,
             })
         else:
             update_job(job_file, scope="parent", updates={
@@ -550,7 +617,7 @@ def run_pipeline(config: PipelineConfig) -> None:
 
     # ─── Step 6: 完了サマリー ────────────────────────────────────
     final_now = now_jst()
-    print(f"[{final_now}] 📊 実行完了: ✅{success}件 / ❌{failed}件 (全{total}件)")
+    print(f"[{final_now}] 📊 実行完了: ✅{success}件 / ❌{failed}件 / ⏭️{skipped}件スキップ (全{total}件)")
     if failed > 0:
         print(f"[{final_now}]    失敗: {' '.join(failed_names)}")
     if use_job_file and job_file:

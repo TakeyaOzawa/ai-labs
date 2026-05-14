@@ -76,6 +76,10 @@ def build_child_jobs(job_defs: list[dict], base_date: str, now_str: str) -> list
             sys.exit(1)
 
         depends_on = job_def.get("depends_on")
+        # depends_on: null or list of strings (job_name)
+        # Normalize: string → list (後方互換移行期), null → null, list → list
+        if isinstance(depends_on, str):
+            depends_on = [depends_on]
         status = "pending" if depends_on else "starting"
 
         # 再帰: child_jobs が定義されていれば子ジョブを生成

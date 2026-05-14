@@ -31,11 +31,11 @@ CHILD_JOBS = [
     {"job_name": "github-public-digest-scout", "timeout": 600, "retry_delay": 60, "depends_on": None},
     {"job_name": "github-org-digest-scout", "timeout": 600, "retry_delay": 60, "depends_on": None},
     {"job_name": "tech-blog-material-scout", "timeout": 600, "retry_delay": 60, "depends_on": None},
-    {"job_name": "tech-poc-planner", "timeout": 900, "retry_delay": 60, "depends_on": "tech-blog-material-scout"},
+    {"job_name": "github-verification-candidate-scout", "timeout": 600, "retry_delay": 60, "depends_on": ["github-public-digest-scout", "tech-blog-material-scout"]},
+    {"job_name": "tech-poc-planner", "timeout": 900, "retry_delay": 60, "depends_on": ["tech-blog-material-scout", "github-verification-candidate-scout"]},
     {"job_name": "gws-digest-scout", "timeout": 900, "retry_delay": 60, "depends_on": None},
     {"job_name": "slack-digest-scout", "timeout": 600, "retry_delay": 60, "depends_on": None},
     {"job_name": "notion-digest-scout", "timeout": 600, "retry_delay": 60, "depends_on": None},
-    {"job_name": "github-verification-candidate-scout", "timeout": 600, "retry_delay": 60, "depends_on": "github-public-digest-scout"},
 ]
 
 

@@ -60,12 +60,25 @@ parent (scout_daily)
 
 `child_jobs` フィールドは再帰的に処理される。未指定の場合は空配列（後方互換）。
 
+### depends_on フィールド
+
+`depends_on` は依存先ジョブを指定するフィールド。以下の形式をサポート:
+
+| 形式 | 例 | 説明 |
+|------|-----|------|
+| `null` | `"depends_on": null` | 依存なし（即時実行可能） |
+| 配列 | `"depends_on": ["agent-a", "agent-b"]` | 依存あり（全完了後に実行可能） |
+
+依存ありのジョブは初期ステータスが `pending` となり、パイプライン実行時に依存先が全て完了するまでスキップされる。
+
+**注意:** 文字列形式（`"depends_on": "agent-a"`）は後方互換のため内部で配列に正規化されるが、新規定義では配列形式を使用すること。
+
 ### 使用例
 
 ```bash
 # GitHub org トレンドスカウトパイプライン
 python3.12 ~/scripts/create-jobs.py --pipeline github-org-trend-scout-pipeline --base-date 2026-05-14 \
-  --jobs '[{"job_name":"github-org-repo-collector","timeout":300,"retry_delay":30,"depends_on":null},{"job_name":"github-org-pr-collector","timeout":600,"retry_delay":30,"depends_on":"github-org-repo-collector"},{"job_name":"github-org-report-generator","timeout":300,"retry_delay":30,"depends_on":"github-org-pr-collector"}]'
+  --jobs '[{"job_name":"github-org-repo-collector","timeout":300,"retry_delay":30,"depends_on":null},{"job_name":"github-org-pr-collector","timeout":600,"retry_delay":30,"depends_on":["github-org-repo-collector"]},{"job_name":"github-org-report-generator","timeout":300,"retry_delay":30,"depends_on":["github-org-pr-collector"]}]'
 
 # ネストされたジョブ定義
 python3.12 ~/scripts/create-jobs.py --pipeline scout_daily --base-date 2026-05-10 \
