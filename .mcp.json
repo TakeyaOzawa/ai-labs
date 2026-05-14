@@ -1,0 +1,184 @@
+{
+  "mcpServers": {
+    "notion-home": {
+      "type": "sse",
+      "description": "Notion公式MCPサーバー",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.notion.com/mcp"
+      ],
+      "disabled": false,
+      "disabledTools": [
+        "notion-get-user",
+        "notion-list-agents",
+        "notion-duplicate-page",
+        "notion-move-pages",
+        "notion-create-pages"
+      ],
+      "autoApprove": [
+        "notion-get-self",
+        "notion-search",
+        "notion-fetch",
+        "notion-get-users",
+        "notion-query-meeting-notes",
+        "notion-query-database-view"
+      ]
+    },
+    "playwright-home": {
+      "type": "stdio",
+      "description": "Playwrightブラウザ自動化MCPサーバー",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "env": {},
+      "disabled": false,
+      "disabledTools": [],
+      "autoApprove": [
+        "browser_navigate",
+        "browser_snapshot",
+        "browser_click",
+        "browser_wait_for",
+        "browser_console_messages",
+        "browser_network_requests",
+        "browser_take_screenshot",
+        "browser_evaluate",
+        "browser_close"
+      ]
+    },
+    "chrome-carmoon-home": {
+      "type": "stdio",
+      "description": "Chrome DevToolsプロトコルを使用したかるもーん自動操作用MCPサーバー",
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest",
+        "--isolated"
+      ],
+      "disabled": true,
+      "disabledTools": [],
+      "autoApprove": [
+        "list_pages",
+        "new_page",
+        "take_snapshot",
+        "evaluate_script",
+        "take_screenshot",
+        "navigate_page",
+        "fill",
+        "click",
+        "wait_for"
+      ]
+    },
+    "chrome-headless-home": {
+      "type": "stdio",
+      "description": "Chrome DevToolsプロトコルを使用したブラウザ開発・デバッグ支援MCPサーバー",
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest",
+        "--isolated",
+        "--headless"
+      ],
+      "disabled": true,
+      "disabledTools": [],
+      "autoApprove": [
+        "list_pages",
+        "new_page",
+        "take_snapshot",
+        "evaluate_script",
+        "take_screenshot",
+        "navigate_page",
+        "fill",
+        "click",
+        "wait_for"
+      ]
+    },
+    "dbhub-carmoon-home": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@bytebase/dbhub@latest",
+        "--config",
+        "~/works/carmo-system-console/dbhub.toml"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "execute_sql",
+        "search_objects",
+        "search_objects_production",
+        "execute_sql_epsilon",
+        "execute_sql_production",
+        "execute_sql_alpha",
+        "search_objects_alpha",
+        "search_objects_alpha",
+        "search_objects_delta",
+        "search_objects_epsilon"
+      ]
+    },
+    "slack-notification-home": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-slack"
+      ],
+      "env": {
+        "SLACK_BOT_TOKEN": "${MY_SLACK_OAUTH_TOKEN}",
+        "SLACK_TEAM_ID": "${SLACK_REFERENCE_TEAM_ID}"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "slack_list_channels",
+        "slack_post_message",
+        "slack_reply_to_thread"
+      ]
+    },
+    "slack-reference-home": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-slack"
+      ],
+      "env": {
+        "SLACK_BOT_TOKEN": "${SLACK_REFERENCE_BOT_TOKEN}",
+        "SLACK_TEAM_ID": "${SLACK_REFERENCE_TEAM_ID}"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "slack_list_channels",
+        "slack_get_channel_history",
+        "slack_get_users",
+        "slack_post_message",
+        "slack_get_thread_replies"
+      ]
+    },
+    "github-reference-home": {
+      "description": "GitHubリポジトリ管理・PR・Issue操作MCPサーバー",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GH_REFERENCE_TOKEN}"
+      },
+      "disabled": false,
+      "disabledTools": [],
+      "autoApprove": [
+        "list_commits",
+        "get_file_contents",
+        "list_issues",
+        "get_issue",
+        "list_pull_requests",
+        "get_pull_request",
+        "get_pull_request_files",
+        "get_pull_request_reviews",
+        "get_pull_request_comments",
+        "search_repositories",
+        "search_code",
+        "search_issues",
+        "search_users"
+      ]
+    }
+  }
+}
