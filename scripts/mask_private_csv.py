@@ -287,9 +287,7 @@ PARTIAL_MASK_COLS: list[str] = [
     "返却コメント",
 ]
 
-# 各カラムに対応するマッピング記録用カラム名を自動生成
-def _map_col_name(col: str) -> str:
-    return f"{col}_置換記録"
+
 
 
 def load_mapping(path: Path) -> tuple[dict[str, dict[str, str]], list[str], int]:
@@ -368,11 +366,6 @@ def main() -> None:
     for col in target_cols:
         if col not in map_cols:
             map_cols.append(col)
-    # 部分置換記録列を追加
-    for col in active_partial_cols:
-        mc = _map_col_name(col)
-        if mc not in map_cols:
-            map_cols.append(mc)
 
     delta_keys: list[str] = []  # 差分出力するキー（順序保持・重複排除）
     delta_keys_set: set[str] = set()
@@ -422,7 +415,6 @@ def main() -> None:
                         masked_text, repls = _mask_template_field(text, stable_key)
                         if any(repls.values()):
                             row[col] = masked_text
-                            entry[_map_col_name(col)] = _format_replacements(repls)
                             has_new = True
 
                 if has_new and key not in delta_keys_set:
@@ -456,11 +448,6 @@ def main() -> None:
                         masked_text, repls = _mask_template_field(text, stable_key)
                         if any(repls.values()):
                             row[col] = masked_text
-                            entry[_map_col_name(col)] = _format_replacements(repls)
-                        else:
-                            entry[_map_col_name(col)] = ""
-                    else:
-                        entry[_map_col_name(col)] = ""
 
                 existing[key] = entry
                 delta_keys.append(key)
@@ -468,23 +455,17 @@ def main() -> None:
 
             writer.writerow(row)
 
-    with delta_path.open("w", encoding="utf-8-sig", newline="") as fmap:
-        mw = csv.DictWriter(fmap, fieldnames=map_cols, extrasaction="ignore")
-        mw.writeheader()
-        for k in delta_keys:
-            mw.writerow(existing[k])
+    if delta_keys:
+        with delta_path.open("w", encoding="utf-8-sig", newline="") as fmap:
+            mw = csv.DictWriter(fmap, fieldnames=map_cols, extrasaction="ignore")
+            mw.writeheader()
+            for k in delta_keys:
+                mw.writerow(existing[k])
+        print(f"マッピング差分: {delta_path} ({len(delta_keys)} 件)")
+    else:
+        print("マッピング差分: なし（新規差分なし）")
 
     print(f"マスク済み: {output_path} ({len(rows)} 行)")
-    print(f"マッピング差分: {delta_path} ({len(delta_keys)} 件)")
-
-
-def _format_replacements(repls: dict[str, list[tuple[str, str]]]) -> str:
-    """置換記録を可読な文字列にフォーマットする。"""
-    parts: list[str] = []
-    for category, pairs in repls.items():
-        for orig, masked in pairs:
-            parts.append(f"{orig} -> {masked}")
-    return " | ".join(parts)
 
 
 if __name__ == "__main__":
