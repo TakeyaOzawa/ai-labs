@@ -285,6 +285,8 @@ MAP_SEQ_COL = "seq"
 PARTIAL_MASK_COLS: list[str] = [
     "初回商談時テンプレ",
     "返却コメント",
+    "備考欄",
+    "通信欄",
 ]
 
 
