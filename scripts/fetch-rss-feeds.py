@@ -280,6 +280,26 @@ FEEDS = {
             "url": "https://www.androidauthority.com/feed/",
             "type": "rss",
         },
+        {
+            "name": "SiliconANGLE",
+            "url": "https://siliconangle.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "The Decoder",
+            "url": "https://the-decoder.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "Modular Blog",
+            "url": "https://www.modular.com/blog/rss.xml",
+            "type": "rss",
+        },
+        {
+            "name": "Airbnb Tech Blog",
+            "url": "https://airbnb.tech/feed/",
+            "type": "rss",
+        },
     ],
     "biz_car": [
         {
@@ -340,6 +360,31 @@ FEEDS = {
         {
             "name": "Motor Finance Online",
             "url": "https://www.motorfinanceonline.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "InsideEVs",
+            "url": "https://insideevs.com/rss/articles/all/",
+            "type": "rss",
+        },
+        {
+            "name": "Electrive",
+            "url": "https://www.electrive.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "CnEVPost",
+            "url": "https://cnevpost.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "CarNewsChina",
+            "url": "https://carnewschina.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "EVsmart ブログ",
+            "url": "https://blog.evsmart.net/feed/",
             "type": "rss",
         },
     ],

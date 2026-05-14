@@ -16,7 +16,7 @@ Response, 日刊自動車新聞, くるまのニュース, MOBY, ベストカー
 損害保険料率算出機構, 日本損害保険協会, テレマティクス保険(UBI), Insurance Journal, Insurance Business Asia
 
 ## 海外動向
-Automotive News, Reuters Autos, S&P Global Mobility, Autoblog, Toyota Pressroom, CBT News, Automotive Manufacturing Solutions
+Automotive News, Reuters Autos, S&P Global Mobility, Autoblog, Toyota Pressroom, CBT News, Automotive Manufacturing Solutions, Honda Global ニュースルーム
 
 ## ビジネスメディア
 Bloomberg, Forbes, TechCrunch, Reuters, 東洋経済オンライン, ダイヤモンド・オンライン, ITmedia, BRIDGE, CNBC, BusinessWire

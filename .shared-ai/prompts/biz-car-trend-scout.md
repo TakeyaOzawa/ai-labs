@@ -18,9 +18,9 @@ python3.12 ~/scripts/get-jst-date.py --yesterday
 ## 事前取得済み情報（検索不要）
 
 `.tmp_{YYYY-MM-DD}_feeds.md` に格納済み。Phase 1ではこれらと重複しないソースに集中すること。
-事前取得済み: Response, Car Watch, くるまのニュース, TechCrunch, BRIDGE, ITmedia ビジネス, 東洋経済オンライン, Electrek, Automotive World, TeslaNorth, 日産グローバルニュースルーム, Motor Finance Online
+事前取得済み: Response, Car Watch, くるまのニュース, TechCrunch, BRIDGE, ITmedia ビジネス, 東洋経済オンライン, Electrek, Automotive World, TeslaNorth, 日産グローバルニュースルーム, Motor Finance Online, InsideEVs, Electrive, CnEVPost, CarNewsChina, EVsmart ブログ
 
-RSSでカバーできないサイト（検索で補完）: 日刊自動車新聞, MOBY, ベストカーWeb, カーセンサー, 日経クロステック, 業界団体(JALA/リース事業協会), 省庁(国交省/経産省), Automotive News, Bloomberg, Forbes, Autoblog, Toyota Pressroom, CNBC, Insurance Journal, JAF Training, CBT News, BusinessWire, Automotive Manufacturing Solutions, 日本経済新聞, グーネット自動車流通, Insurance Business Asia, 次世代自動車振興センター, JADA愛知
+RSSでカバーできないサイト（検索で補完）: 日刊自動車新聞, MOBY, ベストカーWeb, カーセンサー, 日経クロステック, 業界団体(JALA/リース事業協会), 省庁(国交省/経産省), Automotive News, Bloomberg, Forbes, Autoblog, Toyota Pressroom, CNBC, Insurance Journal, JAF Training, CBT News, BusinessWire, Automotive Manufacturing Solutions, 日本経済新聞, グーネット自動車流通, Insurance Business Asia, 次世代自動車振興センター, JADA愛知, Honda Global ニュースルーム
 
 ## 収集手順
 
