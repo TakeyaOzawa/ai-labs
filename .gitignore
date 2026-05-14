@@ -51,6 +51,7 @@
 /.gemini/*
 !.gemini/GEMINI.md
 /.ollama/*
+/.aider/*
 /.vim/*
 /.gk/*
 /.th-client/*
@@ -90,3 +91,4 @@
 **/*.backup
 /.config/*
 /.playwright-mcp/*
+/.cmuxterm/*
