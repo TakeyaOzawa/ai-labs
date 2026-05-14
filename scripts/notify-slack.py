@@ -271,7 +271,6 @@ def notify(
     channel: str,
     content: str,
     thread_mode: str | None,
-    header: str | None,
 ) -> dict:
     """Slack通知のメインロジック。
 
@@ -280,7 +279,6 @@ def notify(
         channel: 投稿先チャンネルID
         content: 投稿するMarkdownコンテンツ
         thread_mode: スレッドモード（None/compact/thread_ts値）
-        header: ヘッダーテキスト（省略時はH1から自動抽出）
 
     Returns:
         結果情報のdict
@@ -288,29 +286,53 @@ def notify(
     # Markdown → mrkdwn変換
     mrkdwn = convert_md_to_mrkdwn(content)
 
+    # compactモード: H1タイトルバーを親メッセージ、残りをスレッドに分離
+    if thread_mode == "compact":
+        header_msg, body = _split_header(mrkdwn)
+        if header_msg:
+            # ヘッダーを親メッセージとして投稿
+            result = post_message(token, channel, header_msg)
+            if not result.get("ok"):
+                return {
+                    "success": False,
+                    "error": result.get("error", "unknown"),
+                    "posted_count": 0,
+                }
+            parent_ts = result.get("ts")
+            # 残りの本文をスレッドに分割投稿
+            chunks = split_message(body) if body.strip() else []
+            posted_count = 1
+            for i, chunk in enumerate(chunks):
+                time.sleep(1)
+                res = post_message(token, channel, chunk, parent_ts)
+                if not res.get("ok"):
+                    return {
+                        "success": False,
+                        "error": res.get("error", "unknown"),
+                        "posted_count": posted_count,
+                    }
+                posted_count += 1
+            return {
+                "success": True,
+                "posted_count": posted_count,
+                "channel": channel,
+                "thread_ts": parent_ts,
+                "thread_mode": "compact",
+            }
+        # H1がない場合はsequentialと同じ動作にフォールバック
+
     # メッセージ分割
     chunks = split_message(mrkdwn)
-
-    # ヘッダーが明示指定されている場合、独立メッセージとして先頭に挿入
-    if header:
-        bar = TITLE_BAR_CHAR * TITLE_BAR_LENGTH
-        header_block = f"{bar}\n\u3000\n*{header}*\n\u3000\n{bar}"
-        chunks.insert(0, header_block)
 
     posted_count = 0
     first_ts: str | None = None
     thread_ts: str | None = None
 
-    # スレッドモード判定
+    # スレッドモード判定（既存スレッドID指定）
     if thread_mode and thread_mode != "compact":
-        # 既存スレッドIDが指定された場合、全メッセージをそのスレッドに投稿
         thread_ts = thread_mode
 
     for i, chunk in enumerate(chunks):
-        # compactモード: 最初のメッセージは通常投稿、残りはスレッドに
-        if thread_mode == "compact" and i > 0:
-            thread_ts = first_ts
-
         result = post_message(token, channel, chunk, thread_ts)
 
         if not result.get("ok"):
@@ -322,7 +344,6 @@ def notify(
 
         posted_count += 1
 
-        # 最初のメッセージのtsを記録（compactモード用）
         if i == 0 and not first_ts:
             first_ts = result.get("ts")
 
@@ -337,6 +358,54 @@ def notify(
         "thread_ts": first_ts,
         "thread_mode": thread_mode or "sequential",
     }
+
+
+def _split_header(mrkdwn: str) -> tuple[str, str]:
+    """変換済みmrkdwnからH1タイトルバー部分と本文を分離する。
+
+    H1タイトルバーは以下の形式:
+        ⎯⎯⎯...
+        　（全角スペース）
+        *タイトル*
+        　（全角スペース）
+        ⎯⎯⎯...
+
+    Returns:
+        (ヘッダー文字列, 残りの本文) のタプル。H1がなければ ("", 元テキスト)
+    """
+    bar = TITLE_BAR_CHAR * TITLE_BAR_LENGTH
+    lines = mrkdwn.split("\n")
+
+    # 最初のタイトルバー開始位置を探す
+    header_start = -1
+    for i, line in enumerate(lines):
+        if line.strip() == bar:
+            header_start = i
+            break
+
+    if header_start == -1:
+        return ("", mrkdwn)
+
+    # タイトルバーの終了位置を探す（2つ目のbar）
+    header_end = -1
+    for i in range(header_start + 1, len(lines)):
+        if lines[i].strip() == bar:
+            header_end = i
+            break
+
+    if header_end == -1:
+        return ("", mrkdwn)
+
+    header_lines = lines[header_start:header_end + 1]
+    # H1前のテキスト + H1後のテキストを本文として結合
+    pre_header = lines[:header_start]
+    post_header = lines[header_end + 1:]
+    body_lines = pre_header + post_header
+
+    header_msg = "\n".join(header_lines)
+    body = "\n".join(body_lines).strip()
+
+    return (header_msg, body)
 
 
 def main() -> None:
@@ -363,13 +432,9 @@ def main() -> None:
         default=None,
         help=(
             "スレッド投稿モード。"
-            "引数なし or 'compact': 最初のメッセージに残りをスレッドでぶら下げる。"
+            "引数なし or 'compact': H1タイトルを親メッセージにし残りをスレッドにぶら下げる。"
             "thread_ts値: 指定スレッドに全メッセージを投稿"
         ),
-    )
-    parser.add_argument(
-        "--header",
-        help="メッセージヘッダー（省略時: ファイルのH1から自動抽出）",
     )
     parser.add_argument(
         "--token-env",
@@ -429,7 +494,6 @@ def main() -> None:
         channel=args.channel,
         content=content,
         thread_mode=args.thread,
-        header=args.header,
     )
 
     # 結果出力
