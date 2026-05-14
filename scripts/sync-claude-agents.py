@@ -11,7 +11,7 @@ sync-claude-agents: kiroエージェント定義からclaude code用エージェ
 使い方:
     python3.12 scripts/sync-claude-agents.py
     python3.12 scripts/sync-claude-agents.py --dry-run
-    python3.12 scripts/sync-claude-agents.py --agent slack-notifier
+    python3.12 scripts/sync-claude-agents.py --agent tech-trend-scout
     python3.12 scripts/sync-claude-agents.py --prune
 
 出力: ~/.claude/agents/<name>.md
@@ -118,7 +118,7 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true",
                         help="出力先に書き込まず変換結果を標準出力に表示")
     parser.add_argument("--agent",
-                        help="特定エージェント名のみ変換(例: --agent slack-notifier)")
+                        help="特定エージェント名のみ変換(例: --agent tech-trend-scout)")
     parser.add_argument("--prune", action="store_true",
                         help="kiro側に存在しないclaudeエージェント.mdを削除する"
                              "(--agent指定時は無効)")

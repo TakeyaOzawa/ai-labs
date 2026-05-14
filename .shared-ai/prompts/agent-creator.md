@@ -71,6 +71,6 @@ readFile: .shared-ai/references/agent-pipeline-guide.md
 5. 既存エージェントとの重複・競合がないか確認する
 6. hook（IDE経路）とパイプラインスクリプト（ヘッドレス経路）の両方を常に整合させる
 7. プロンプト内で特定ツール固有名（kiro-cli等）を使わない（`.shared-ai/` は複数AIで共用）
-8. Slack通知は `slack-notifier` エージェントへの委譲パターンを使う（通知指示のみ記載）
+8. Slack通知は `~/scripts/notify-slack.py` を `--thread compact` で実行。H1タイトルが親メッセージ、本文がスレッドにぶら下がる（パイプラインでは `run_slack_notify()` 経由）
 9. JSON定義の `read.allowedPaths` にプロンプトが参照する全パスを含める
 10. 出力は日本語

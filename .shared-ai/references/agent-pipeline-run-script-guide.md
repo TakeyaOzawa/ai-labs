@@ -61,7 +61,7 @@ class PipelineConfig:
 6. Step 2: エージェント実行ループ（`pre_agent_hook` → `build_prompt` → `run_kiro_cli`）
 7. Step 2.5: `post_agents_hook`
 8. Step 3: 親タスク完了処理
-9. Step 4: Slack通知（`resolve_notify_path` → `slack-notifier`）
+9. Step 4: Slack通知（`resolve_notify_path` → `run_slack_notify()`）
 10. Step 5: `post_notify_hook`
 11. Step 6: 完了サマリー + caffeinate解除
 
@@ -176,7 +176,7 @@ CHILD_JOBS = [
 |------|------|
 | --agent フラグ | 必ず `--agent {agent-name}` を指定。エージェント定義の `prompt`, `tools`, `includeMcpJson`, `model` が自動適用される |
 | MCP環境変数 | `.zshrc` で定義された環境変数をsourceして解決。`kiro-cli` はmcp.jsonの `${...}` をプロセス環境変数から展開する |
-| SLACK_BOT_TOKEN | 収集フェーズ: `SLACK_REFERENCE_BOT_TOKEN` / 通知フェーズ: `MY_SLACK_OAUTH_TOKEN` を切り替え |
+| SLACK_BOT_TOKEN | 収集フェーズ: `SLACK_REFERENCE_BOT_TOKEN` を設定。通知フェーズ: `notify-slack.py` が `MY_SLACK_OAUTH_TOKEN` を直接参照するため切り替え不要 |
 | Notion MCP | SSE接続でブラウザ認証が必要。初回は手動認証。`includeMcpJson: false` のエージェントではロードされない |
 | ツール承認 | `--trust-all-tools` で全ツールを自動承認。`--no-interactive` と併用必須 |
 | セッション独立性 | 各エージェントは独立したセッションで実行。コンテキスト共有なし |
@@ -232,7 +232,7 @@ python3.12 ~/scripts/manage-scheduler.py {load|unload|reload|status|list} {label
 
 ## Slack通知
 
-`NOTIFY_FILE_MAP` でエージェント名→出力ファイルテンプレートを定義。`run_pipeline()` が各ファイルにつき1回 `slack-notifier` エージェントを呼び出す（セッション独立、前のファイル内容は保持しない）。
+`NOTIFY_FILE_MAP` でエージェント名→出力ファイルテンプレートを定義。`run_pipeline()` が各ファイルにつき1回 `run_slack_notify()` を呼び出す（`~/scripts/notify-slack.py` を `--thread compact` で実行。H1タイトルが親メッセージ、本文がスレッドにぶら下がる）。
 
 - マッピングに無いエージェント → スキップ
 - 出力ファイルが存在しない → スキップ

@@ -25,7 +25,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from _pipeline_common import run_ai_command
+from _pipeline_common import run_ai_command, run_slack_notify
 
 # ─── 定数 ────────────────────────────────────────────────────────
 
@@ -315,9 +315,7 @@ def step6_review(report_path: Path, log_file: Path) -> bool:
 
 def step7_slack_notify(report_path: Path, log_file: Path) -> bool:
     """Step 7: Slack通知。"""
-    prompt = f"file_path={report_path}"
-    _log_agent_header(log_file, "slack-notifier", prompt)
-    return run_ai_command(prompt, log_file, agent_name="slack-notifier")
+    return run_slack_notify(report_path, log_file, thread="compact")
 
 
 # ─── 一時ファイルクリーンアップ ──────────────────────────────────
@@ -452,8 +450,6 @@ def main() -> None:
         print(f"[{now_jst()}] Step 7: Slack通知（スキップ）")
     else:
         print(f"[{now_jst()}] Step 7: Slack通知...")
-        # 通知用に環境変数を切り替え
-        os.environ["SLACK_BOT_TOKEN"] = os.environ.get("MY_SLACK_OAUTH_TOKEN", "")
         if step7_slack_notify(report_path, log_file):
             print(f"[{now_jst()}]    ✅ 通知完了")
         else:

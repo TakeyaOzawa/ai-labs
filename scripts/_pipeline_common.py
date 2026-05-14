@@ -160,6 +160,38 @@ def log_error(pipeline: str, agent: str, message: str) -> None:
     print(f"[{timestamp}] [{pipeline}] > [{agent}] {message}", file=sys.stderr)
 
 
+def run_slack_notify(
+    file_path: Path,
+    log_file: Path,
+    channel: str = "",
+    thread: str = "",
+) -> bool:
+    """notify-slack.pyを呼び出してSlack通知を実行する。
+
+    Args:
+        file_path: 投稿するMarkdownファイルパス
+        log_file: ログ出力先
+        channel: 投稿先チャンネルID（省略時: スクリプトのデフォルト）
+        thread: スレッドモード（"compact" / thread_ts / 省略）
+
+    Returns:
+        成功時True
+    """
+    cmd = [
+        "python3.12",
+        str(SCRIPTS_DIR / "notify-slack.py"),
+        "--file", str(file_path),
+    ]
+    if channel:
+        cmd.extend(["--channel", channel])
+    if thread:
+        cmd.extend(["--thread", thread])
+
+    with open(log_file, "a", encoding="utf-8") as f:
+        result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
+    return result.returncode == 0
+
+
 # ─── ヘルパー関数 ────────────────────────────────────────────────
 
 def start_caffeinate() -> str:
@@ -474,9 +506,6 @@ def run_pipeline(config: PipelineConfig) -> None:
     notify_now = now_jst()
     print(f"[{notify_now}] Step 4: Slack通知...")
 
-    # 通知用に環境変数を切り替え
-    os.environ["SLACK_BOT_TOKEN"] = os.environ.get("MY_SLACK_OAUTH_TOKEN", "")
-
     notify_success = 0
     notify_skipped = 0
     notify_log = config.log_dir / "slack-notify.log"
@@ -504,9 +533,8 @@ def run_pipeline(config: PipelineConfig) -> None:
             continue
 
         print(f"[{now_jst()}]    📨 {entry_name} 通知中...")
-        notify_prompt = f"file_path={file_path}"
 
-        if run_ai_command(notify_prompt, notify_log, agent_name="slack-notifier"):
+        if run_slack_notify(file_path, notify_log, thread="compact"):
             print(f"[{now_jst()}]    ✅ {entry_name} 通知完了")
             notify_success += 1
         else:

@@ -319,7 +319,35 @@ def notify(
                 "thread_ts": parent_ts,
                 "thread_mode": "compact",
             }
-        # H1がない場合はsequentialと同じ動作にフォールバック
+        # H1がない場合: 最初のチャンクを親メッセージ、残りをスレッドにぶら下げる
+        chunks = split_message(mrkdwn)
+        if chunks:
+            result = post_message(token, channel, chunks[0])
+            if not result.get("ok"):
+                return {
+                    "success": False,
+                    "error": result.get("error", "unknown"),
+                    "posted_count": 0,
+                }
+            parent_ts = result.get("ts")
+            posted_count = 1
+            for chunk in chunks[1:]:
+                time.sleep(1)
+                res = post_message(token, channel, chunk, parent_ts)
+                if not res.get("ok"):
+                    return {
+                        "success": False,
+                        "error": res.get("error", "unknown"),
+                        "posted_count": posted_count,
+                    }
+                posted_count += 1
+            return {
+                "success": True,
+                "posted_count": posted_count,
+                "channel": channel,
+                "thread_ts": parent_ts,
+                "thread_mode": "compact",
+            }
 
     # メッセージ分割
     chunks = split_message(mrkdwn)
@@ -432,7 +460,8 @@ def main() -> None:
         default=None,
         help=(
             "スレッド投稿モード。"
-            "引数なし or 'compact': H1タイトルを親メッセージにし残りをスレッドにぶら下げる。"
+            "引数なし or 'compact': H1タイトルを親メッセージにし残りをスレッドにぶら下げる"
+            "（H1なしの場合は最初のチャンクが親）。"
             "thread_ts値: 指定スレッドに全メッセージを投稿"
         ),
     )
