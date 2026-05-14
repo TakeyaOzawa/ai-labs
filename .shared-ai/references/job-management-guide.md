@@ -63,6 +63,10 @@ parent (scout_daily)
 ### 使用例
 
 ```bash
+# GitHub org トレンドスカウトパイプライン
+python3.12 ~/scripts/create-jobs.py --pipeline github-org-trend-scout-pipeline --base-date 2026-05-14 \
+  --jobs '[{"job_name":"github-org-repo-collector","timeout":300,"retry_delay":30,"depends_on":null},{"job_name":"github-org-pr-collector","timeout":600,"retry_delay":30,"depends_on":"github-org-repo-collector"},{"job_name":"github-org-report-generator","timeout":300,"retry_delay":30,"depends_on":"github-org-pr-collector"}]'
+
 # ネストされたジョブ定義
 python3.12 ~/scripts/create-jobs.py --pipeline scout_daily --base-date 2026-05-10 \
   --jobs '[{"job_name":"agent-a","timeout":300},{"job_name":"sub-pipe","timeout":900,"child_jobs":[{"job_name":"step-1","timeout":300}]}]'

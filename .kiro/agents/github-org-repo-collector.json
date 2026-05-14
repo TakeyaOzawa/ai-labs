@@ -1,0 +1,11 @@
+{
+  "name": "github-org-repo-collector",
+  "description": "GitHub organizationの指定日にアクティビティがあったリポジトリ一覧を収集",
+  "tools": ["read", "write", "shell"],
+  "includeMcpJson": false,
+  "toolsSettings": {
+    "allowedPaths": {
+      "write": ["Documents/works/scout_histories/**"]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "github-org-report-generator",
+  "description": "PR詳細データから最終的な日次レポートを生成",
+  "tools": ["read", "write"],
+  "includeMcpJson": false,
+  "toolsSettings": {
+    "allowedPaths": {
+      "write": ["Documents/works/scout_histories/**"]
+    }
+  }
+}

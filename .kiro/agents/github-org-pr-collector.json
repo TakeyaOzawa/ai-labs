@@ -1,0 +1,11 @@
+{
+  "name": "github-org-pr-collector",
+  "description": "リポジトリ一覧からPR情報を収集し、詳細データを中間ファイルに出力",
+  "tools": ["read", "write", "shell"],
+  "includeMcpJson": false,
+  "toolsSettings": {
+    "allowedPaths": {
+      "write": ["Documents/works/scout_histories/**"]
+    }
+  }
+}

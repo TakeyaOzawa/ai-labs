@@ -156,6 +156,14 @@ python3.12 ~/scripts/check-directory-freshness.py --type {type} --max-age-days {
 | Slackユーザー一覧 | `slack-user-directory-updater` | 7日 | 週次scout完了後 | `slack-user-directory-update` hook |
 | Notionユーザー一覧 | `notion-user-directory-updater` | 14日 | 週次scout完了後 | `notion-user-directory-update` hook |
 
+### 独立パイプライン
+
+| パイプライン名 | 実行スクリプト | 対象エージェント | 実行頻度 | 目的 |
+|---------------|---------------|-----------------|----------|------|
+| gws-trend-scout-pipeline | `run-gws-trend-scout-pipeline.py` | gws-trend-extractor | 日次 | GWSドキュメント活動の日次レポート（コンテキスト逼迫対策） |
+| academic-trend-scout-pipeline | `run-academic-trend-scout-pipeline.py` | academic-trend-searcher | 日次 | 学術論文トレンドの日次レポート（月曜日のarXivフィード膨張対策） |
+| github-org-trend-scout-pipeline | `run-github-org-trend-scout-pipeline.py` | github-org-repo-collector, github-org-pr-collector, github-org-report-generator | 日次 | GitHub org PR活動の日次レポート（コンテキスト逼迫対策） |
+
 ### 新規追加時のチェックリスト
 
 - [ ] 更新頻度の決定（`max-age-days`）

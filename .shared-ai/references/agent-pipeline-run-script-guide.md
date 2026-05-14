@@ -11,7 +11,8 @@ scripts/
 ├── _pipeline_common.py              # 共通ユーティリティ + PipelineConfig + run_pipeline()
 ├── run-daily-pipeline.py            # daily固有の設定 + フック関数
 ├── run-weekly-pipeline.py           # weekly固有の設定 + フック関数
-└── run-gws-trend-scout-pipeline.py  # サブパイプライン（dailyから呼び出し）
+├── run-gws-trend-scout-pipeline.py  # サブパイプライン（dailyから呼び出し）
+└── run-academic-trend-scout-pipeline.py  # サブパイプライン（dailyから呼び出し）
 ```
 
 ### 設計方針: 設定dict + 共通runner関数
@@ -105,10 +106,19 @@ if __name__ == "__main__":
 
 `AGENTS` リストに `.py` で終わるエントリを含めると、`run_pipeline()` はそれをサブパイプラインスクリプトとして `run_sub_pipeline()` で実行する。
 
+エントリ名の解決（`_resolve_entry_name`）:
+- `.py` 拡張子を除去
+- `run-` プレフィックスがあれば除去
+
+例: `"run-gws-trend-scout-pipeline.py"` → entry_name: `"gws-trend-scout-pipeline"`
+
+このentry_nameがジョブ名、NOTIFY_FILE_MAPキー、ログファイル名として使用される。
+
 ```python
 AGENTS = [
-    "tech-trend-scout",              # kiro-cliエージェント
-    "run-gws-trend-scout-pipeline.py",  # サブパイプライン
+    "tech-trend-scout",                         # kiro-cliエージェント
+    "run-gws-trend-scout-pipeline.py",          # サブパイプライン
+    "run-academic-trend-scout-pipeline.py",     # サブパイプライン
 ]
 ```
 
@@ -151,7 +161,7 @@ if job_file:
 
 ```python
 CHILD_JOBS = [
-    {"job_name": "run-gws-trend-scout-pipeline", "timeout": 900, "child_jobs": [
+    {"job_name": "gws-trend-scout-pipeline", "timeout": 900, "child_jobs": [
         {"job_name": "gws-extractor-docs", "timeout": 300},
         {"job_name": "gws-extractor-slides", "timeout": 300},
     ]},
