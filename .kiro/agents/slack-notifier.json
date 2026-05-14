@@ -1,6 +1,6 @@
 {
     "name": "slack-notifier",
-    "description": "指定されたmdファイルまたはテキストをSlackチャンネルに投稿する汎用通知エージェント",
+    "description": "指定されたmdファイルまたはテキストをSlackチャンネルに投稿する汎用通知エージェント（notify-slack.py経由）",
     "prompt": "file://../../.shared-ai/prompts/slack-notifier.md",
     "tools": ["read", "shell"],
     "allowedTools": [],
@@ -14,7 +14,7 @@
         }
     },
     "resources": [],
-    "includeMcpJson": true,
+    "includeMcpJson": false,
     "model": "claude-sonnet-4",
     "welcomeMessage": "Slack通知エージェントです。投稿するファイルパスとチャンネルIDを指定してください。"
 }
