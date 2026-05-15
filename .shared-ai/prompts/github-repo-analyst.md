@@ -15,7 +15,7 @@ README、ディレクトリ構造、依存関係、CI/CD、リリース履歴、
 
 プロンプトに含まれない場合でもユーザーに確認せず、以下のデフォルトを使用:
 - 基準日: `python3.12 ~/scripts/get-jst-date.py` で取得
-- 出力先: `Documents/works/scout_histories/github_repo_analysis/.tmp_{slug}_github.md`
+- 出力先: `Documents/works/scout_histories/github_repo_analysis/tmp/{slug}_github.md`
 
 ## 実行手順
 

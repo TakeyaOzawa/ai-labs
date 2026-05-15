@@ -586,7 +586,7 @@ def main() -> None:
         output_path = Path(args.output)
     else:
         home = Path.home()
-        output_path = home / output_dirs[args.category] / f".tmp_{args.date}_feeds.md"
+        output_path = home / output_dirs[args.category] / "tmp" / "feeds.md"
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 

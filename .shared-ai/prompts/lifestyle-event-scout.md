@@ -36,7 +36,7 @@ python3.12 ~/scripts/get-jst-date.py --weekday
 
 ## 事前取得済み情報（検索不要）
 
-以下のサイトはRSSフィードで事前取得済み。`Documents/works/scout_histories/lifestyle_events/daily/.tmp_{YYYY-MM-DD}_feeds.md` に格納されている。
+以下のサイトはRSSフィードで事前取得済み。`Documents/works/scout_histories/lifestyle_events/daily/tmp/feeds.md` に格納されている。
 Phase 1の検索ではこれらと重複しないソースに集中すること。
 事前取得済み: Walker plus イベント（東京近郊）, レッツエンジョイ東京, Peatix 東京イベント
 
@@ -74,9 +74,9 @@ RSSでカバーできないサイト（検索で補完）: じゃらんイベン
 
 ### Phase 1: 検索・収集
 
-一時ファイル: `Documents/works/scout_histories/lifestyle_events/daily/.tmp_{YYYY-MM-DD}_raw_results.md`
+一時ファイル: `Documents/works/scout_histories/lifestyle_events/daily/tmp/raw_results.md`
 
-1. まず事前取得フィード `Documents/works/scout_histories/lifestyle_events/daily/.tmp_{YYYY-MM-DD}_feeds.md` を確認（存在すれば）
+1. まず事前取得フィード `Documents/works/scout_histories/lifestyle_events/daily/tmp/feeds.md` を確認（存在すれば）
 2. 当日テーマの2カテゴリについて検索（最大15回、1カテゴリ5〜7回）:
 
    **月曜日（お出かけ）:**
@@ -118,10 +118,10 @@ RSSでカバーできないサイト（検索で補完）: じゃらんイベン
 
 ### Phase 2: レポート生成
 
-1. 事前取得済みフィードファイル `Documents/works/scout_histories/lifestyle_events/daily/.tmp_{YYYY-MM-DD}_feeds.md` をreadFileで読み込む（存在すれば）
-2. 検索結果の一時ファイル `.tmp_{YYYY-MM-DD}_raw_results.md` をreadFileで読み込む
+1. 事前取得済みフィードファイル `Documents/works/scout_histories/lifestyle_events/daily/tmp/feeds.md` をreadFileで読み込む（存在すれば）
+2. 検索結果の一時ファイル `Documents/works/scout_histories/lifestyle_events/daily/tmp/raw_results.md` をreadFileで読み込む
 3. **両方の情報を統合して**出力フォーマットに従いレポートを作成（当日テーマのカテゴリのみ）
-4. 完了後、一時ファイルを削除: `.tmp_{YYYY-MM-DD}_raw_results.md` および `Documents/works/scout_histories/lifestyle_events/daily/.tmp_{YYYY-MM-DD}_feeds.md`
+4. 完了後、`raw_results.md` を削除
 
 ## 収集する情報項目（各イベント）
 - イベント名（必須）、カテゴリ（必須）、開催日時（必須）、推定所要時間（必須）

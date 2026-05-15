@@ -73,4 +73,5 @@ readFile: .shared-ai/references/agent-pipeline-guide.md
 7. プロンプト内で特定ツール固有名（kiro-cli等）を使わない（`.shared-ai/` は複数AIで共用）
 8. Slack通知は `~/scripts/notify-slack.py` を `--thread compact` で実行。H1タイトルが親メッセージ、本文がスレッドにぶら下がる（パイプラインでは `run_slack_notify()` 経由）
 9. JSON定義の `read.allowedPaths` にプロンプトが参照する全パスを含める
-10. 出力は日本語
+10. 一時ファイルは `{出力ディレクトリ}/tmp/` に日付なしで配置。`raw_results.md` は成功時に削除。`.tmp_{日付}_` 形式は使用禁止
+11. 出力は日本語

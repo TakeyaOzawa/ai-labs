@@ -140,7 +140,8 @@ def step1_github_analysis(
     owner: str, repo: str, slug: str, base_date: str, log_file: Path,
 ) -> Path | None:
     """Step 1: GitHub API調査。"""
-    output_path = OUTPUT_BASE / f".tmp_{slug}_github.md"
+    output_path = OUTPUT_BASE / "tmp" / f"{slug}_github.md"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     prompt = (
         f"基準日は {base_date} です。"
         f"日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
@@ -180,7 +181,7 @@ def step2_refs_analysis(
         print(f"[{now_jst()}]    ⏭️  参照先リポジトリなし（スキップ）")
         return None
 
-    output_path = OUTPUT_BASE / f".tmp_{slug}_refs.md"
+    output_path = OUTPUT_BASE / "tmp" / f"{slug}_refs.md"
     repos_text = "\n".join(f"- {r}" for r in repos_to_check[:3])
     prompt = (
         f"基準日は {base_date} です。"
@@ -201,7 +202,7 @@ def step3_web_search(
     machine_data: dict, log_file: Path,
 ) -> Path | None:
     """Step 3: Web調査。"""
-    output_path = OUTPUT_BASE / f".tmp_{slug}_web.md"
+    output_path = OUTPUT_BASE / "tmp" / f"{slug}_web.md"
 
     # キーワード抽出
     keywords = machine_data.get("web_search_keywords", {})
@@ -241,7 +242,7 @@ def step4_code_analysis(
     machine_data: dict, log_file: Path,
 ) -> Path | None:
     """Step 4: コードベース分析。"""
-    output_path = OUTPUT_BASE / f".tmp_{slug}_codebase.md"
+    output_path = OUTPUT_BASE / "tmp" / f"{slug}_codebase.md"
 
     basic_info = machine_data.get("basic_info", {})
     default_branch = basic_info.get("default_branch", "main")
@@ -322,11 +323,12 @@ def step7_slack_notify(report_path: Path, log_file: Path) -> bool:
 
 def cleanup_tmp_files(slug: str) -> None:
     """一時ファイルを削除する。"""
+    tmp_dir = OUTPUT_BASE / "tmp"
     patterns = [
-        OUTPUT_BASE / f".tmp_{slug}_github.md",
-        OUTPUT_BASE / f".tmp_{slug}_refs.md",
-        OUTPUT_BASE / f".tmp_{slug}_web.md",
-        OUTPUT_BASE / f".tmp_{slug}_codebase.md",
+        tmp_dir / f"{slug}_github.md",
+        tmp_dir / f"{slug}_refs.md",
+        tmp_dir / f"{slug}_web.md",
+        tmp_dir / f"{slug}_codebase.md",
     ]
     for p in patterns:
         if p.exists():

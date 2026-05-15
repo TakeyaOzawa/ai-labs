@@ -3,7 +3,7 @@
 split-academic-feeds: アカデミックフィードを分野別に分割する
 
 目的:
-    academic-trend-scoutのフィードファイル（.tmp_{date}_feeds.md）を
+    academic-trend-scoutのフィードファイル（tmp/feeds.md）を
     分野別の小さなファイルに分割し、各extractorが独立して処理できるようにする。
     各分野のフィードサイズを制限し、コンテキスト逼迫を防ぐ。
 
@@ -142,7 +142,7 @@ def main() -> None:
                         help=f"分野あたりの最大記事数（デフォルト: {DEFAULT_MAX_ITEMS}）")
     args = parser.parse_args()
 
-    feed_path = FEED_DIR / f".tmp_{args.date}_feeds.md"
+    feed_path = FEED_DIR / "tmp" / "feeds.md"
     print(f"📂 フィード分割開始（対象日: {args.date}）")
     print(f"   入力: {feed_path}")
     print(f"   最大件数/分野: {args.max_items}")

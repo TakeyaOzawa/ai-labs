@@ -10,9 +10,9 @@ extract-repo-analysis-data: github-repo-analyst出力から機械可読データ
 
 使い方:
     python3.12 scripts/extract-repo-analysis-data.py <input_file>
-    python3.12 scripts/extract-repo-analysis-data.py .tmp_slug_github.md
-    python3.12 scripts/extract-repo-analysis-data.py .tmp_slug_github.md --key related_repositories.recommended_for_deep_analysis
-    python3.12 scripts/extract-repo-analysis-data.py .tmp_slug_github.md --key web_search_keywords --format prompt
+    python3.12 scripts/extract-repo-analysis-data.py tmp/slug_github.md
+    python3.12 scripts/extract-repo-analysis-data.py tmp/slug_github.md --key related_repositories.recommended_for_deep_analysis
+    python3.12 scripts/extract-repo-analysis-data.py tmp/slug_github.md --key web_search_keywords --format prompt
 
 出力:
     JSON（デフォルト）またはプロンプト用テキスト（--format prompt）

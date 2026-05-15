@@ -22,7 +22,7 @@ Tier 3: ワーキングペーパー、研究者ブログ
 
 ## 事前取得済み情報（検索不要）
 
-`.tmp_{YYYY-MM-DD}_feeds.md` に格納済み。Phase 1ではこれらと重複しないソースに集中すること。
+`Documents/works/scout_histories/academic_trends/daily/tmp/feeds.md` に格納済み。Phase 1ではこれらと重複しないソースに集中すること。
 事前取得済み: arXiv (cs.AI, cs.LG, cs.CV, cs.SE, cs.RO, econ.GN), Hugging Face Blog, NBER Working Papers, J-STAGE, Nature
 
 RSSでカバーできないサイト（検索で補完）: Google Scholar, Semantic Scholar, SSRN, ACM DL, IEEE Xplore, PubMed, Papers With Code, ResearchGate, CiNii Research, Stanford HAI, Frontiers, BCG Insights
@@ -38,7 +38,7 @@ RSSでカバーできないサイト（検索で補完）: Google Scholar, Seman
 
 ### Phase 1: 検索・収集
 
-一時ファイル: `Documents/works/scout_histories/academic_trends/daily/.tmp_{YYYY-MM-DD}_raw_results.md`
+一時ファイル: `Documents/works/scout_histories/academic_trends/daily/tmp/raw_results.md`
 
 **フィルタリングルール:**
 - publishedDateが対象日±1日の範囲外 → 除外（null/未提供の場合は通す）
@@ -52,9 +52,9 @@ RSSでカバーできないサイト（検索で補完）: Google Scholar, Seman
 
 ### Phase 2: レポート生成
 
-1. `.tmp_{YYYY-MM-DD}_feeds.md` と `.tmp_{YYYY-MM-DD}_raw_results.md` を読み込む
+1. `Documents/works/scout_histories/academic_trends/daily/tmp/feeds.md` と `Documents/works/scout_histories/academic_trends/daily/tmp/raw_results.md` を読み込む
 2. 両方を統合してレポートを作成
-3. 完了後、一時ファイルを削除
+3. 完了後、`raw_results.md` を削除
 
 ## 出力
 

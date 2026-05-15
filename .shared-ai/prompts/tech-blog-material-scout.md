@@ -28,7 +28,7 @@ RSSでカバーできないサイト（検索で補完）: 各技術の公式ド
 
 ### Phase 1: テーマ選定 + 検索・収集
 
-一時ファイル: `Documents/works/scout_histories/tech_blog_materials/weekly/.tmp_{YYYY-MM-DD}_raw_results.md`
+一時ファイル: `Documents/works/scout_histories/tech_blog_materials/weekly/tmp/raw_results.md`
 
 #### Step 1: テーマ特定
 
@@ -69,9 +69,9 @@ RSSでカバーできないサイト（検索で補完）: 各技術の公式ド
 
 ### Phase 2: 素材シート生成
 
-1. 一時ファイル `.tmp_{YYYY-MM-DD}_raw_results.md` をreadFileで読み込む
+1. 一時ファイル `Documents/works/scout_histories/tech_blog_materials/weekly/tmp/raw_results.md` をreadFileで読み込む
 2. 出力フォーマットに従い素材シートを作成
-3. 完了後、一時ファイルを削除: `.tmp_{YYYY-MM-DD}_raw_results.md`
+3. 完了後、`raw_results.md` を削除
 
 ## 出力
 ファイル: `Documents/works/scout_histories/tech_blog_materials/weekly/{YYYY-MM-DD}_{テーマのkebab-case}_material.md`
