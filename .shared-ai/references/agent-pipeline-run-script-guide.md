@@ -240,5 +240,8 @@ python3.12 ~/scripts/manage-scheduler.py {load|unload|reload|status|list} {label
 
 ## 依存関係の解決
 
-`AGENTS` 配列の順序で順次実行。依存関係は配列の並び順で暗黙的に解決する。
-`depends_on` 付きジョブは、依存先が先に実行されるよう配置する。
+`AGENTS` 配列の順序で順次実行。`depends_on` 付きジョブは、依存先が先に実行されるよう配置する。
+ジョブファイル使用時は `_pipeline_common.py` のスケジューラが `depends_on`（配列）を参照し、
+依存先が全て完了していないジョブを自動スキップする。
+
+`depends_on` の形式: `null`（依存なし）または `["job-name-1", "job-name-2"]`（配列）。

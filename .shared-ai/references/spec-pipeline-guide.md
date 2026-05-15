@@ -141,7 +141,7 @@ Documents/works/jobs/spec/{TASK_ID}_spec.json
       "options": { "async": true, "timeout_seconds": 900, "max_retries": 0, "retry_delay_seconds": 0 },
       "status": "pending",
       "status_detail": null,
-      "depends_on": "investigator",
+      "depends_on": ["investigator"],
       "child_jobs": [],
       "created_at": "{ISO8601}",
       "updated_at": "{ISO8601}",
@@ -156,7 +156,7 @@ Documents/works/jobs/spec/{TASK_ID}_spec.json
       "options": { "async": true, "timeout_seconds": 3600, "max_retries": 0, "retry_delay_seconds": 0 },
       "status": "pending",
       "status_detail": null,
-      "depends_on": "spec-architect",
+      "depends_on": ["spec-architect"],
       "child_jobs": [],
       "created_at": "{ISO8601}",
       "updated_at": "{ISO8601}",
@@ -171,7 +171,7 @@ Documents/works/jobs/spec/{TASK_ID}_spec.json
       "options": { "async": true, "timeout_seconds": 1800, "max_retries": 0, "retry_delay_seconds": 0 },
       "status": "pending",
       "status_detail": null,
-      "depends_on": "implementer",
+      "depends_on": ["implementer"],
       "child_jobs": [],
       "created_at": "{ISO8601}",
       "updated_at": "{ISO8601}",
@@ -186,7 +186,7 @@ Documents/works/jobs/spec/{TASK_ID}_spec.json
       "options": { "async": true, "timeout_seconds": 900, "max_retries": 0, "retry_delay_seconds": 0 },
       "status": "pending",
       "status_detail": null,
-      "depends_on": "integration-tester",
+      "depends_on": ["integration-tester"],
       "child_jobs": [],
       "created_at": "{ISO8601}",
       "updated_at": "{ISO8601}",
@@ -207,7 +207,7 @@ Documents/works/jobs/spec/{TASK_ID}_spec.json
 
 | 観点 | scout | spec |
 |---|---|---|
-| 子タスクの実行順序 | 並列（`depends_on: null`） | 直列（`depends_on: "{前のエージェント}"`) |
+| 子タスクの実行順序 | 並列（`depends_on: null`） | 直列（`depends_on: ["{前のエージェント}"]`） |
 | 子タスクの `status` 初期値 | 全て `starting` | 最初のみ `starting`、残りは `pending` |
 | 親タスクの `args` | `base_date` | `spec_path`, `spec_type` |
 | ジョブ管理スクリプト | `find-job.py --pipeline daily\|weekly` | 将来対応（現時点は手動管理） |

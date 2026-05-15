@@ -8,7 +8,7 @@
     "max_retries": 0,
     "retry_delay_seconds": 0
   },
-  "status": "pending",
+  "status": "running",
   "status_detail": null,
   "depends_on": null,
   "child_jobs": [
@@ -31,11 +31,31 @@
       "started_at": null,
       "completed_at": null,
       "error": null
+    },
+    {
+      "job_id": "{ULID}",
+      "job_name": "{dependent-agent-name}",
+      "args": {},
+      "options": {
+        "async": true,
+        "timeout_seconds": 300,
+        "max_retries": 1,
+        "retry_delay_seconds": 30
+      },
+      "status": "pending",
+      "status_detail": null,
+      "depends_on": ["{agent-name}"],
+      "child_jobs": [],
+      "created_at": "{ISO8601}",
+      "updated_at": "{ISO8601}",
+      "started_at": null,
+      "completed_at": null,
+      "error": null
     }
   ],
   "created_at": "{ISO8601}",
   "updated_at": "{ISO8601}",
-  "started_at": null,
+  "started_at": "{ISO8601}",
   "completed_at": null,
   "error": null
 }
