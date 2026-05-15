@@ -10,7 +10,7 @@ split-academic-feeds: アカデミックフィードを分野別に分割する
 使い方:
     python3.12 scripts/split-academic-feeds.py --date 2026-05-11 [--max-items 100]
 
-出力: Documents/works/scout_histories/academic_trends/daily/tmp/{field}_feed.md
+出力: Documents/works/scout_reports/academic_trends/daily/tmp/{field}_feed.md
 依存: python3.12
 """
 
@@ -22,7 +22,7 @@ from pathlib import Path
 # ─── 定数 ────────────────────────────────────────────────────────
 
 HOME = Path.home()
-FEED_DIR = HOME / "Documents" / "works" / "scout_histories" / "academic_trends" / "daily"
+FEED_DIR = HOME / "Documents" / "works" / "scout_reports" / "academic_trends" / "daily"
 TMP_DIR = FEED_DIR / "tmp"
 
 # 分野定義: 分野名 → フィードセクション名のリスト

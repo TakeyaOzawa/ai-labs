@@ -576,11 +576,11 @@ def main() -> None:
 
     # 出力先決定
     output_dirs = {
-        "tech": "Documents/works/scout_histories/tech_trends/daily",
-        "biz_car": "Documents/works/scout_histories/biz_car_trends/daily",
-        "academic": "Documents/works/scout_histories/academic_trends/daily",
-        "tech_events": "Documents/works/scout_histories/tech_events/weekly",
-        "lifestyle_events": "Documents/works/scout_histories/lifestyle_events/daily",
+        "tech": "Documents/works/scout_reports/tech_trends/daily",
+        "biz_car": "Documents/works/scout_reports/biz_car_trends/daily",
+        "academic": "Documents/works/scout_reports/academic_trends/daily",
+        "tech_events": "Documents/works/scout_reports/tech_events/weekly",
+        "lifestyle_events": "Documents/works/scout_reports/lifestyle_events/daily",
     }
     if args.output:
         output_path = Path(args.output)

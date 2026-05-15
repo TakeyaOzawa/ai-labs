@@ -28,11 +28,11 @@ RSSでカバーできないサイト（検索で補完）: 各技術の公式ド
 
 ### Phase 1: テーマ選定 + 検索・収集
 
-一時ファイル: `Documents/works/scout_histories/tech_blog_materials/weekly/tmp/raw_results.md`
+一時ファイル: `Documents/works/scout_reports/tech_blog_materials/weekly/tmp/raw_results.md`
 
 #### Step 1: テーマ特定
 
-`Documents/works/scout_histories/tech_trends/daily/` 配下のscoutレポートを傾向分析:
+`Documents/works/scout_reports/tech_trends/daily/` 配下のscoutレポートを傾向分析:
 - **直近1週間分のみ**をreadFileで読み込む（コンテキスト節約のため1ヶ月分は読まない）
 - 各レポートの「🔥 注目トピック」セクションと「📊 当プロジェクトへの影響サマリ」セクションのみに注目
 - 直近1週間で2回以上登場するトピックをテーマ候補とする
@@ -69,12 +69,12 @@ RSSでカバーできないサイト（検索で補完）: 各技術の公式ド
 
 ### Phase 2: 素材シート生成
 
-1. 一時ファイル `Documents/works/scout_histories/tech_blog_materials/weekly/tmp/raw_results.md` をreadFileで読み込む
+1. 一時ファイル `Documents/works/scout_reports/tech_blog_materials/weekly/tmp/raw_results.md` をreadFileで読み込む
 2. 出力フォーマットに従い素材シートを作成
 3. 完了後、`raw_results.md` を削除
 
 ## 出力
-ファイル: `Documents/works/scout_histories/tech_blog_materials/weekly/{YYYY-MM-DD}_{テーマのkebab-case}_material.md`
+ファイル: `Documents/works/scout_reports/tech_blog_materials/weekly/{YYYY-MM-DD}_{テーマのkebab-case}_material.md`
 
 フォーマット:
 ```markdown
@@ -131,7 +131,7 @@ confidence: high | medium | low
 - ユーザー確認スキップ
 - **1テーマずつ逐次処理**: テーマ選定→検索→素材シート書き出し→次テーマへ。全テーマの情報を同時にコンテキストに保持しない
 - 各テーマの素材シートを個別mdファイルとして作成（1テーマ完了ごとにfsWriteで書き出し）
-- 出力先: `Documents/works/scout_histories/tech_blog_materials/weekly/`
+- 出力先: `Documents/works/scout_reports/tech_blog_materials/weekly/`
 - 全5テーマ完了後、tech-poc-planner引き継ぎ情報を出力:
   - 5つの素材シートのファイルパス一覧
   - 各テーマの推奨タイトル・切り口・想定読者・注意点

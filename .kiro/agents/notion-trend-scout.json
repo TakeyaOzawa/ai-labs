@@ -6,12 +6,12 @@
     "allowedTools": ["shell"],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_histories/notion_trends/daily/**"]
+            "allowedPaths": ["Documents/works/scout_reports/notion_trends/daily/**"]
         },
         "read": {
             "allowedPaths": [
                 "Documents/works/notion_users/**",
-                "Documents/works/scout_histories/notion_trends/**"
+                "Documents/works/scout_reports/notion_trends/**"
             ]
         }
     },

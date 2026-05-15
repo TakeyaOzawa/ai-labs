@@ -9,7 +9,7 @@
             "allowedPaths": [
                 "Documents/works/tech_poc_plans/**",
                 "Documents/works/tech_blog_articles/**",
-                "Documents/works/scout_histories/tech_blog_materials/**",
+                "Documents/works/scout_reports/tech_blog_materials/**",
                 "works/poc-something/**"
             ]
         },

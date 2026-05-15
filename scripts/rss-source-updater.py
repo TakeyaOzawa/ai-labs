@@ -193,7 +193,7 @@ def main():
         # ファイル収集
         files = []
         for date in dates:
-            file_path = Path.home() / f"Documents/works/scout_histories/{trend_type}/daily/{date}_{trend_type}.md"
+            file_path = Path.home() / f"Documents/works/scout_reports/{trend_type}/daily/{date}_{trend_type}.md"
             if file_path.exists():
                 files.append(file_path)
         

@@ -7,7 +7,7 @@
   "toolsSettings": {
     "read": {
       "allowedPaths": [
-        "Documents/works/scout_histories/**",
+        "Documents/works/scout_reports/**",
         "scripts/fetch-rss-feeds.py",
         ".shared-ai/references/**",
         ".shared-ai/prompts/**"

@@ -6,7 +6,7 @@
     "allowedTools": ["web"],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_histories/tech_trends/daily/**"]
+            "allowedPaths": ["Documents/works/scout_reports/tech_trends/daily/**"]
         }
     },
     "resources": [],

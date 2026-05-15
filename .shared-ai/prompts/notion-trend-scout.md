@@ -73,7 +73,7 @@ readFile: ${HOME}/Documents/works/notion_users/{DATE}/people.md
 ### Step 1: 出力ディレクトリの準備と タスクリストの収集
 
 ```bash
-mkdir -p Documents/works/scout_histories/notion_trends/daily
+mkdir -p Documents/works/scout_reports/notion_trends/daily
 ```
 
 #### 1.1 データベース構造の把握
@@ -166,7 +166,7 @@ mcp_notion_home_notion_search:
 
 ### Step 5: レポート出力
 
-出力先: `Documents/works/scout_histories/notion_trends/daily/{基準日}_notion_daily.md`
+出力先: `Documents/works/scout_reports/notion_trends/daily/{基準日}_notion_daily.md`
 
 出力フォーマットは `readFile: ~/.shared-ai/interfaces/notion-trend-scout-output.md` を参照すること。
 

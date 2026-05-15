@@ -6,7 +6,7 @@
     "allowedTools": [],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_histories/github_org_trends/weekly/**"]
+            "allowedPaths": ["Documents/works/scout_reports/github_org_trends/weekly/**"]
         }
     },
     "resources": [],

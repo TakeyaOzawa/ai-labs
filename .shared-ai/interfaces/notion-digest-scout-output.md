@@ -1,6 +1,6 @@
 # notion-digest-scout 出力フォーマット
 
-出力先: `Documents/works/scout_histories/notion_trends/weekly/{YYYY-MM-DD}_notion_weekly_digest.md`
+出力先: `Documents/works/scout_reports/notion_trends/weekly/{YYYY-MM-DD}_notion_weekly_digest.md`
 
 ```markdown
 ---

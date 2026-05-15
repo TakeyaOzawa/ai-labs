@@ -46,14 +46,14 @@ AGENTS = [
 ]
 
 NOTIFY_FILE_MAP: dict[str, str] = {
-    "tech-trend-scout": "scout_histories/tech_trends/daily/{date}_tech_trends.md",
-    "biz-car-trend-scout": "scout_histories/biz_car_trends/daily/{date}_biz_car_trends.md",
-    "academic-trend-scout-pipeline": "scout_histories/academic_trends/daily/{date}_academic_trends.md",
-    "gws-trend-scout-pipeline": "scout_histories/gws_trends/daily/{date}_gws_daily.md",
-    "slack-trend-scout": "scout_histories/slack_trends/daily/{date}_slack_daily.md",
-    "github-org-trend-scout": "scout_histories/github_org_trends/daily/{date}_github-org_daily.md",
-    "github-public-trend-scout": "scout_histories/github_public_trends/daily/{date}_github-public_daily.md",
-    "notion-trend-scout": "scout_histories/notion_trends/daily/{date}_notion_daily.md",
+    "tech-trend-scout": "scout_reports/tech_trends/daily/{date}_tech_trends.md",
+    "biz-car-trend-scout": "scout_reports/biz_car_trends/daily/{date}_biz_car_trends.md",
+    "academic-trend-scout-pipeline": "scout_reports/academic_trends/daily/{date}_academic_trends.md",
+    "gws-trend-scout-pipeline": "scout_reports/gws_trends/daily/{date}_gws_daily.md",
+    "slack-trend-scout": "scout_reports/slack_trends/daily/{date}_slack_daily.md",
+    "github-org-trend-scout": "scout_reports/github_org_trends/daily/{date}_github-org_daily.md",
+    "github-public-trend-scout": "scout_reports/github_public_trends/daily/{date}_github-public_daily.md",
+    "notion-trend-scout": "scout_reports/notion_trends/daily/{date}_notion_daily.md",
 }
 
 # lifestyle-event-scoutは曜日によって出力ファイル名が変わるため動的に解決
@@ -141,10 +141,10 @@ def _resolve_notify_path(agent: str, base_date: str) -> Path | None:
     if theme is None:
         # 日曜日: 週次サマリー
         return (HOME / "Documents" / "works" /
-                f"scout_histories/lifestyle_events/weekly/{today_date}_lifestyle_weekly_summary.md")
+                f"scout_reports/lifestyle_events/weekly/{today_date}_lifestyle_weekly_summary.md")
     else:
         return (HOME / "Documents" / "works" /
-                f"scout_histories/lifestyle_events/daily/{today_date}_lifestyle_{theme}.md")
+                f"scout_reports/lifestyle_events/daily/{today_date}_lifestyle_{theme}.md")
 
 
 # ─── メイン ──────────────────────────────────────────────────────

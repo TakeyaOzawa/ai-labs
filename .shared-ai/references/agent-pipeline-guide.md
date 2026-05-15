@@ -77,7 +77,7 @@ def _build_prompt(agent: str, base_date: str) -> str:
 ```python
 NOTIFY_FILE_MAP = {
     ...
-    "{new-agent-name}": "scout_histories/{output_dir}/{frequency}/{date}_{output_file}.md",
+    "{new-agent-name}": "scout_reports/{output_dir}/{frequency}/{date}_{output_file}.md",
 }
 ```
 

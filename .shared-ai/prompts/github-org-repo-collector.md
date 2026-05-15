@@ -28,7 +28,7 @@ gh repo list "$ORG_NAME" --limit 200 --json name,pushedAt --jq '.[] | select(.pu
 収集したリポジトリ一覧を中間ファイルに出力する。
 
 ## 出力
-ファイル: `~/Documents/works/scout_histories/github_org_trends/daily/tmp/repos.json`
+ファイル: `~/Documents/works/scout_reports/github_org_trends/daily/tmp/repos.json`
 
 フォーマット:
 ```json

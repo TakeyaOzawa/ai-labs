@@ -209,7 +209,7 @@ code_analysis_hints:
 以下のリポジトリを調査してください（概要レベル）:
 - vercel/next.js: フォーク元。アーキテクチャの参考として重要
 - volareinc/carmo-kintone: 同一org内の類似プロジェクト
-出力先: Documents/works/scout_histories/github_repo_analysis/tmp/{slug}_refs.md
+出力先: Documents/works/scout_reports/github_repo_analysis/tmp/{slug}_refs.md
 ```
 
 ### → web-searcher
@@ -222,7 +222,7 @@ code_analysis_hints:
 キーワード: {secondary}
 競合: {competitors}
 エコシステム: {ecosystem}
-出力先: Documents/works/scout_histories/github_repo_analysis/tmp/{slug}_web.md
+出力先: Documents/works/scout_reports/github_repo_analysis/tmp/{slug}_web.md
 purpose: tech_selection
 ```
 
@@ -239,5 +239,5 @@ purpose: tech_selection
 テストディレクトリ: {test_dirs}
 設定ファイル: {config_files}
 エントリポイント: {entry_points}
-出力先: Documents/works/scout_histories/github_repo_analysis/tmp/{slug}_codebase.md
+出力先: Documents/works/scout_reports/github_repo_analysis/tmp/{slug}_codebase.md
 ```

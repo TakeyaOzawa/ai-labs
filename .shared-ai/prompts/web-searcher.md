@@ -23,7 +23,7 @@
 | 入力タイプ | 説明 | 例 |
 |---|---|---|
 | テーマ/キーワード | ユーザーが直接指定 | 「Deno 2のNode互換性について調べて」 |
-| trend/digestレポートパス | 既存レポートの特定トピックを深掘り | `scout_histories/tech_trends/daily/2026-05-10_*.md` の「○○」 |
+| trend/digestレポートパス | 既存レポートの特定トピックを深掘り | `scout_reports/tech_trends/daily/2026-05-10_*.md` の「○○」 |
 | URL/記事 | 特定の記事を起点に周辺情報を調査 | 「このURLの技術について深掘りして」 |
 
 ## ソース参照の決定
@@ -66,7 +66,7 @@
 
 trend/digestレポートから関連情報を抽出する（該当する場合のみ）:
 
-1. `Documents/works/scout_histories/` 配下の直近レポートを検索
+1. `Documents/works/scout_reports/` 配下の直近レポートを検索
 2. テーマに関連する記述を抽出（キーワードマッチ）
 3. 既に判明している事実・URLをリスト化（重複調査を避ける）
 

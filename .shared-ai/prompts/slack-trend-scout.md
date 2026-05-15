@@ -72,7 +72,7 @@ invokeSubAgent:
     対象日: {YYYY-MM-DD}
     チャンネルID: {channel_id}
     チャンネル名: {channel_name}
-    出力先: Documents/works/scout_histories/slack_trends/daily/tmp/{中間ファイル名}
+    出力先: Documents/works/scout_reports/slack_trends/daily/tmp/{中間ファイル名}
     ユーザーディレクトリ: {slack_users_dir}
 
     ユーザーID解決の手順:
@@ -111,14 +111,14 @@ invokeSubAgent:
     slack-trend-scout-merge エージェントとしてプロンプトファイルに従い実行してください。
 
     対象日: {YYYY-MM-DD}
-    中間ファイルディレクトリ: Documents/works/scout_histories/slack_trends/daily/tmp/
-    出力先: Documents/works/scout_histories/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md
+    中間ファイルディレクトリ: Documents/works/scout_reports/slack_trends/daily/tmp/
+    出力先: Documents/works/scout_reports/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md
 
     中間ファイル一覧:
-    - Documents/works/scout_histories/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C05B4AZ7ZMM.md（エンジニア用）
-    - Documents/works/scout_histories/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C05TJBT6BM2.md（エンジニア他部署連絡用）
-    - Documents/works/scout_histories/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C5L91295J.md（不具合報告）
-    - Documents/works/scout_histories/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C02S55ZN0U9.md（作業依頼・質問）
+    - Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C05B4AZ7ZMM.md（エンジニア用）
+    - Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C05TJBT6BM2.md（エンジニア他部署連絡用）
+    - Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C5L91295J.md（不具合報告）
+    - Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C02S55ZN0U9.md（作業依頼・質問）
 
     【重要: コンテキスト節約ルール】
     完了時は以下の形式のみで報告すること。レポート全文やファイル内容は絶対に返さないこと:
@@ -135,7 +135,7 @@ invokeSubAgent:
 
 ```
 ✅ slack-trend-scout 完了
-- 出力ファイル: Documents/works/scout_histories/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md
+- 出力ファイル: Documents/works/scout_reports/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md
 - 件数/概要: {合計メッセージ数}件のメッセージを{4}チャンネルから収集
 - エラー: なし / {エラー内容}
 ```

@@ -12,7 +12,7 @@ run-github-repo-analysis-pipeline: GitHubリポジトリ分析パイプライン
     python3.12 scripts/run-github-repo-analysis-pipeline.py https://github.com/owner/repo --skip-web --skip-codebase
     python3.12 scripts/run-github-repo-analysis-pipeline.py https://github.com/owner/repo --skip-refs --skip-review
 
-出力: Documents/works/scout_histories/github_repo_analysis/{date}_{slug}_analysis.md
+出力: Documents/works/scout_reports/github_repo_analysis/{date}_{slug}_analysis.md
 依存: kiro-cli または claude (AI_COMMAND_TYPE環境変数で切替), python3.12, gh (GitHub CLI)
 """
 
@@ -33,7 +33,7 @@ JST = timezone(timedelta(hours=9))
 HOME = Path.home()
 SCRIPTS_DIR = Path(__file__).parent
 PLATFORM_CMD = SCRIPTS_DIR / "platform-commands.sh"
-OUTPUT_BASE = HOME / "Documents" / "works" / "scout_histories" / "github_repo_analysis"
+OUTPUT_BASE = HOME / "Documents" / "works" / "scout_reports" / "github_repo_analysis"
 LOG_DIR = HOME / "logs" / "jobs" / "github_repo_analysis"
 MAX_LOG_LINES = 500
 

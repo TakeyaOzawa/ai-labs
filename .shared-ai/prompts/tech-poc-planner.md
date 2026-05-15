@@ -13,7 +13,7 @@
 
 | 入力タイプ | 説明 | 例 |
 |---|---|---|
-| 素材シート | tech-blog-material-scoutが作成したmd | `Documents/works/scout_histories/tech_blog_materials/weekly/2026-05-05_*.md` |
+| 素材シート | tech-blog-material-scoutが作成したmd | `Documents/works/scout_reports/tech_blog_materials/weekly/2026-05-05_*.md` |
 | 草案・テーマ文章 | ユーザーが直接提供するテキスト | 「TypeScript 7のGoコンパイラについて書きたい」「こんな構成で...」 |
 | mdファイルパス | ユーザーが指定するファイル | 任意のmdファイル |
 

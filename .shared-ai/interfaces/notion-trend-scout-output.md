@@ -1,6 +1,6 @@
 # notion-trend-scout 出力フォーマット
 
-出力先: `Documents/works/scout_histories/notion_trends/daily/{基準日}_notion_daily.md`
+出力先: `Documents/works/scout_reports/notion_trends/daily/{基準日}_notion_daily.md`
 
 ```markdown
 ---

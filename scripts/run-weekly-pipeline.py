@@ -60,12 +60,12 @@ WEEKLY_PIPELINE_MODE_AGENTS = {
 }
 
 NOTIFY_FILE_MAP: dict[str, str] = {
-    "slack-digest-scout": "scout_histories/slack_trends/weekly/{date}_slack_weekly_digest.md",
-    "gws-digest-scout": "scout_histories/gws_trends/weekly/{date}_gws_weekly_digest.md",
-    "notion-digest-scout": "scout_histories/notion_trends/weekly/{date}_notion_weekly_digest.md",
-    "github-org-digest-scout": "scout_histories/github_org_trends/weekly/{date}_github-org_weekly_digest.md",
-    "github-public-digest-scout": "scout_histories/github_public_trends/weekly/{date}_github-public_weekly_digest.md",
-    "tech-event-scout": "scout_histories/tech_events/weekly/{date}_tech_events.md",
+    "slack-digest-scout": "scout_reports/slack_trends/weekly/{date}_slack_weekly_digest.md",
+    "gws-digest-scout": "scout_reports/gws_trends/weekly/{date}_gws_weekly_digest.md",
+    "notion-digest-scout": "scout_reports/notion_trends/weekly/{date}_notion_weekly_digest.md",
+    "github-org-digest-scout": "scout_reports/github_org_trends/weekly/{date}_github-org_weekly_digest.md",
+    "github-public-digest-scout": "scout_reports/github_public_trends/weekly/{date}_github-public_weekly_digest.md",
+    "tech-event-scout": "scout_reports/tech_events/weekly/{date}_tech_events.md",
 }
 
 
@@ -133,7 +133,7 @@ def run_poc_planner(base_date: str) -> None:
     print(f"[{planner_now}] Step 2.5: tech-poc-planner 個別実行...")
 
     material_dir = (HOME / "Documents" / "works" /
-                    "scout_histories" / "tech_blog_materials" / "weekly")
+                    "scout_reports" / "tech_blog_materials" / "weekly")
     planner_log = LOG_DIR / "tech-poc-planner.log"
     rotate_log(planner_log, MAX_AGENT_LOG_LINES, keep_lines=100)
 

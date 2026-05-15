@@ -11,7 +11,7 @@ run-academic-trend-scout-pipeline: アカデミックトレンドスカウトの
     python3.12 scripts/run-academic-trend-scout-pipeline.py [基準日]
     python3.12 scripts/run-academic-trend-scout-pipeline.py 2026-05-11
 
-出力: Documents/works/scout_histories/academic_trends/daily/{date}_academic_trends.md
+出力: Documents/works/scout_reports/academic_trends/daily/{date}_academic_trends.md
 依存: python3.12, kiro-cli または claude (AI_COMMAND_TYPE環境変数で切替), split-academic-feeds.py, merge-academic-intermediate-files.py
 """
 
@@ -30,7 +30,7 @@ from _pipeline_common import run_ai_command
 JST = timezone(timedelta(hours=9))
 HOME = Path.home()
 SCRIPTS_DIR = Path(__file__).parent
-FEED_DIR = HOME / "Documents" / "works" / "scout_histories" / "academic_trends" / "daily"
+FEED_DIR = HOME / "Documents" / "works" / "scout_reports" / "academic_trends" / "daily"
 TMP_DIR = FEED_DIR / "tmp"
 OUTPUT_DIR = FEED_DIR
 

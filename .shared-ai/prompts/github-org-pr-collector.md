@@ -9,7 +9,7 @@
 github-org-trend-scout-pipelineの第2ステップ。PR詳細収集のみ。最終レポート生成は後続エージェントが担当。
 
 ## 入力ファイル
-`~/Documents/works/scout_histories/github_org_trends/daily/tmp/repos.json`
+`~/Documents/works/scout_reports/github_org_trends/daily/tmp/repos.json`
 
 ## 環境変数
 ```bash
@@ -41,7 +41,7 @@ gh pr view {pr_number} --repo "$ORG_NAME/{repo}" --json body,commits --jq '{body
 収集したPR詳細情報を中間ファイルに出力する。
 
 ## 出力
-ファイル: `~/Documents/works/scout_histories/github_org_trends/daily/tmp/prs.json`
+ファイル: `~/Documents/works/scout_reports/github_org_trends/daily/tmp/prs.json`
 
 フォーマット:
 ```json

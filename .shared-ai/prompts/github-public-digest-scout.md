@@ -19,7 +19,7 @@ python3.12 ~/scripts/get-jst-date.py
 
 ### Phase 1: 日次レポート集約
 
-1. `Documents/works/scout_histories/github_public_trends/daily/` 配下の直近7日分を読み込む
+1. `Documents/works/scout_reports/github_public_trends/daily/` 配下の直近7日分を読み込む
    - ファイル名パターン: `{YYYY-MM-DD}_github-public_daily.md`
 2. 各レポートからリポジトリ情報・カテゴリ・修正傾向・自社関連度を抽出
 3. 同一リポジトリが複数日に出現する場合は出現回数を記録（持続的注目の指標）
@@ -35,7 +35,7 @@ python3.12 ~/scripts/get-jst-date.py
 5. **言語別トレンド**: 注目されている言語の傾向
 
 ## 出力
-ファイル: `Documents/works/scout_histories/github_public_trends/weekly/{YYYY-MM-DD}_github-public_weekly_digest.md`
+ファイル: `Documents/works/scout_reports/github_public_trends/weekly/{YYYY-MM-DD}_github-public_weekly_digest.md`
 
 フォーマット:
 ```markdown

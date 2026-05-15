@@ -6,7 +6,7 @@
     "allowedTools": ["web"],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_histories/academic_trends/daily/**"]
+            "allowedPaths": ["Documents/works/scout_reports/academic_trends/daily/**"]
         }
     },
     "resources": [],

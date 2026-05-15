@@ -6,7 +6,7 @@
     "allowedTools": ["shell"],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_histories/github_repo_analysis/**"]
+            "allowedPaths": ["Documents/works/scout_reports/github_repo_analysis/**"]
         },
         "shell": {
             "allowedCommands": [

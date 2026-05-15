@@ -6,7 +6,7 @@
     "allowedTools": [],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_histories/slack_trends/daily/**"]
+            "allowedPaths": ["Documents/works/scout_reports/slack_trends/daily/**"]
         }
     },
     "resources": [],
