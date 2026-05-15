@@ -267,9 +267,11 @@ case "$COMMAND" in
     fi
 
     if [[ -n "$SHELL_RC" ]]; then
-      # サブシェルでsourceして、対象の環境変数のみ出力
-      (
-        source "$SHELL_RC" 2>/dev/null || true
+      # export行のみ抽出して評価（zsh固有構文でbashが失敗するのを回避）
+      while IFS= read -r line; do
+        echo "$line"
+      done < <(
+        eval "$(grep -E '^export (MY_SLACK_OAUTH_TOKEN|SLACK_REFERENCE_BOT_TOKEN|SLACK_REFERENCE_TEAM_ID|GITHUB_TOKEN|NOTION_TOKEN)=' "$SHELL_RC" 2>/dev/null)" 2>/dev/null
         env | grep -E '^(MY_SLACK_OAUTH_TOKEN|SLACK_REFERENCE_BOT_TOKEN|SLACK_REFERENCE_TEAM_ID|GITHUB_TOKEN|NOTION_TOKEN)='
       ) 2>/dev/null || true
     fi
