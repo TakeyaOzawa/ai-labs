@@ -300,6 +300,16 @@ FEEDS = {
             "url": "https://airbnb.tech/feed/",
             "type": "rss",
         },
+        {
+            "name": "PostgreSQL Blog",
+            "url": "https://www.postgresql.org/news/feed.rss",
+            "type": "rss",
+        },
+        {
+            "name": "KDE Community",
+            "url": "https://kde.org/index.xml",
+            "type": "rss",
+        },
     ],
     "biz_car": [
         {
@@ -385,6 +395,11 @@ FEEDS = {
         {
             "name": "EVsmart ブログ",
             "url": "https://blog.evsmart.net/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "innovaTopia",
+            "url": "https://innovatopia.jp/feed/",
             "type": "rss",
         },
     ],

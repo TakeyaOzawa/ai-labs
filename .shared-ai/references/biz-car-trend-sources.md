@@ -1,7 +1,7 @@
 # Biz Car Trend Scout — 収集対象ソース参照
 
 ## 自動車業界メディア（国内）
-Response, 日刊自動車新聞, くるまのニュース, MOBY, ベストカーWeb, カーセンサー, オートックワン, Car Watch, 日経クロステック, 日本経済新聞, グーネット自動車流通
+Response, 日刊自動車新聞, くるまのニュース, MOBY, ベストカーWeb, カーセンサー, オートックワン, Car Watch, 日経クロステック, 日本経済新聞, グーネット自動車流通, Toyota Times, トラックニュース
 
 ## カーリース・サブスク
 日本自動車リース協会連合会, リース事業協会, KINTO, SOMPOで乗ーる
@@ -16,7 +16,7 @@ Response, 日刊自動車新聞, くるまのニュース, MOBY, ベストカー
 損害保険料率算出機構, 日本損害保険協会, テレマティクス保険(UBI), Insurance Journal, Insurance Business Asia
 
 ## 海外動向
-Automotive News, Reuters Autos, S&P Global Mobility, Autoblog, Toyota Pressroom, CBT News, Automotive Manufacturing Solutions, Honda Global ニュースルーム
+Automotive News, Reuters Autos, S&P Global Mobility, Autoblog, Toyota Pressroom, CBT News, Automotive Manufacturing Solutions, Honda Global ニュースルーム, Benzinga
 
 ## ビジネスメディア
 Bloomberg, Forbes, TechCrunch, Reuters, 東洋経済オンライン, ダイヤモンド・オンライン, ITmedia, BRIDGE, CNBC, BusinessWire
