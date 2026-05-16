@@ -150,16 +150,30 @@ for attempt in range(max_retries):
 - スクリプトの最終出力は **JSON形式を標準** とする（shスクリプトと統一）
 - 成功時: `{"success": true, ...}`
 - 失敗時: `{"success": false, "error": "..."}`
-- 進捗表示は `print(..., file=sys.stderr)`
+- 進捗・ログ出力は `scripts/logger.py` の共通ロガーを使用する
 
 ```python
-# 最終出力
+# 最終出力（JSON）
 result = {"success": True, "count": len(items), "output": str(output_path)}
 print(json.dumps(result, ensure_ascii=False))
 
-# 進捗表示（stderrへ）
-print(f"→ {feed_name}... ✅ {count}件", file=sys.stderr)
+# ログ出力（logger.py 使用）
+from logger import get_logger
+logger = get_logger("my-script")
+logger.info(f"{feed_name}... {count}件")
+logger.warning("フォールバック使用")
+logger.error(f"取得失敗: {e}")
 ```
+
+### ログ出力の使い分け
+
+| 用途 | 方法 |
+|------|------|
+| パイプラインスクリプト（run_pipeline内） | `PipelineLogger` クラスが自動管理（ログ出力+ローテーション統合） |
+| パイプラインのコールバック関数 | `from logger import get_logger` または `rotate_log` / `log_error` |
+| 単体ユーティリティ | `from logger import get_logger` でコンソール出力のみ |
+| 構造化エラー（launchd連携） | `from logger import log_error` で stderr 出力 |
+| スクリプト最終結果 | `print(json.dumps(...))` で stdout にJSON出力（loggerは使わない） |
 
 ## 9. 引数パース
 

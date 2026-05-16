@@ -25,9 +25,11 @@ scripts/
 | カテゴリ | 内容 |
 |---------|------|
 | 定数 | `JST`, `HOME`, `SCRIPTS_DIR`, `PLATFORM_CMD`, `MAX_LOG_LINES`, `MAX_AGENT_LOG_LINES` |
-| ユーティリティ | `now_jst()`, `rotate_log()`, `load_env()`, `run_kiro_cli()`, `run_sub_pipeline()`, `log_error()` |
+| ログ（logger.py経由） | `PipelineLogger`, `rotate_log()`, `log_error()`, `setup_pipeline_logging()` |
+| ユーティリティ | `now_jst()`, `load_env()`, `run_ai_command()`, `run_sub_pipeline()` |
+| 通知 | `run_slack_notify()`, `run_slack_notify_async()` |
 | ヘルパー | `start_caffeinate()`, `stop_caffeinate()`, `get_child_job_id()`, `update_job()` |
-| 設定クラス | `PipelineConfig` dataclass |
+| 設定クラス | `PipelineConfig` dataclass, `NotifyEntry` NamedTuple |
 | runner | `run_pipeline(config)` — パイプライン共通実行フロー |
 
 ### PipelineConfig フィールド
@@ -38,15 +40,16 @@ class PipelineConfig:
     name: str                          # "daily" | "weekly"
     log_dir: Path                      # ログ出力ディレクトリ
     agents: list[str]                  # エージェントリスト
-    notify_file_map: dict[str, str]    # エージェント名 → 通知ファイルテンプレート
+    notify_file_map: dict[str, str | NotifyEntry]  # エージェント名 → 通知設定
     create_jobs_script: str            # ジョブファイル生成スクリプト名
     default_base_date: Callable[[], str]  # 基準日デフォルト計算
 
     # 以下はオプション（デフォルト: None or デフォルト関数）
+    pre_pipeline_hook: Callable[[str, Path], None] | None       # 起動直後フック
     rss_fetch_hook: Callable[[str, Path], None] | None          # RSS取得ステップ全体
     build_prompt: Callable[[str, str], str]                      # (agent, base_date) -> prompt
     resolve_notify_path: Callable[[str, str], Path | None] | None  # 通知ファイルパス動的解決
-    pre_agent_hook: Callable[[str, str], str | None] | None     # スキップ判定
+    pre_agent_hook: Callable[[str, str], tuple[str, bool] | str | None] | None  # スキップ/委譲判定
     post_agents_hook: Callable[[str], None] | None              # 全エージェント実行後
     post_notify_hook: Callable[[str], None] | None              # 通知後の追加ステップ
 ```
@@ -54,14 +57,14 @@ class PipelineConfig:
 ### run_pipeline() の実行フロー
 
 1. オプション解析（`--no-job-file`, 基準日）
-2. 環境準備（caffeinate, load_env, SLACK_BOT_TOKEN設定）
-3. ログローテーション
+2. `PipelineLogger` 初期化 + `rotate_all()`（ログ管理セットアップ）
+3. 環境準備（caffeinate, load_env, SLACK_BOT_TOKEN設定）
 4. Step 0: ジョブファイル生成
 5. Step 1: `rss_fetch_hook` によるRSSフィード事前取得
-6. Step 2: エージェント実行ループ（`pre_agent_hook` → `build_prompt` → `run_kiro_cli`）
+6. Step 2: エージェント実行ループ（`pre_agent_hook` → `build_prompt` → `run_ai_command`）
 7. Step 2.5: `post_agents_hook`
 8. Step 3: 親タスク完了処理
-9. Step 4: Slack通知（`resolve_notify_path` → `run_slack_notify()`）
+9. Step 4: Slack通知（`resolve_notify_path` → `run_slack_notify_async()`）
 10. Step 5: `post_notify_hook`
 11. Step 6: 完了サマリー + caffeinate解除
 
@@ -71,11 +74,13 @@ class PipelineConfig:
 #!/usr/bin/env python3.12
 from pathlib import Path
 
-from _pipeline_common import HOME, JST, PipelineConfig, run_pipeline
+from _pipeline_common import (
+    HOME, JST, NotifyEntry, PipelineConfig, now_jst, run_pipeline,
+)
 
 LOG_DIR = HOME / "logs" / "jobs" / "scout_{name}"
 AGENTS = [...]
-NOTIFY_FILE_MAP = {...}
+NOTIFY_FILE_MAP: dict[str, str | NotifyEntry] = {...}
 
 def _default_base_date() -> str: ...
 def _rss_fetch_hook(base_date: str, scripts_dir: Path) -> None: ...
@@ -219,6 +224,52 @@ python3.12 ~/scripts/manage-scheduler.py {load|unload|reload|status|list} {label
 ```
 
 ログローテーション: 行数ベース（パイプライン: 1000行/keep200、エージェント: 500行/keep100）
+
+### 共通ロガー（scripts/logger.py）
+
+ログ出力は `scripts/logger.py` の共通ロガーモジュールを使用する。
+`run_pipeline()` 内部では `PipelineLogger` クラスが自プロセスのログ出力と子プロセスのログファイル管理を統合する。
+
+#### PipelineLogger（パイプライン用）
+
+```python
+from logger import PipelineLogger
+
+plogger = PipelineLogger("daily", log_dir=LOG_DIR)
+plogger.rotate_all()                          # 起動時一括ローテーション
+plogger.info("パイプライン起動")              # コンソール + pipeline.log
+plogger.warning("注意事項")
+plogger.error("失敗")
+agent_log = plogger.get_agent_log("agent-name")  # パス取得 + 事前ローテーション
+notify_log = plogger.get_notify_log()             # パス取得 + 事前ローテーション
+plogger.log_error("agent-name", "エラー詳細")    # stderr出力（launchd連携）
+```
+
+| メソッド | 用途 |
+|----------|------|
+| `info()` / `warning()` / `error()` | 自プロセスのログ出力（コンソール + pipeline.log） |
+| `get_agent_log(name)` | エージェントログのパス取得 + 事前ローテーション |
+| `get_notify_log()` | 通知ログのパス取得 + 事前ローテーション |
+| `get_log_file(name)` | 任意のログファイルのパス取得 + 事前ローテーション |
+| `log_error(agent, message)` | 構造化エラー出力（常にstderr） |
+| `rotate_all()` | 起動時に pipeline-error.log をローテーション |
+
+#### 後方互換関数（単体スクリプト・コールバック用）
+
+```python
+from logger import get_logger, rotate_log, log_error
+```
+
+| 関数 | 用途 |
+|------|------|
+| `get_logger(name)` | 単体スクリプト用。コンソール出力のみ |
+| `rotate_log(log_file, max_lines)` | 手動ローテーション（後方互換） |
+| `log_error(pipeline, agent, message)` | 構造化エラー出力（後方互換シグネチャ） |
+
+#### 環境変数による制御
+
+- `LOG_LEVEL`: ログレベル（DEBUG/INFO/WARNING/ERROR。デフォルト: INFO）
+- `LOG_FORMAT`: 出力形式（text/json。デフォルト: text。json はCloudWatch等向け）
 
 ## ジョブ管理
 

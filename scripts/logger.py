@@ -8,16 +8,18 @@ logger: パイプライン共通ロガーモジュール
     クラウド移行（CloudWatch等）に対応する拡張ポイントを提供する。
 
 使い方:
-    from logger import get_logger, setup_pipeline_logging
+    from logger import get_logger, PipelineLogger
 
     # 単体スクリプト用
     logger = get_logger("my-script")
     logger.info("処理開始")
     logger.error("失敗しました")
 
-    # パイプライン用（ファイル出力 + ローテーション付き）
-    logger = setup_pipeline_logging("daily", log_dir=Path("~/logs/jobs/scout_daily"))
-    logger.info("パイプライン起動")
+    # パイプライン用（PipelineLoggerクラス）
+    plogger = PipelineLogger("daily", log_dir=Path("~/logs/jobs/scout_daily"))
+    plogger.info("パイプライン起動")
+    agent_log = plogger.get_agent_log("tech-trend-scout")  # パス取得+ローテーション
+    plogger.log_error("tech-trend-scout", "AI command exit non-zero")
 
 出力: コンソール（stdout/stderr）+ オプショナルなファイル出力
 依存: 標準ライブラリのみ
@@ -262,15 +264,156 @@ def setup_pipeline_logging(
     return logger
 
 
-# ─── 後方互換ユーティリティ ──────────────────────────────────────
+# ─── PipelineLogger クラス ────────────────────────────────────────
 
-def rotate_log(log_file: Path, max_lines: int, keep_lines: int = 200) -> None:
-    """ログファイルが max_lines を超えていたら末尾 keep_lines 行に切り詰める。
+class PipelineLogger:
+    """パイプライン全体のログ管理を統合するクラス。
 
-    後方互換: _pipeline_common.py の既存 rotate_log() と同一シグネチャ。
-    setup_pipeline_logging() を使用する場合は RotatingLineHandler が
-    自動でローテーションするため、この関数の呼び出しは不要。
+    自プロセスのログ出力（logging module経由）と、
+    子プロセスが書き込むログファイルのローテーションを一元管理する。
+
+    使い方:
+        plogger = PipelineLogger("daily", log_dir=Path("~/logs/jobs/scout_daily"))
+        plogger.rotate_all()           # 起動時に全管理対象をローテーション
+        plogger.info("パイプライン起動")
+        agent_log = plogger.get_agent_log("tech-trend-scout")  # パス+ローテーション
+        notify_log = plogger.get_notify_log()                   # パス+ローテーション
+        plogger.log_error("tech-trend-scout", "失敗")           # stderr出力
     """
+
+    def __init__(
+        self,
+        name: str,
+        log_dir: Path,
+        max_lines: int = DEFAULT_MAX_LINES,
+        keep_lines: int = DEFAULT_KEEP_LINES,
+        agent_max_lines: int = 500,
+        agent_keep_lines: int = 100,
+    ) -> None:
+        """初期化。
+
+        Args:
+            name: パイプライン名（"daily" / "weekly"）
+            log_dir: ログ出力ディレクトリ
+            max_lines: パイプラインログのローテーション閾値
+            keep_lines: パイプラインログのローテーション後保持行数
+            agent_max_lines: エージェントログのローテーション閾値
+            agent_keep_lines: エージェントログのローテーション後保持行数
+        """
+        self._name = name
+        self._log_dir = log_dir
+        self._max_lines = max_lines
+        self._keep_lines = keep_lines
+        self._agent_max_lines = agent_max_lines
+        self._agent_keep_lines = agent_keep_lines
+
+        # ディレクトリ作成
+        self._log_dir.mkdir(parents=True, exist_ok=True)
+
+        # 内部ロガーをセットアップ（コンソール + ファイル出力）
+        self._logger = setup_pipeline_logging(
+            name, log_dir,
+            max_lines=max_lines, keep_lines=keep_lines,
+        )
+
+    # ─── 自プロセスのログ出力 ────────────────────────────────
+
+    def info(self, msg: str, *args: object) -> None:
+        """INFOレベルのログを出力する。"""
+        self._logger.info(msg, *args)
+
+    def warning(self, msg: str, *args: object) -> None:
+        """WARNINGレベルのログを出力する。"""
+        self._logger.warning(msg, *args)
+
+    def error(self, msg: str, *args: object) -> None:
+        """ERRORレベルのログを出力する。"""
+        self._logger.error(msg, *args)
+
+    def debug(self, msg: str, *args: object) -> None:
+        """DEBUGレベルのログを出力する。"""
+        self._logger.debug(msg, *args)
+
+    # ─── 子プロセス用ファイル管理 ────────────────────────────
+
+    def get_agent_log(self, agent_name: str) -> Path:
+        """エージェントログのパスを返し、事前ローテーションを実行する。
+
+        Args:
+            agent_name: エージェント名（ファイル名に使用）
+
+        Returns:
+            ログファイルのパス（子プロセスのstdoutリダイレクト先として使用）
+        """
+        log_file = self._log_dir / f"{agent_name}.log"
+        _rotate_file(log_file, self._agent_max_lines, self._agent_keep_lines)
+        return log_file
+
+    def get_notify_log(self) -> Path:
+        """通知ログのパスを返し、事前ローテーションを実行する。
+
+        Returns:
+            通知ログファイルのパス
+        """
+        log_file = self._log_dir / "slack-notify.log"
+        _rotate_file(log_file, self._agent_max_lines, self._agent_keep_lines)
+        return log_file
+
+    def get_log_file(self, name: str) -> Path:
+        """任意のログファイルのパスを返し、事前ローテーションを実行する。
+
+        Args:
+            name: ログファイル名（拡張子なし）
+
+        Returns:
+            ログファイルのパス
+        """
+        log_file = self._log_dir / f"{name}.log"
+        _rotate_file(log_file, self._agent_max_lines, self._agent_keep_lines)
+        return log_file
+
+    # ─── 構造化エラー（stderr） ──────────────────────────────
+
+    def log_error(self, agent: str, message: str) -> None:
+        """構造化エラーログを stderr に出力する。
+
+        launchd StandardErrorPath との互換性を維持するため、
+        常に stderr に直接出力する（logging module は経由しない）。
+
+        Args:
+            agent: エージェント名またはコンポーネント名
+            message: エラーメッセージ
+        """
+        timestamp = datetime.now(tz=JST).strftime("%Y-%m-%dT%H:%M:%S+09:00")
+        print(
+            f"[{timestamp}] [{self._name}-pipeline] > [{agent}] {message}",
+            file=sys.stderr,
+        )
+
+    # ─── 一括ローテーション ──────────────────────────────────
+
+    def rotate_all(self) -> None:
+        """パイプライン起動時に全管理対象ファイルをローテーションする。
+
+        pipeline.log は RotatingLineHandler が自動管理するため、
+        ここでは子プロセスが書き込むファイルのみを対象とする。
+        """
+        # pipeline-error.log（launchd StandardErrorPath）
+        _rotate_file(
+            self._log_dir / "pipeline-error.log",
+            self._max_lines, self._keep_lines,
+        )
+
+    @property
+    def log_dir(self) -> Path:
+        """ログ出力ディレクトリを返す。"""
+        return self._log_dir
+
+
+# ─── 内部ヘルパー ────────────────────────────────────────────────
+
+def _rotate_file(log_file: Path, max_lines: int, keep_lines: int) -> None:
+    """ファイルが max_lines を超えていたら末尾 keep_lines 行に切り詰める。"""
     if not log_file.exists():
         return
     try:
@@ -281,6 +424,18 @@ def rotate_log(log_file: Path, max_lines: int, keep_lines: int = 200) -> None:
             )
     except OSError:
         pass
+
+
+# ─── 後方互換ユーティリティ ──────────────────────────────────────
+
+def rotate_log(log_file: Path, max_lines: int, keep_lines: int = 200) -> None:
+    """ログファイルが max_lines を超えていたら末尾 keep_lines 行に切り詰める。
+
+    後方互換: _pipeline_common.py の既存 rotate_log() と同一シグネチャ。
+    PipelineLogger を使用する場合は get_agent_log() / rotate_all() が
+    自動でローテーションするため、この関数の呼び出しは不要。
+    """
+    _rotate_file(log_file, max_lines, keep_lines)
 
 
 def log_error(pipeline: str, agent: str, message: str) -> None:

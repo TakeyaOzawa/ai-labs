@@ -1,0 +1,12 @@
+{
+    "name": "slack-dispatch-router",
+    "description": "Slackディスパッチルーター。投稿内容を分析し、最適なエージェント名を判定して返す。",
+    "prompt": "file://../../.shared-ai/prompts/slack-dispatch-router.md",
+    "tools": ["read"],
+    "allowedTools": [],
+    "toolsSettings": {},
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "Slack投稿の分析を開始します。最適なエージェントを判定します。"
+}

@@ -60,7 +60,7 @@
 - `_post_agents_hook()` — 全エージェント実行後の追加ステップ（不要ならNone）
 - `_post_notify_hook()` — 通知後の追加ステップ（不要ならNone）
 
-共通処理（ログローテーション、caffeinate、環境変数ロード、ジョブ管理、エージェント実行ループ、Slack通知、完了サマリー）は全て `run_pipeline()` が担当する。
+共通処理（ログ管理（`PipelineLogger`）、caffeinate、環境変数ロード、ジョブ管理、エージェント実行ループ、Slack通知、完了サマリー）は全て `run_pipeline()` が担当する。
 
 #### 3.2 ジョブ定義
 
@@ -87,7 +87,7 @@ python3.12 ~/scripts/run-{name}-pipeline.py --no-job-file {base_date}
 1. 既存パイプライン（daily/weekly）のコード構造を踏襲する
 2. パイプライン名はユーザーに提案しつつ最終判断を委ねる
 3. ジョブ管理は `create-jobs.py` / `find-job.py` / `update-job.py` を使用する
-4. ログローテーションは行数ベース（既存と同じ方式）
+4. ログ管理は `PipelineLogger`（`scripts/logger.py`）が統合管理する。ローテーションは自動
 5. ユーザーの承認なしにファイルを作成しない（設計案を先に提示）
 6. 既存パイプラインとの重複・競合がないか確認する
 7. 出力は日本語

@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Callable, NamedTuple
 
 from logger import (
-    get_logger as _get_logger,
+    PipelineLogger,
     log_error,
     rotate_log,
     setup_pipeline_logging,
@@ -485,7 +485,14 @@ def run_pipeline(config: PipelineConfig) -> None:
     else:
         base_date = config.default_base_date()
 
+    # ─── PipelineLogger 初期化 ────────────────────────────────────
     config.log_dir.mkdir(parents=True, exist_ok=True)
+    plogger = PipelineLogger(
+        config.name, log_dir=config.log_dir,
+        max_lines=MAX_LOG_LINES, keep_lines=200,
+        agent_max_lines=MAX_AGENT_LOG_LINES, agent_keep_lines=100,
+    )
+    plogger.rotate_all()
 
     # スリープ防止
     caffeinate_pid = start_caffeinate()
@@ -497,16 +504,8 @@ def run_pipeline(config: PipelineConfig) -> None:
     os.environ["SLACK_BOT_TOKEN"] = os.environ.get("SLACK_REFERENCE_BOT_TOKEN", "")
     os.environ["SLACK_TEAM_ID"] = os.environ.get("SLACK_REFERENCE_TEAM_ID", "")
 
-    # ログローテーション
-    log_file = config.log_dir / "pipeline.log"
-    rotate_log(log_file, MAX_LOG_LINES)
-
-    # error.log ローテーション（launchd StandardErrorPath）
-    error_log = config.log_dir / "pipeline-error.log"
-    rotate_log(error_log, MAX_LOG_LINES)
-
     label = "日次" if config.name == "daily" else "週次"
-    print(f"[{now_jst()}] 📋 {label}scoutパイプライン起動（基準日: {base_date}）")
+    plogger.info(f"{label}scoutパイプライン起動（基準日: {base_date}）")
 
     # ─── Pre-pipeline: 起動直後フック ─────────────────────────────
     if config.pre_pipeline_hook:
@@ -515,25 +514,25 @@ def run_pipeline(config: PipelineConfig) -> None:
     # ─── Step 0: ジョブファイル生成 ───────────────────────────────
     job_file: Path | None = None
     if use_job_file:
-        print(f"[{now_jst()}] Step 0: ジョブファイル生成...")
+        plogger.info("Step 0: ジョブファイル生成...")
         job_file = _create_job_file(config, base_date)
         if job_file:
-            print(f"[{now_jst()}]    ジョブファイル: {job_file}")
+            plogger.info(f"   ジョブファイル: {job_file}")
             update_job(job_file, scope="parent",
                        updates={"status": "running", "started_at": now_jst()})
         else:
-            print(f"[{now_jst()}] ⚠️  ジョブファイル生成失敗。進捗管理なしで続行。")
+            plogger.warning("ジョブファイル生成失敗。進捗管理なしで続行。")
             use_job_file = False
 
     # ─── Step 1: RSSフィード事前取得 ─────────────────────────────
-    print(f"[{now_jst()}] Step 1: RSSフィード事前取得...")
+    plogger.info("Step 1: RSSフィード事前取得...")
     if config.rss_fetch_hook:
         config.rss_fetch_hook(base_date, SCRIPTS_DIR)
     else:
-        print("   ⏭️  RSSフック未定義（スキップ）")
+        plogger.info("   ⏭️  RSSフック未定義（スキップ）")
 
     # ─── Step 2: エージェント/パイプライン実行ループ ──────────────
-    print(f"[{now_jst()}] Step 2: scoutエージェント実行開始...")
+    plogger.info("Step 2: scoutエージェント実行開始...")
 
     success = 0
     failed = 0
@@ -549,15 +548,16 @@ def run_pipeline(config: PipelineConfig) -> None:
             job_file, use_job_file, entry_name, completed_names,
         )
         if not deps_satisfied:
-            print(f"[{now_jst()}] ⏭️  {entry_name} スキップ"
-                  f"（未完了の依存先: {', '.join(unmet_deps)}）")
+            plogger.info(
+                f"⏭️  {entry_name} スキップ"
+                f"（未完了の依存先: {', '.join(unmet_deps)}）"
+            )
             skipped += 1
             continue
 
-        print(f"[{now_jst()}] 🔄 {entry_name} 実行中...")
+        plogger.info(f"🔄 {entry_name} 実行中...")
 
-        agent_log = config.log_dir / f"{entry_name}.log"
-        rotate_log(agent_log, MAX_AGENT_LOG_LINES, keep_lines=100)
+        agent_log = plogger.get_agent_log(entry_name)
 
         child_job_id = _mark_job_running(job_file, use_job_file, entry_name)
 
@@ -571,15 +571,15 @@ def run_pipeline(config: PipelineConfig) -> None:
 
         # 結果処理
         if result.success:
-            print(f"[{now_jst()}]    ✅ {entry_name} 完了")
+            plogger.info(f"   ✅ {entry_name} 完了")
             success += 1
             completed_names.add(entry_name)
             _mark_job_done(job_file, use_job_file, child_job_id, True,
                            result.reason or "完了")
         else:
-            print(f"[{now_jst()}]    ❌ {entry_name} 失敗（ログ: {agent_log}）")
+            plogger.error(f"   {entry_name} 失敗（ログ: {agent_log}）")
             _print_retry_hint(agent, entry_name, base_date, config)
-            log_error(f"{config.name}-pipeline", entry_name, result.reason)
+            plogger.log_error(entry_name, result.reason)
             failed += 1
             failed_names.append(entry_name)
             _mark_job_done(job_file, use_job_file, child_job_id, False,
@@ -613,14 +613,12 @@ def run_pipeline(config: PipelineConfig) -> None:
             })
 
     # ─── Step 4: Slack通知（非同期） ──────────────────────────────
-    notify_now = now_jst()
-    print(f"[{notify_now}] Step 4: Slack通知...")
+    plogger.info("Step 4: Slack通知...")
 
     notify_launched = 0
     notify_skipped = 0
     notify_disabled = 0
-    notify_log = config.log_dir / "slack-notify.log"
-    rotate_log(notify_log, MAX_AGENT_LOG_LINES, keep_lines=100)
+    notify_log = plogger.get_notify_log()
 
     for agent in config.agents:
         entry_name = _resolve_entry_name(agent)
@@ -652,39 +650,37 @@ def run_pipeline(config: PipelineConfig) -> None:
             file_path = HOME / "Documents" / "works" / template.format(date=base_date)
 
         if not file_path.exists():
-            print(f"   ⏭️  {entry_name}: 出力ファイルなし（スキップ）")
+            plogger.info(f"   ⏭️  {entry_name}: 出力ファイルなし（スキップ）")
             notify_skipped += 1
             continue
 
-        print(f"[{now_jst()}]    📨 {entry_name} 通知起動...")
+        plogger.info(f"   📨 {entry_name} 通知起動...")
 
         pid = run_slack_notify_async(file_path, notify_log, thread="compact")
         if pid:
-            print(f"[{now_jst()}]    ✅ {entry_name} 通知プロセス起動 (PID={pid})")
+            plogger.info(f"   ✅ {entry_name} 通知プロセス起動 (PID={pid})")
             notify_launched += 1
         else:
-            print(f"[{now_jst()}]    ⚠️  {entry_name} 通知プロセス起動失敗")
-            log_error(f"{config.name}-pipeline", f"slack-notify:{entry_name}", "プロセス起動失敗")
+            plogger.warning(f"   {entry_name} 通知プロセス起動失敗")
+            plogger.log_error(f"slack-notify:{entry_name}", "プロセス起動失敗")
 
-    notify_end = now_jst()
     parts = [f"🚀{notify_launched}件起動"]
     if notify_disabled > 0:
         parts.append(f"🔇{notify_disabled}件OFF")
     parts.append(f"⏭️{notify_skipped}件スキップ")
-    print(f"[{notify_end}] 📨 通知完了: {' / '.join(parts)}")
+    plogger.info(f"📨 通知完了: {' / '.join(parts)}")
 
     # ─── Step 5: post_notify_hook ────────────────────────────────
     if config.post_notify_hook:
         config.post_notify_hook(base_date)
 
     # ─── Step 6: 完了サマリー ────────────────────────────────────
-    final_now = now_jst()
-    print(f"[{final_now}] 📊 実行完了: ✅{success}件 / ❌{failed}件 / ⏭️{skipped}件スキップ (全{total}件)")
+    plogger.info(f"📊 実行完了: ✅{success}件 / ❌{failed}件 / ⏭️{skipped}件スキップ (全{total}件)")
     if failed > 0:
-        print(f"[{final_now}]    失敗: {' '.join(failed_names)}")
+        plogger.info(f"   失敗: {' '.join(failed_names)}")
     if use_job_file and job_file:
-        print(f"[{final_now}]    ジョブファイル: {job_file}")
-    print(f"[{final_now}] ✅ {label}scoutパイプライン完了（基準日: {base_date}）")
+        plogger.info(f"   ジョブファイル: {job_file}")
+    plogger.info(f"✅ {label}scoutパイプライン完了（基準日: {base_date}）")
 
     # スリープ防止解除
     stop_caffeinate(caffeinate_pid)
