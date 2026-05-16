@@ -3,7 +3,7 @@
 run-slack-dispatch-router: Slack DMポーリング→エージェントディスパッチ
 
 目的:
-    Slack DM（D09M7MYRCVD）の未処理投稿をポーリングし、LLM判定で
+    Slack DMの未処理投稿をポーリングし、LLM判定で
     適切なエージェント/パイプラインを選定、別プロセスで非同期起動する。
     スレッドIDとセッションIDのマッピングを管理し、既存セッションがあれば
     継続、なければ新規起動する。
@@ -33,8 +33,8 @@ SCRIPTS_DIR = Path(__file__).parent
 PLATFORM_CMD = SCRIPTS_DIR / "platform-commands.sh"
 
 # Slack設定
-DM_CHANNEL = "D09M7MYRCVD"
-TARGET_USER = "U076LRL1B35"
+DM_CHANNEL = os.environ["SLACK_DISPATCH_DM_CHANNEL"]
+TARGET_USER = os.environ["SLACK_DISPATCH_TARGET_USER"]
 FETCH_LIMIT = 10
 THREAD_LOOKBACK_DAYS = 7        # この日数以内のスレッドを返信追跡対象とする
 THREAD_REPLY_FETCH_LIMIT = 20   # スレッド返信の最大取得件数
