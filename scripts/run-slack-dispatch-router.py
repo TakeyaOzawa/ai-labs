@@ -36,6 +36,8 @@ PLATFORM_CMD = SCRIPTS_DIR / "platform-commands.sh"
 DM_CHANNEL = "D09M7MYRCVD"
 TARGET_USER = "U076LRL1B35"
 FETCH_LIMIT = 10
+THREAD_LOOKBACK_DAYS = 7        # この日数以内のスレッドを返信追跡対象とする
+THREAD_REPLY_FETCH_LIMIT = 20   # スレッド返信の最大取得件数
 
 # ファイルパス
 WORK_DIR = HOME / "Documents" / "works" / "slack_dispatch"
@@ -220,12 +222,206 @@ def reply_to_thread(thread_ts: str, text: str) -> bool:
     return result is not None
 
 
+def fetch_thread_replies(
+    thread_ts: str, oldest: str | None = None
+) -> list[dict]:
+    """スレッドの返信を取得し、対象ユーザーの投稿を返す。
+
+    Args:
+        thread_ts: 親メッセージのタイムスタンプ
+        oldest: この Unix タイムスタンプ以降のメッセージのみ取得（省略時は全件）
+
+    Returns:
+        対象ユーザーによるスレッド返信のリスト（親メッセージ自体は除外）。
+    """
+    params: dict = {
+        "channel": DM_CHANNEL,
+        "ts": thread_ts,
+        "limit": str(THREAD_REPLY_FETCH_LIMIT),
+    }
+    if oldest:
+        params["oldest"] = oldest
+
+    result = slack_api("conversations.replies", params)
+    if not result:
+        return []
+    messages = result.get("messages", [])
+    if not messages:
+        return []
+    # ts == thread_ts の親メッセージは除外（oldest 指定時は先頭にいないこともある）
+    return [
+        msg for msg in messages
+        if msg.get("user") == TARGET_USER
+        and not msg.get("subtype")
+        and msg.get("ts") != thread_ts
+    ]
+
+
+def collect_unprocessed_thread_replies(
+    session_map: dict, processed: dict
+) -> list[dict]:
+    """既知スレッドの未処理返信を収集する。
+
+    session_map に登録されたスレッドのうち、THREAD_LOOKBACK_DAYS 以内に
+    アクティブなものを対象に conversations.replies を呼び出し、
+    まだ processed に記録されていない返信を返す。
+
+    oldest パラメータを使って「前回確認時刻以降のみ」に絞ることで、
+    長いスレッドでも最新の返信を取りこぼさない。
+
+    Args:
+        session_map: スレッドIDとセッション情報のマッピング
+        processed: 処理済みメッセージのマッピング
+
+    Returns:
+        未処理のスレッド返信メッセージリスト（thread_ts フィールド付き）
+    """
+    now = datetime.now(tz=JST)
+    thread_replies: list[dict] = []
+
+    for thread_ts, entry in session_map.items():
+        # 最終アクティブ日時でスレッドの有効期限を判定
+        last_used = entry.get("last_used_at") or entry.get("started_at", "")
+        oldest: str | None = None
+        if last_used:
+            try:
+                dt = datetime.fromisoformat(last_used)
+                if (now - dt).days > THREAD_LOOKBACK_DAYS:
+                    continue
+                # oldest を Unix タイムスタンプ文字列に変換
+                # 1秒引いて境界上のメッセージを取りこぼさないようにする
+                oldest = str(dt.timestamp() - 1)
+            except ValueError:
+                pass  # 日付パース失敗は oldest なしで続行
+
+        # スレッド返信を取得（oldest 以降のみ）
+        replies = fetch_thread_replies(thread_ts, oldest=oldest)
+        for reply in replies:
+            reply_ts = reply.get("ts")
+            if reply_ts and reply_ts not in processed:
+                # thread_ts を明示的に付与（conversations.replies では通常付いているが念のため）
+                reply.setdefault("thread_ts", thread_ts)
+                thread_replies.append(reply)
+
+    if thread_replies:
+        log(f"🧵 未処理スレッド返信: {len(thread_replies)}件")
+
+    return thread_replies
+
+
+def handle_expired_thread_replies(
+    session_map: dict, processed: dict
+) -> int:
+    """期限切れスレッド（THREAD_LOOKBACK_DAYS 超）への新規返信を検出し、
+    Slackで期限切れを通知して処理済みにマークする。
+
+    スレッドごとに1回だけ通知し、新規返信は全て "expired" としてマークする。
+
+    Args:
+        session_map: スレッドIDとセッション情報のマッピング
+        processed: 処理済みメッセージのマッピング（in-place更新）
+
+    Returns:
+        通知を送ったスレッド数
+    """
+    now = datetime.now(tz=JST)
+    notified_count = 0
+
+    for thread_ts, entry in session_map.items():
+        last_used = entry.get("last_used_at") or entry.get("started_at", "")
+        if not last_used:
+            continue
+
+        try:
+            dt = datetime.fromisoformat(last_used)
+            if (now - dt).days <= THREAD_LOOKBACK_DAYS:
+                continue  # まだ有効なスレッド
+            # 期限切れ確認の目的は「最近届いた返信の検出」のみ。
+            # last_used_at 基準だと古いスレッドで oldest が遠すぎ、
+            # limit=20 の範囲に新しい返信が収まらない恐れがある。
+            # 直近 THREAD_LOOKBACK_DAYS+1 日分に固定して確実に検出する。
+            oldest = str((now - timedelta(days=THREAD_LOOKBACK_DAYS + 1)).timestamp())
+        except ValueError:
+            continue
+
+        # 期限切れスレッドに新規返信がないか確認
+        replies = fetch_thread_replies(thread_ts, oldest=oldest)
+        new_replies = [
+            r for r in replies
+            if r.get("ts") and r["ts"] not in processed
+        ]
+        if not new_replies:
+            continue
+
+        # スレッドへの通知（1スレッド1回のみ）
+        reply_to_thread(
+            thread_ts,
+            "⚠️ このスレッドは処理期限（7日）を過ぎているため対象外となりました。\n"
+            "新しいメッセージを送って新規スレッドを立ててください。",
+        )
+        notified_count += 1
+        log(f"  📭 期限切れスレッド通知: thread_ts={thread_ts}")
+
+        # 新規返信を全て "expired" としてマーク
+        for reply in new_replies:
+            processed[reply["ts"]] = {
+                "processed_at": now_jst(),
+                "status": "expired",
+                "text_preview": reply.get("text", "")[:100],
+            }
+        save_json(PROCESSED_FILE, processed)
+
+    return notified_count
+
+
 # ─── エージェント一覧取得 ────────────────────────────────────────
 
-def scan_agents() -> list[dict]:
-    """利用可能なエージェント一覧を取得する。
+def _extract_pipeline_description(script_path: Path) -> str:
+    """パイプラインスクリプトの docstring から説明行を抽出する。
 
-    AI_COMMAND_TYPE に応じて .kiro/agents/ または .claude/agents/ をスキャンする。
+    "name: description" 形式の最初の有意義な行を返す。
+    """
+    try:
+        lines = script_path.read_text(encoding="utf-8").splitlines()
+        in_docstring = False
+        for line in lines[:25]:
+            stripped = line.strip()
+            if not in_docstring:
+                if stripped.startswith('"""') or stripped.startswith("'''"):
+                    in_docstring = True
+                continue
+            if stripped and not stripped.startswith('"""') and not stripped.startswith("'''"):
+                # "name: description" 形式ならコロン以降を返す
+                if ": " in stripped:
+                    return stripped.split(": ", 1)[1].strip()
+                return stripped
+    except OSError:
+        pass
+    return ""
+
+
+def _is_pipeline_target(agent_name: str) -> bool:
+    """エージェント名が scripts/ 直下のパイプラインスクリプトを指しているか判定する。"""
+    return (SCRIPTS_DIR / f"{agent_name}.py").exists()
+
+
+def _pipeline_uses_run_pipeline(script_path: Path) -> bool:
+    """スクリプトが _pipeline_common.run_pipeline() を使用しているか確認する。
+
+    True の場合、--slack-channel / --slack-thread-ts 引数に対応している。
+    """
+    try:
+        content = script_path.read_text(encoding="utf-8")
+        return "run_pipeline" in content and "_pipeline_common" in content
+    except OSError:
+        return False
+
+
+def scan_agents() -> list[dict]:
+    """利用可能なエージェント・パイプライン一覧を取得する。
+
+    AI_COMMAND_TYPE に応じて .kiro/agents/ または .claude/agents/ をスキャンし、
+    さらに scripts/run-*-pipeline.py も対象として追加する。
 
     Returns:
         [{"name": "...", "description": "..."}, ...] のリスト
@@ -262,6 +458,16 @@ def scan_agents() -> list[dict]:
                     agents.append({"name": name, "description": desc})
                 except OSError:
                     agents.append({"name": name, "description": ""})
+
+    # run-*-pipeline.py をスキャン（エージェントと並列の起動対象として追加）
+    # run-github-repo-analysis-pipeline は必須引数(repo_url)が必要なため除外
+    EXCLUDED_PIPELINES = {"run-github-repo-analysis-pipeline"}
+    for f in sorted(SCRIPTS_DIR.glob("run-*-pipeline.py")):
+        name = f.stem
+        if name in EXCLUDED_PIPELINES:
+            continue
+        desc = _extract_pipeline_description(f)
+        agents.append({"name": name, "description": desc})
 
     return agents
 
@@ -382,7 +588,26 @@ def launch_agent(
         with open(agent_log, "a", encoding="utf-8") as f:
             f.write(f"\n--- [{marker_ts}] dispatch: {prompt[:100]}... ---\n")
 
-        # ラッパースクリプト経由で起動
+        # パイプラインスクリプトの場合: dispatch-agent-wrapper をバイパスして直接起動
+        # パイプライン自身が開始・完了通知を送る
+        if _is_pipeline_target(agent_name):
+            script_path = SCRIPTS_DIR / f"{agent_name}.py"
+            pipeline_cmd = ["python3.12", str(script_path)]
+            # 全パイプラインに slack 返信引数を付与
+            # （対応していないスクリプトは引数を無視する）
+            pipeline_cmd.extend([
+                "--slack-channel", DM_CHANNEL,
+                "--slack-thread-ts", thread_ts,
+            ])
+            proc = subprocess.Popen(
+                pipeline_cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+            return proc.pid, None, marker_ts
+
+        # ラッパースクリプト経由で起動（AIエージェント）
         # ラッパーがエージェント実行 → 完了後にSlack通知を行う
         wrapper_cmd = [
             "python3.12", str(SCRIPTS_DIR / "dispatch-agent-wrapper.py"),
@@ -531,31 +756,37 @@ def main() -> None:
     # 前回起動分のセッションID回収（claude mode）
     _recover_session_ids()
 
-    # Slackメッセージ取得
-    messages = fetch_messages()
-    if not messages:
-        log("📭 未処理メッセージなし（取得0件）")
-        print(json.dumps({"success": True, "processed": 0}, ensure_ascii=False))
-        return
-
-    log(f"📬 {len(messages)}件のメッセージ取得")
-
-    # 処理済みJSON読み込み
+    # 処理済みJSON読み込み（スレッド返信収集にも必要なため先に読む）
     processed = load_json(PROCESSED_FILE)
     session_map = load_json(SESSION_MAP_FILE)
 
-    # 未処理メッセージをフィルタ
+    # 期限切れスレッド（7日超）への新規返信を通知
+    expired_count = handle_expired_thread_replies(session_map, processed)
+    if expired_count:
+        log(f"📭 期限切れスレッド通知: {expired_count}件")
+
+    # Slackメッセージ取得（トップレベル）
+    messages = fetch_messages()
+    log(f"📬 {len(messages)}件のトップレベルメッセージ取得")
+
+    # 未処理のトップレベルメッセージをフィルタ
     unprocessed = [
         msg for msg in messages
         if msg.get("ts") and msg["ts"] not in processed
     ]
 
-    if not unprocessed:
+    # 既知スレッドの未処理返信を収集（conversations.replies 経由）
+    thread_replies = collect_unprocessed_thread_replies(session_map, processed)
+
+    # 全未処理メッセージを統合
+    all_unprocessed = unprocessed + thread_replies
+
+    if not all_unprocessed:
         log("✅ 全メッセージ処理済み")
         print(json.dumps({"success": True, "processed": 0}, ensure_ascii=False))
         return
 
-    log(f"🔍 未処理: {len(unprocessed)}件")
+    log(f"🔍 未処理: {len(unprocessed)}件（スレッド返信: {len(thread_replies)}件）")
 
     # エージェント一覧取得
     agents = scan_agents()
@@ -569,59 +800,114 @@ def main() -> None:
 
     log(f"📋 利用可能エージェント: {len(agents)}件")
 
-    # 各未処理メッセージを処理
+    # 親スレッド毎にメッセージをグループ化
+    thread_groups: dict[str, list[dict]] = {}
+    for msg in all_unprocessed:
+        tts = msg.get("thread_ts", msg["ts"])
+        if tts not in thread_groups:
+            thread_groups[tts] = []
+        thread_groups[tts].append(msg)
+
+    log(f"🗂️  スレッドグループ: {len(thread_groups)}件（メッセージ合計: {len(all_unprocessed)}件）")
+
     dispatched = 0
     errors = 0
 
-    for msg in unprocessed:
-        ts = msg["ts"]
-        text = msg.get("text", "")
-        thread_ts = msg.get("thread_ts", ts)  # スレッド内ならthread_ts、なければts
+    for thread_ts, group_msgs in thread_groups.items():
+        # 1. ts 順でソート（時系列）
+        group_msgs.sort(key=lambda m: m["ts"])
 
-        log(f"  📝 処理中: ts={ts}, text={text[:50]}...")
+        # 2. テキスト重複排除（同一テキストは最初の1件のみ残す）
+        seen_texts: set[str] = set()
+        unique_msgs: list[dict] = []
+        for m in group_msgs:
+            text_key = m.get("text", "").strip()
+            if text_key not in seen_texts:
+                seen_texts.add(text_key)
+                unique_msgs.append(m)
+            else:
+                log(f"  🔁 重複メッセージをスキップ: ts={m['ts']}, text={text_key[:50]}")
 
-        # 処理開始マーク
-        processed[ts] = {
-            "processed_at": now_jst(),
-            "status": "processing",
-            "text_preview": text[:100],
-        }
+        # 3. テキストを連結してグループ全体のプロンプトを生成
+        combined_text = "\n".join(m.get("text", "") for m in unique_msgs)
+
+        log(
+            f"  📝 グループ処理: thread_ts={thread_ts}, "
+            f"{len(group_msgs)}件→重複除去後{len(unique_msgs)}件, "
+            f"text={combined_text[:80]}..."
+        )
+
+        # 4. 全メッセージを「処理中」としてマーク
+        now_str = now_jst()
+        for m in group_msgs:
+            processed[m["ts"]] = {
+                "processed_at": now_str,
+                "status": "processing",
+                "text_preview": m.get("text", "")[:100],
+            }
         save_json(PROCESSED_FILE, processed)
 
-        # LLM判定
-        agent_name = determine_agent(text, agents)
-        if not agent_name:
-            log(f"  ⏭️  判定不能（スキップ）: {text[:50]}")
-            processed[ts]["status"] = "skipped"
-            processed[ts]["reason"] = "no_matching_agent"
-            save_json(PROCESSED_FILE, processed)
-            reply_to_thread(thread_ts, "⚠️ 該当するエージェントが見つかりませんでした。")
-            continue
-
-        log(f"  🎯 判定結果: {agent_name}")
-
-        # セッションID検索
+        # 5. エージェント・セッション決定
         existing_session = session_map.get(thread_ts)
         session_id: str | None = None
-        if existing_session and existing_session.get("session_id"):
-            session_id = existing_session["session_id"]
-            log(f"  🔄 既存セッション再開: {session_id}")
 
-        # エージェント起動
+        # グループ内の全メッセージがスレッド返信（親メッセージなし）かどうか確認
+        is_reply_only = all(
+            bool(m.get("thread_ts") and m["thread_ts"] != m["ts"])
+            for m in group_msgs
+        )
+
+        if is_reply_only and existing_session and existing_session.get("agent"):
+            # スレッド返信のみ + 既存セッションあり: LLM判定スキップして継続
+            agent_name = existing_session["agent"]
+            session_id = existing_session.get("session_id")
+            log(f"  🔁 スレッド返信グループ: 既存エージェント継続 ({agent_name})")
+        else:
+            # LLM判定（新規トップレベル or セッションなしのスレッド返信）
+            # グループ内の全テキストを結合して1回だけ判定
+            agent_name = determine_agent(combined_text, agents)
+            if not agent_name:
+                log(f"  ⏭️  判定不能（スキップ）: {combined_text[:50]}")
+                for m in group_msgs:
+                    processed[m["ts"]]["status"] = "skipped"
+                    processed[m["ts"]]["reason"] = "no_matching_agent"
+                save_json(PROCESSED_FILE, processed)
+                reply_to_thread(thread_ts, "⚠️ 該当するエージェントが見つかりませんでした。")
+                # スレッドへの返信を追跡できるよう session_map に記録（agent なし）
+                if thread_ts not in session_map:
+                    session_map[thread_ts] = {
+                        "agent": None,
+                        "session_id": None,
+                        "started_at": now_str,
+                        "last_used_at": now_str,
+                    }
+                    save_json(SESSION_MAP_FILE, session_map)
+                    log(f"  📌 スキップスレッドを追跡登録: {thread_ts}")
+                continue
+
+            log(f"  🎯 判定結果: {agent_name}")
+
+            # 既存セッションIDがあれば引き継ぐ
+            if existing_session and existing_session.get("session_id"):
+                session_id = existing_session["session_id"]
+                log(f"  🔄 既存セッション再開: {session_id}")
+
+        # 6. エージェント起動（グループ全体で1回）
         pid, new_session_id, marker_ts = launch_agent(
-            agent_name, text, thread_ts, session_id,
+            agent_name, combined_text, thread_ts, session_id,
         )
 
         if pid == 0:
             log(f"  ❌ 起動失敗: {agent_name}")
-            processed[ts]["status"] = "error"
-            processed[ts]["error"] = "launch_failed"
+            for m in group_msgs:
+                processed[m["ts"]]["status"] = "error"
+                processed[m["ts"]]["error"] = "launch_failed"
             save_json(PROCESSED_FILE, processed)
             reply_to_thread(thread_ts, f"❌ エージェント `{agent_name}` の起動に失敗しました。")
             errors += 1
             continue
 
-        # セッションマップ更新
+        # 7. セッションマップ更新
         if new_session_id:
             session_map[thread_ts] = {
                 "agent": agent_name,
@@ -639,17 +925,17 @@ def main() -> None:
                 "started_at": marker_ts,
                 "last_used_at": marker_ts,
             }
-
         save_json(SESSION_MAP_FILE, session_map)
 
-        # 処理済み更新
-        processed[ts]["status"] = "dispatched"
-        processed[ts]["agent"] = agent_name
-        processed[ts]["session_id"] = new_session_id or session_id
-        processed[ts]["pid"] = pid
+        # 8. グループ内全メッセージを「dispatched」としてマーク
+        for m in group_msgs:
+            processed[m["ts"]]["status"] = "dispatched"
+            processed[m["ts"]]["agent"] = agent_name
+            processed[m["ts"]]["session_id"] = new_session_id or session_id
+            processed[m["ts"]]["pid"] = pid
         save_json(PROCESSED_FILE, processed)
 
-        # Slack返信
+        # 9. Slack返信
         if session_id:
             reply_to_thread(
                 thread_ts,

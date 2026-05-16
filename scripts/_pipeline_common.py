@@ -165,6 +165,30 @@ def is_pipeline_entry(entry: str) -> bool:
 # log_error は logger.py から import済み（後方互換シグネチャ維持）
 
 
+def _notify_slack_reply(
+    text: str,
+    channel: str,
+    thread_ts: str,
+    log_file: Path,
+) -> None:
+    """Slackスレッドにテキスト返信する（同期）。
+
+    ディスパッチャー経由で起動されたパイプラインが、元DMスレッドへの
+    開始・完了通知を送るために使用する。
+    """
+    notify_script = SCRIPTS_DIR / "notify-slack.py"
+    if not notify_script.exists():
+        return
+    cmd = [
+        "python3.12", str(notify_script),
+        "--text", text,
+        "--channel", channel,
+        "--thread", thread_ts,
+    ]
+    with open(log_file, "a", encoding="utf-8") as f:
+        subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
+
+
 def run_slack_notify(
     file_path: Path,
     log_file: Path,
@@ -471,13 +495,25 @@ def run_pipeline(config: PipelineConfig) -> None:
 
     # オプション解析
     use_job_file = True
+    slack_channel: str = ""
+    slack_thread_ts: str = ""
     positional_args: list[str] = []
 
-    for arg in sys.argv[1:]:
+    argv = sys.argv[1:]
+    i = 0
+    while i < len(argv):
+        arg = argv[i]
         if arg == "--no-job-file":
             use_job_file = False
+        elif arg == "--slack-channel" and i + 1 < len(argv):
+            i += 1
+            slack_channel = argv[i]
+        elif arg == "--slack-thread-ts" and i + 1 < len(argv):
+            i += 1
+            slack_thread_ts = argv[i]
         else:
             positional_args.append(arg)
+        i += 1
 
     # 基準日
     if positional_args:
@@ -505,7 +541,16 @@ def run_pipeline(config: PipelineConfig) -> None:
     os.environ["SLACK_TEAM_ID"] = os.environ.get("SLACK_REFERENCE_TEAM_ID", "")
 
     label = "日次" if config.name == "daily" else "週次"
+    # notify_log はディスパッチャー開始通知と Step 4 Slack通知の両方で使用
+    notify_log = plogger.get_notify_log()
     plogger.info(f"{label}scoutパイプライン起動（基準日: {base_date}）")
+
+    # ディスパッチャー経由で起動された場合: 元DMスレッドへ開始通知
+    if slack_channel and slack_thread_ts:
+        _notify_slack_reply(
+            f"🚀 {label}パイプライン開始（基準日: {base_date}）",
+            slack_channel, slack_thread_ts, notify_log,
+        )
 
     # ─── Pre-pipeline: 起動直後フック ─────────────────────────────
     if config.pre_pipeline_hook:
@@ -618,7 +663,6 @@ def run_pipeline(config: PipelineConfig) -> None:
     notify_launched = 0
     notify_skipped = 0
     notify_disabled = 0
-    notify_log = plogger.get_notify_log()
 
     for agent in config.agents:
         entry_name = _resolve_entry_name(agent)
@@ -656,7 +700,15 @@ def run_pipeline(config: PipelineConfig) -> None:
 
         plogger.info(f"   📨 {entry_name} 通知起動...")
 
-        pid = run_slack_notify_async(file_path, notify_log, thread="compact")
+        if slack_channel and slack_thread_ts:
+            # dispatch経由: 元スレッドへ返信（thread_ts を直接指定）
+            pid = run_slack_notify_async(
+                file_path, notify_log,
+                channel=slack_channel, thread=slack_thread_ts,
+            )
+        else:
+            # 通常起動: compact形式で新規DM投稿
+            pid = run_slack_notify_async(file_path, notify_log, thread="compact")
         if pid:
             plogger.info(f"   ✅ {entry_name} 通知プロセス起動 (PID={pid})")
             notify_launched += 1
@@ -681,6 +733,14 @@ def run_pipeline(config: PipelineConfig) -> None:
     if use_job_file and job_file:
         plogger.info(f"   ジョブファイル: {job_file}")
     plogger.info(f"✅ {label}scoutパイプライン完了（基準日: {base_date}）")
+
+    # ディスパッチャー経由で起動された場合: 元DMスレッドへ完了通知
+    if slack_channel and slack_thread_ts:
+        summary = f"✅ {label}パイプライン完了（基準日: {base_date}）\n"
+        summary += f"✅{success}件 / ❌{failed}件 / ⏭️{skipped}件スキップ"
+        if failed_names:
+            summary += f"\n失敗: {', '.join(failed_names)}"
+        _notify_slack_reply(summary, slack_channel, slack_thread_ts, notify_log)
 
     # スリープ防止解除
     stop_caffeinate(caffeinate_pid)

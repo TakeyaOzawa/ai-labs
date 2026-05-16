@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from _pipeline_common import run_ai_command
+from _pipeline_common import run_ai_command, _notify_slack_reply, run_slack_notify
 
 # ─── 定数 ────────────────────────────────────────────────────────
 
@@ -482,10 +482,24 @@ def step4_report(
 
 def main() -> None:
     """パイプラインのメインエントリポイント。"""
-    # 引数解析
+    # 引数解析（--slack-channel / --slack-thread-ts はdispatch-router経由で渡される）
+    slack_channel: str = ""
+    slack_thread_ts: str = ""
     base_date_arg: str | None = None
-    if len(sys.argv) > 1:
-        base_date_arg = sys.argv[1]
+
+    argv = sys.argv[1:]
+    i = 0
+    while i < len(argv):
+        arg = argv[i]
+        if arg == "--slack-channel" and i + 1 < len(argv):
+            i += 1
+            slack_channel = argv[i]
+        elif arg == "--slack-thread-ts" and i + 1 < len(argv):
+            i += 1
+            slack_thread_ts = argv[i]
+        else:
+            base_date_arg = arg
+        i += 1
 
     # ジョブコンテキスト読み込み（親パイプラインから環境変数経由）
     job_ctx = load_job_context()
@@ -494,11 +508,19 @@ def main() -> None:
     base_date, start_utc, end_utc = step0_prepare(base_date_arg)
     log_dir = HOME / "logs" / "jobs" / "scout_daily"
     log_dir.mkdir(parents=True, exist_ok=True)
+    notify_log = log_dir / "gws-notify.log"
 
     print(f"[{now_jst()}] 📋 GWSトレンドスカウト パイプライン起動（基準日: {base_date}）")
     print(f"[{now_jst()}]    UTC範囲: {start_utc} 〜 {end_utc}")
     if job_ctx.enabled:
         print(f"[{now_jst()}]    ジョブ連携: 有効（parent_job_id={job_ctx.parent_job_id[:12]}...）")
+
+    # dispatch経由で起動された場合: 元DMスレッドへ開始通知
+    if slack_channel and slack_thread_ts:
+        _notify_slack_reply(
+            f"🚀 GWSトレンドスカウト開始（基準日: {base_date}）",
+            slack_channel, slack_thread_ts, notify_log,
+        )
 
     # Step 1: メタデータ一括取得
     ndjson_paths = step1_fetch_metadata(TYPE_CONFIGS, start_utc, end_utc)
@@ -524,9 +546,24 @@ def main() -> None:
     # Step 5: 完了
     if report_ok:
         print(f"[{now_jst()}] ✅ GWSトレンドスカウト パイプライン完了（基準日: {base_date}）")
+        # dispatch経由: 元スレッドへレポートと完了通知を返信
+        if slack_channel and slack_thread_ts:
+            output_path = OUTPUT_BASE / f"{base_date}_gws_daily.md"
+            if output_path.exists():
+                run_slack_notify(output_path, notify_log, channel=slack_channel, thread=slack_thread_ts)
+            _notify_slack_reply(
+                f"✅ GWSトレンドスカウト完了（基準日: {base_date}）",
+                slack_channel, slack_thread_ts, notify_log,
+            )
         sys.exit(0)
     else:
         print(f"[{now_jst()}] ⚠️  GWSトレンドスカウト パイプライン一部失敗（基準日: {base_date}）")
+        # dispatch経由: 元スレッドへ失敗通知
+        if slack_channel and slack_thread_ts:
+            _notify_slack_reply(
+                f"⚠️ GWSトレンドスカウト一部失敗（基準日: {base_date}）",
+                slack_channel, slack_thread_ts, notify_log,
+            )
         sys.exit(1)
 
 
