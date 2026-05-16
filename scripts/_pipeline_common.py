@@ -12,7 +12,14 @@ import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Callable
+from typing import Callable, NamedTuple
+
+from logger import (
+    get_logger as _get_logger,
+    log_error,
+    rotate_log,
+    setup_pipeline_logging,
+)
 
 # ─── 定数 ────────────────────────────────────────────────────────
 
@@ -25,6 +32,13 @@ MAX_AGENT_LOG_LINES = 500
 
 
 # ─── パイプライン設定 ────────────────────────────────────────────
+
+class NotifyEntry(NamedTuple):
+    """エージェント通知設定。"""
+
+    template: str       # 出力ファイルテンプレート（{date}プレースホルダ）
+    enabled: bool = True  # 通知を実行するか
+
 
 def _default_build_prompt(agent: str, base_date: str) -> str:
     """デフォルトのプロンプト構築。"""
@@ -41,7 +55,7 @@ class PipelineConfig:
     name: str                                # "daily" | "weekly"
     log_dir: Path                            # ログ出力ディレクトリ
     agents: list[str]                        # エージェント名 or パイプラインスクリプト名（.py）
-    notify_file_map: dict[str, str]          # エージェント名 → 通知ファイルテンプレート
+    notify_file_map: dict[str, str | NotifyEntry]  # エージェント名 → 通知設定
     create_jobs_script: str                  # ジョブファイル生成スクリプト名
     default_base_date: Callable[[], str]     # 基準日デフォルト計算
 
@@ -80,13 +94,7 @@ def now_jst() -> str:
     return datetime.now(tz=JST).strftime("%Y-%m-%dT%H:%M:%S+09:00")
 
 
-def rotate_log(log_file: Path, max_lines: int, keep_lines: int = 200) -> None:
-    """ログファイルが max_lines を超えていたら末尾 keep_lines 行に切り詰める。"""
-    if not log_file.exists():
-        return
-    lines = log_file.read_text(encoding="utf-8", errors="replace").splitlines()
-    if len(lines) > max_lines:
-        log_file.write_text("\n".join(lines[-keep_lines:]) + "\n", encoding="utf-8")
+# rotate_log は logger.py から import済み（後方互換シグネチャ維持）
 
 
 def load_env() -> None:
@@ -154,10 +162,7 @@ def is_pipeline_entry(entry: str) -> bool:
     return entry.endswith(".py")
 
 
-def log_error(pipeline: str, agent: str, message: str) -> None:
-    """error.logに親タスク > 子タスクの2階層ヘッダー付きでエラーを記録する。"""
-    timestamp = now_jst()
-    print(f"[{timestamp}] [{pipeline}] > [{agent}] {message}", file=sys.stderr)
+# log_error は logger.py から import済み（後方互換シグネチャ維持）
 
 
 def run_slack_notify(
@@ -190,6 +195,44 @@ def run_slack_notify(
     with open(log_file, "a", encoding="utf-8") as f:
         result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
     return result.returncode == 0
+
+
+def run_slack_notify_async(
+    file_path: Path,
+    log_file: Path,
+    channel: str = "",
+    thread: str = "",
+) -> int:
+    """notify-slack.pyを新規プロセスで非同期に実行する（fire-and-forget）。
+
+    Args:
+        file_path: 投稿するMarkdownファイルパス
+        log_file: ログ出力先
+        channel: 投稿先チャンネルID（省略時: スクリプトのデフォルト）
+        thread: スレッドモード（"compact" / thread_ts / 省略）
+
+    Returns:
+        起動したプロセスのPID（起動失敗時は0）
+    """
+    cmd = [
+        "python3.12",
+        str(SCRIPTS_DIR / "notify-slack.py"),
+        "--file", str(file_path),
+    ]
+    if channel:
+        cmd.extend(["--channel", channel])
+    if thread:
+        cmd.extend(["--thread", thread])
+
+    try:
+        with open(log_file, "a", encoding="utf-8") as f:
+            proc = subprocess.Popen(
+                cmd, stdout=f, stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+        return proc.pid
+    except OSError:
+        return 0
 
 
 # ─── ヘルパー関数 ────────────────────────────────────────────────
@@ -569,12 +612,13 @@ def run_pipeline(config: PipelineConfig) -> None:
                 "status_detail": "全子タスク完了",
             })
 
-    # ─── Step 4: Slack通知 ───────────────────────────────────────
+    # ─── Step 4: Slack通知（非同期） ──────────────────────────────
     notify_now = now_jst()
     print(f"[{notify_now}] Step 4: Slack通知...")
 
-    notify_success = 0
+    notify_launched = 0
     notify_skipped = 0
+    notify_disabled = 0
     notify_log = config.log_dir / "slack-notify.log"
     rotate_log(notify_log, MAX_AGENT_LOG_LINES, keep_lines=100)
 
@@ -588,7 +632,20 @@ def run_pipeline(config: PipelineConfig) -> None:
             file_path = config.resolve_notify_path(agent, base_date)
 
         if file_path is None:
-            template = config.notify_file_map.get(entry_name, "")
+            entry = config.notify_file_map.get(entry_name)
+            if entry is None:
+                notify_skipped += 1
+                continue
+
+            # NotifyEntry or str（後方互換）
+            if isinstance(entry, NotifyEntry):
+                if not entry.enabled:
+                    notify_disabled += 1
+                    continue
+                template = entry.template
+            else:
+                template = entry
+
             if not template:
                 notify_skipped += 1
                 continue
@@ -599,17 +656,22 @@ def run_pipeline(config: PipelineConfig) -> None:
             notify_skipped += 1
             continue
 
-        print(f"[{now_jst()}]    📨 {entry_name} 通知中...")
+        print(f"[{now_jst()}]    📨 {entry_name} 通知起動...")
 
-        if run_slack_notify(file_path, notify_log, thread="compact"):
-            print(f"[{now_jst()}]    ✅ {entry_name} 通知完了")
-            notify_success += 1
+        pid = run_slack_notify_async(file_path, notify_log, thread="compact")
+        if pid:
+            print(f"[{now_jst()}]    ✅ {entry_name} 通知プロセス起動 (PID={pid})")
+            notify_launched += 1
         else:
-            print(f"[{now_jst()}]    ⚠️  {entry_name} 通知失敗（レポート作成は成功扱い）")
-            log_error(f"{config.name}-pipeline", f"slack-notify:{entry_name}", "通知失敗")
+            print(f"[{now_jst()}]    ⚠️  {entry_name} 通知プロセス起動失敗")
+            log_error(f"{config.name}-pipeline", f"slack-notify:{entry_name}", "プロセス起動失敗")
 
     notify_end = now_jst()
-    print(f"[{notify_end}] 📨 通知完了: ✅{notify_success}件 / ⏭️{notify_skipped}件スキップ")
+    parts = [f"🚀{notify_launched}件起動"]
+    if notify_disabled > 0:
+        parts.append(f"🔇{notify_disabled}件OFF")
+    parts.append(f"⏭️{notify_skipped}件スキップ")
+    print(f"[{notify_end}] 📨 通知完了: {' / '.join(parts)}")
 
     # ─── Step 5: post_notify_hook ────────────────────────────────
     if config.post_notify_hook:

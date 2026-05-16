@@ -26,6 +26,7 @@ from _pipeline_common import (
     HOME,
     JST,
     MAX_AGENT_LOG_LINES,
+    NotifyEntry,
     SCRIPTS_DIR,
     PipelineConfig,
     log_error,
@@ -59,13 +60,19 @@ WEEKLY_PIPELINE_MODE_AGENTS = {
     "tech-poc-planner",
 }
 
-NOTIFY_FILE_MAP: dict[str, str] = {
-    "slack-digest-scout": "scout_reports/slack_trends/weekly/{date}_slack_weekly_digest.md",
-    "gws-digest-scout": "scout_reports/gws_trends/weekly/{date}_gws_weekly_digest.md",
-    "notion-digest-scout": "scout_reports/notion_trends/weekly/{date}_notion_weekly_digest.md",
-    "github-org-digest-scout": "scout_reports/github_org_trends/weekly/{date}_github-org_weekly_digest.md",
-    "github-public-digest-scout": "scout_reports/github_public_trends/weekly/{date}_github-public_weekly_digest.md",
-    "tech-event-scout": "scout_reports/tech_events/weekly/{date}_tech_events.md",
+NOTIFY_FILE_MAP: dict[str, str | NotifyEntry] = {
+    # ─── 通知ON（処理完了時に非同期でSlack通知を実行） ───────────
+    "slack-digest-scout": NotifyEntry("scout_reports/slack_trends/weekly/{date}_slack_weekly_digest.md"),
+    "gws-digest-scout": NotifyEntry("scout_reports/gws_trends/weekly/{date}_gws_weekly_digest.md"),
+    "notion-digest-scout": NotifyEntry("scout_reports/notion_trends/weekly/{date}_notion_weekly_digest.md"),
+    "github-org-digest-scout": NotifyEntry("scout_reports/github_org_trends/weekly/{date}_github-org_weekly_digest.md"),
+    "github-public-digest-scout": NotifyEntry("scout_reports/github_public_trends/weekly/{date}_github-public_weekly_digest.md"),
+    "tech-event-scout": NotifyEntry("scout_reports/tech_events/weekly/{date}_tech_events.md"),
+
+    # ─── 通知OFF（初期状態で無効。有効化するには enabled=True に変更） ─
+    "tech-blog-material-scout": NotifyEntry("", enabled=False),
+    "github-verification-candidate-scout": NotifyEntry("", enabled=False),
+    "tech-poc-planner": NotifyEntry("", enabled=False),
 }
 
 

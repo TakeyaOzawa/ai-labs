@@ -23,6 +23,7 @@ from pathlib import Path
 from _pipeline_common import (
     HOME,
     JST,
+    NotifyEntry,
     PipelineConfig,
     now_jst,
     run_pipeline,
@@ -45,15 +46,20 @@ AGENTS = [
     "notion-trend-scout",
 ]
 
-NOTIFY_FILE_MAP: dict[str, str] = {
-    "tech-trend-scout": "scout_reports/tech_trends/daily/{date}_tech_trends.md",
-    "biz-car-trend-scout": "scout_reports/biz_car_trends/daily/{date}_biz_car_trends.md",
-    "academic-trend-scout-pipeline": "scout_reports/academic_trends/daily/{date}_academic_trends.md",
-    "gws-trend-scout-pipeline": "scout_reports/gws_trends/daily/{date}_gws_daily.md",
-    "slack-trend-scout": "scout_reports/slack_trends/daily/{date}_slack_daily.md",
-    "github-org-trend-scout": "scout_reports/github_org_trends/daily/{date}_github-org_daily.md",
-    "github-public-trend-scout": "scout_reports/github_public_trends/daily/{date}_github-public_daily.md",
-    "notion-trend-scout": "scout_reports/notion_trends/daily/{date}_notion_daily.md",
+NOTIFY_FILE_MAP: dict[str, str | NotifyEntry] = {
+    # ─── 通知ON（処理完了時に非同期でSlack通知を実行） ───────────
+    "tech-trend-scout": NotifyEntry("scout_reports/tech_trends/daily/{date}_tech_trends.md"),
+    "biz-car-trend-scout": NotifyEntry("scout_reports/biz_car_trends/daily/{date}_biz_car_trends.md"),
+    "academic-trend-scout-pipeline": NotifyEntry("scout_reports/academic_trends/daily/{date}_academic_trends.md"),
+    "gws-trend-scout-pipeline": NotifyEntry("scout_reports/gws_trends/daily/{date}_gws_daily.md"),
+    "slack-trend-scout": NotifyEntry("scout_reports/slack_trends/daily/{date}_slack_daily.md"),
+    "github-org-trend-scout": NotifyEntry("scout_reports/github_org_trends/daily/{date}_github-org_daily.md"),
+    "github-public-trend-scout": NotifyEntry("scout_reports/github_public_trends/daily/{date}_github-public_daily.md"),
+    "notion-trend-scout": NotifyEntry("scout_reports/notion_trends/daily/{date}_notion_daily.md"),
+    # lifestyle-event-scout は _resolve_notify_path で動的解決（暗黙的にON）
+
+    # ─── 通知OFF（初期状態で無効。有効化するには enabled=True に変更） ─
+    "rss-source-updater": NotifyEntry("", enabled=False),
 }
 
 # lifestyle-event-scoutは曜日によって出力ファイル名が変わるため動的に解決

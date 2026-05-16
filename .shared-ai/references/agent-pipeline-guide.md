@@ -77,9 +77,15 @@ def _build_prompt(agent: str, base_date: str) -> str:
 ```python
 NOTIFY_FILE_MAP = {
     ...
-    "{new-agent-name}": "scout_reports/{output_dir}/{frequency}/{date}_{output_file}.md",
+    # 通知ON: 処理完了時に新規プロセスで非同期にSlack通知を実行
+    "{new-agent-name}": NotifyEntry("scout_reports/{output_dir}/{frequency}/{date}_{output_file}.md"),
+
+    # 通知OFF: 初期状態で無効（有効化するには enabled=True に変更）
+    "{new-agent-name}": NotifyEntry("", enabled=False),
 }
 ```
+
+全エージェントは `NOTIFY_FILE_MAP` にエントリを持つ。通知を実行しないエージェントは `enabled=False` で明示的にOFFにする。通知は `subprocess.Popen` で新規プロセスとして非同期に起動される（fire-and-forget）。
 
 #### 4. RSS事前取得が必要な場合
 
