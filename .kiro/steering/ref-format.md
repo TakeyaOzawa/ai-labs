@@ -1,21 +1,10 @@
 ---
 inclusion: fileMatch
 fileMatchPattern: ".shared-ai/references/*-guide.md"
+description: referenceガイドのフォーマット基準（タイトル、概要、サイズ、相互参照）の確認
 ---
 
 # Reference Guide フォーマット確認
 
-`-guide.md` ファイルの編集中です。以下のフォーマット基準を意識してください。
-
-## 確認事項
-
-1. **タイトル**: H1は日本語で「〜ガイド」で終わっているか
-2. **概要**: タイトル直下に1〜2文の概要があるか
-3. **構造**: テーブル・コードブロック・チェックリストを活用しているか
-4. **サイズ**: 8KB以下か（超える場合は分割を検討）
-5. **相互参照**: 他のreferencesへの参照は相対ファイル名（`agent-prompt-guide.md`）で記載しているか
-6. **推敲**: 更新後、情報の重複排除・MECE観点でコンパクト化を行ったか（同じ情報が複数セクションに散在していないか）
-
-## テンプレート参照
-
-新規作成の場合は `~/.shared-ai/templates/reference-guide.md` を参照すること。
+以下のファイルをreadFileで読み込み、その指示に従うこと:
+- `~/.shared-ai/references/reference-format-guide.md`

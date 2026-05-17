@@ -1,14 +1,10 @@
 ---
 inclusion: fileMatch
 fileMatchPattern: "docs/domain/**/*.md"
+description: ドメインファイルのfront-matter（updated_at, updated_by, 変更履歴）の自動更新ルール
 ---
 
 # Domain Front-matter チェック
 
-docs/domain/ 配下のファイルを編集中です。以下を確認してください:
-
-1. front-matterの `updated_at` が今日の日付（YYYY-MM-DD）に更新されているか
-2. front-matterの `updated_by` が適切な値に更新されているか
-3. 変更履歴テーブルに今回の変更が記録されているか
-
-不足があれば自動的に修正してください。
+以下のファイルをreadFileで読み込み、その指示に従うこと:
+- `~/.shared-ai/rules/domain-frontmatter.md`
