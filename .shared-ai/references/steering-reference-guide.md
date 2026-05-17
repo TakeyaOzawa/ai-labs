@@ -85,15 +85,86 @@ inclusion: manual
 
 ### fileMatch の不発対策
 
-`fileMatch` はKiroの内部判定に依存するため、期待通りにインクルードされない場合がある。対策として `~/.kiro/steering/filematch-dispatcher.md`（`inclusion: always`、数行の薄いルール）をフォールバックディスパッチャーとして配置し、エージェントが実行時に該当steeringをreadFileで読み込む構成を推奨する。
+`fileMatch` はKiroの内部判定に依存するため、期待通りにインクルードされない場合がある。対策として `~/.kiro/steering/filematch-dispatcher.md`（`inclusion: always`）をフォールバックディスパッチャーとして配置している。
+
+ディスパッチャーは `~/scripts/resolve-shared-ai-rules.py` を実行し、ファイルパスに対応するルール/リファレンスのパスを解決する:
+
+```bash
+python3.12 ~/scripts/resolve-shared-ai-rules.py "<対象ファイルパス>"
+```
+
+出力されたパスのファイルをreadFileで読み込む。出力が空なら何もしない。
 
 ### 設計原則
 
-- `always` 側は可能な限り薄くする（「readFileで○○を読め」の1行程度）
-- 本体のルール・ガイドは `~/.shared-ai/references/` や `~/.shared-ai/rules/` に配置し、必要時のみ読み込ませる
-- `fileMatch` を新規追加した場合は `filematch-dispatcher.md` のテーブルにも追記する
+- `always` 側は可能な限り薄くする（「readFileで○○を読め」または「スクリプトを実行せよ」の1行程度）
+- 本体のルール・ガイドは `~/.shared-ai/rules/contextual/` や `~/.shared-ai/references/` に配置し、必要時のみ読み込ませる
+- `fileMatch` を新規追加した場合は `~/scripts/resolve-shared-ai-rules.py` のRULESリストにも追記する
 - `fileMatchPattern` で複数パターンを指定する場合は配列形式 `["pattern1", "pattern2"]` を使用する（カンマ区切り文字列は非推奨）
 - `auto` を使用する場合は `name` と `description` を必ず指定する
+
+### Wrapper_File テンプレート
+
+Kiro steeringに配置するWrapper_Fileの形式。inclusion typeに応じて使い分ける。
+
+#### always（ディスパッチャー用）
+
+```markdown
+---
+inclusion: always
+description: {ルールの説明}
+---
+
+# {タイトル}
+
+以下のファイルをreadFileで読み込み、その指示に従うこと:
+- `~/.shared-ai/rules/always/{filename}.md`
+```
+
+#### auto（意図ベースのトリガー）
+
+```markdown
+---
+inclusion: auto
+name: {short-name}
+description: {Kiroがマッチング判断に使う説明文。具体的なキーワードを含めること}
+---
+
+# {タイトル}
+
+以下のファイルをreadFileで読み込み、その指示に従うこと:
+- `~/.shared-ai/references/{filename}.md`
+```
+
+#### fileMatch（ファイル種別トリガー）
+
+```markdown
+---
+inclusion: fileMatch
+fileMatchPattern: "{pattern}"
+description: {ルールの説明}
+---
+
+# {タイトル}
+
+以下のファイルをreadFileで読み込み、その指示に従うこと:
+- `~/.shared-ai/rules/contextual/{filename}.md`
+```
+
+#### manual（ユーザー明示指定）
+
+```markdown
+---
+inclusion: manual
+name: {short-name}
+description: {ルールの説明}
+---
+
+# {タイトル}
+
+以下のファイルをreadFileで読み込み、その指示に従うこと:
+- `~/.shared-ai/references/{filename}.md`
+```
 
 ## `#[[file:]]` 参照パスの注意事項
 

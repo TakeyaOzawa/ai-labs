@@ -39,8 +39,8 @@ python3 ~/scripts/fetch-rss-feeds.py --category tech --date 2026-05-07
 
 スクリプトを新規作成・大幅改修する場合は、以下をreadFileで読み込み従うこと:
 
-- **Python コーディング規約**: `~/.shared-ai/rules/python-coding-standards.md`
+- **Python コーディング規約**: `~/.shared-ai/rules/contextual/python-coding-standards.md`
 - **スクリプトファースト詳細ガイド**: `~/.shared-ai/references/script-first-guide.md`
-- **シェル（platform-commands.sh追記時のみ）**: `~/.shared-ai/rules/shell-coding-standards.md`
+- **シェル（platform-commands.sh追記時のみ）**: `~/.shared-ai/rules/contextual/shell-coding-standards.md`
 
 既存ファイルの編集時はsteeringの `fileMatch` で自動注入されるため、明示的な読み込みは不要。

@@ -6,4 +6,4 @@ fileMatchPattern: "**/*.py"
 # Python スクリプト コーディング規約
 
 以下のファイルをreadFileで読み込み、その指示に従うこと:
-- `~/.shared-ai/rules/python-coding-standards.md`
+- `~/.shared-ai/rules/contextual/python-coding-standards.md`

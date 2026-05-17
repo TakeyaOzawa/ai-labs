@@ -45,31 +45,44 @@ DIRECTORY_SYMLINKS = [
 # 個別ファイルsymlink: link_path → target_path
 FILE_SYMLINKS = [
     {
-        "link": HOME / ".codex" / "rules" / "dev-environment.md",
-        "target": SHARED_AI / "rules" / "dev-environment.md",
-        "description": "Codex rule: dev-environment",
+        "link": HOME / ".codex" / "rules" / "filematch-dispatcher.md",
+        "target": SHARED_AI / "rules" / "always" / "filematch-dispatcher.md",
+        "description": "Codex rule: filematch-dispatcher",
     },
     {
-        "link": HOME / ".codex" / "rules" / "gws-integration.md",
-        "target": SHARED_AI / "rules" / "gws-integration.md",
-        "description": "Codex rule: gws-integration",
-    },
-    {
-        "link": HOME / ".codex" / "rules" / "python-coding-standards.md",
-        "target": SHARED_AI / "rules" / "python-coding-standards.md",
-        "description": "Codex rule: python-coding-standards",
-    },
-    {
-        "link": HOME / ".codex" / "rules" / "shell-coding-standards.md",
-        "target": SHARED_AI / "rules" / "shell-coding-standards.md",
-        "description": "Codex rule: shell-coding-standards",
-    },
-    {
-        "link": HOME / ".codex" / "rules" / "pr-creation.md",
-        "target": SHARED_AI / "rules" / "pr-creation.md",
-        "description": "Codex rule: pr-creation",
+        "link": HOME / ".codex" / "rules" / "command-dispatcher.md",
+        "target": SHARED_AI / "rules" / "always" / "command-dispatcher.md",
+        "description": "Codex rule: command-dispatcher",
     },
 ]
+
+# 旧symlink（削除対象）
+OBSOLETE_SYMLINKS = [
+    HOME / ".codex" / "rules" / "dev-environment.md",
+    HOME / ".codex" / "rules" / "gws-integration.md",
+    HOME / ".codex" / "rules" / "python-coding-standards.md",
+    HOME / ".codex" / "rules" / "shell-coding-standards.md",
+    HOME / ".codex" / "rules" / "pr-creation.md",
+]
+
+
+def remove_obsolete_symlinks(dry_run: bool) -> None:
+    """旧symlinkを削除する。"""
+    has_obsolete = False
+    for link in OBSOLETE_SYMLINKS:
+        if link.is_symlink():
+            has_obsolete = True
+            if not dry_run:
+                link.unlink()
+                print(f"  🗑 旧symlink削除: {link}")
+            else:
+                print(f"  → (dry-run) 旧symlink削除予定: {link}")
+        elif link.exists():
+            has_obsolete = True
+            print(f"  ⚠ 旧パスに実体ファイルが存在: {link}（手動確認が必要）")
+
+    if not has_obsolete:
+        print("  ✓ 旧symlinkなし")
 
 
 def create_symlink(link: Path, target: Path, description: str, dry_run: bool) -> bool:
@@ -91,7 +104,6 @@ def create_symlink(link: Path, target: Path, description: str, dry_run: bool) ->
             return not dry_run
 
     if link.exists():
-        # 実体ディレクトリ/ファイルが存在する場合
         print(f"  ⚠ {description}: 実体が存在（symlinkではない）")
         print(f"    パス: {link}")
         if not dry_run:
@@ -107,7 +119,6 @@ def create_symlink(link: Path, target: Path, description: str, dry_run: bool) ->
             print(f"    → (dry-run) バックアップ後にsymlink作成予定")
         return not dry_run
 
-    # 存在しない場合: 親ディレクトリを作成してsymlink作成
     if not dry_run:
         link.parent.mkdir(parents=True, exist_ok=True)
         link.symlink_to(target)
@@ -169,6 +180,14 @@ def verify_symlinks() -> bool:
             print(f"  ✗ {desc}: 存在しない")
             all_ok = False
 
+    print("\n[旧symlink（存在しないことを確認）]")
+    for link in OBSOLETE_SYMLINKS:
+        if link.exists() or link.is_symlink():
+            print(f"  ✗ 旧symlink残存: {link}")
+            all_ok = False
+        else:
+            print(f"  ✓ 削除済み: {link.name}")
+
     print()
     if all_ok:
         print("✅ 全symlink正常")
@@ -192,12 +211,16 @@ def setup(dry_run: bool) -> None:
         print(f"✗ エラー: {SHARED_AI / 'skills'} が存在しません。")
         sys.exit(1)
 
-    if not (SHARED_AI / "rules").exists():
-        print(f"✗ エラー: {SHARED_AI / 'rules'} が存在しません。")
+    if not (SHARED_AI / "rules" / "always").exists():
+        print(f"✗ エラー: {SHARED_AI / 'rules' / 'always'} が存在しません。")
         sys.exit(1)
 
+    # 旧symlink削除
+    print("[旧symlink削除]")
+    remove_obsolete_symlinks(dry_run)
+
     # ディレクトリsymlink
-    print("[ディレクトリsymlink]")
+    print("\n[ディレクトリsymlink]")
     for item in DIRECTORY_SYMLINKS:
         create_symlink(item["link"], item["target"], item["description"], dry_run)
 
