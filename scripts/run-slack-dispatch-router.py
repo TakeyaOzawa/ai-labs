@@ -58,6 +58,28 @@ REQUEST_TIMEOUT = 30
 MAX_LOG_LINES = 500
 
 
+# ─── ai-command-builder 遅延ロード ───────────────────────────────
+
+def _get_ai_command_builder():
+    """ai-command-builder.py モジュールを遅延ロードする。"""
+    from importlib.util import module_from_spec, spec_from_file_location
+    spec = spec_from_file_location("ai_command_builder", SCRIPTS_DIR / "ai-command-builder.py")
+    mod = module_from_spec(spec)  # type: ignore[arg-type]
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+    return mod
+
+
+_ai_cmd_builder = None
+
+
+def _ai_builder():
+    """キャッシュ付きでai-command-builderモジュールを返す。"""
+    global _ai_cmd_builder
+    if _ai_cmd_builder is None:
+        _ai_cmd_builder = _get_ai_command_builder()
+    return _ai_cmd_builder
+
+
 # ─── ユーティリティ ──────────────────────────────────────────────
 
 def now_jst() -> str:
@@ -426,7 +448,7 @@ def scan_agents() -> list[dict]:
     Returns:
         [{"name": "...", "description": "..."}, ...] のリスト
     """
-    ai_type = os.environ.get("AI_COMMAND_TYPE", "claude")
+    ai_type = _ai_builder().get_ai_type()
     agents: list[dict] = []
 
     if ai_type == "kiro-cli":
@@ -497,17 +519,7 @@ def determine_agent(message_text: str, agents: list[dict]) -> str | None:
         f"回答（エージェント名のみ）:"
     )
 
-    ai_type = os.environ.get("AI_COMMAND_TYPE", "claude")
-    if ai_type == "kiro-cli":
-        cmd = [
-            "kiro-cli", "chat", "--trust-all-tools", "--no-interactive",
-            "--agent", DISPATCH_AGENT, prompt,
-        ]
-    else:
-        cmd = [
-            "claude", "--print", "--dangerously-skip-permissions",
-            "--agent", DISPATCH_AGENT, prompt,
-        ]
+    cmd = _ai_builder().build_ai_command(prompt, agent_name=DISPATCH_AGENT)
 
     try:
         result = subprocess.run(
@@ -520,6 +532,7 @@ def determine_agent(message_text: str, agents: list[dict]) -> str | None:
         output = result.stdout.strip()
 
         # claude --output-format json の場合はJSONパース
+        ai_type = _ai_builder().get_ai_type()
         if ai_type != "kiro-cli" and output.startswith("{"):
             try:
                 data = json.loads(output)
@@ -634,8 +647,7 @@ def launch_agent(
             return pid, session_id, marker_ts
 
         # 新規セッション: kiro-cliの場合のみ即時取得を試みる
-        ai_type = os.environ.get("AI_COMMAND_TYPE", "claude")
-        if ai_type == "kiro-cli":
+        if _ai_builder().get_ai_type() == "kiro-cli":
             new_session_id = _get_latest_kiro_session_id()
         else:
             new_session_id = None

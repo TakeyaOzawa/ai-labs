@@ -123,3 +123,32 @@ rules/
 - [ ] `python3.12 ~/scripts/resolve-shared-ai-rules.py "tests/Unit/UserTest.php"` が `critical/test-db-guard.md` を返す
 - [ ] `python3.12 ~/scripts/resolve-shared-ai-rules.py "README.md"` が `quality/readme-guide.md` を返す
 - [ ] 旧パス（`rules/always/`, `rules/contextual/`）への参照がプロジェクト内に残っていないこと
+
+## 追加対応: 動作検証スクリプト + AIコマンドビルダー切り出し
+
+### Task 9: ai-command-builder.py 作成
+
+- **対象ファイル:** `~/scripts/ai-command-builder.py`
+- **変更内容:**
+  - `_pipeline_common.py` の `_build_ai_command()` を独立スクリプトに切り出し
+  - `AI_COMMAND_TYPE` を実行時引数で明示指定可能にする（環境変数フォールバック）
+  - `--no-interactive` フラグ（デフォルトON）を引数で制御可能にする
+  - claude / kiro-cli 両方のコマンド構築に対応
+  - 他スクリプトからimportして使える関数としても提供
+
+### Task 10: verify-shared-ai-structure.py 作成
+
+- **対象ファイル:** `~/scripts/verify-shared-ai-structure.py`
+- **変更内容:**
+  - rules/critical/, rules/quality/, rules/直下のdispatcher存在確認
+  - 全steeringファイルのreadFile参照先パスが実在するか検証
+  - resolve-shared-ai-rules.pyの全パターンマッチテスト
+  - setup-symlinks.py --verify の実行
+  - 旧パス（rules/always/, rules/contextual/）への参照がないことをgrep確認
+  - claude / kiro-cli 両方でdispatcherが正しく読み込まれるか検証（ai-command-builder.py使用）
+  - 今後の階層構造変更時にも再利用可能な汎用設計
+
+### Task 11: _pipeline_common.py リファクタリング
+
+- **対象ファイル:** `~/scripts/_pipeline_common.py`
+- **変更内容:** `_build_ai_command()` を `ai-command-builder.py` からのimportに置き換え

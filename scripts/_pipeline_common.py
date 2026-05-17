@@ -113,21 +113,29 @@ def load_env() -> None:
                 os.environ[key] = value
 
 
+def _load_ai_command_builder():
+    """ai-command-builder.py モジュールを遅延ロードしてキャッシュする。"""
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    builder_path = SCRIPTS_DIR / "ai-command-builder.py"
+    spec = spec_from_file_location("ai_command_builder", builder_path)
+    mod = module_from_spec(spec)  # type: ignore[arg-type]
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+    return mod
+
+
+_ai_command_builder = None
+
+
 def _build_ai_command(prompt: str, agent_name: str = "") -> list[str]:
-    """AI_COMMAND_TYPEに応じた実行コマンドを構築する。"""
-    ai_type = os.environ.get("AI_COMMAND_TYPE", "claude")
-    if ai_type == "kiro-cli":
-        cmd = ["kiro-cli", "chat", "--trust-all-tools", "--no-interactive"]
-        if agent_name:
-            cmd.extend(["--agent", agent_name])
-        cmd.append(prompt)
-        return cmd
-    # default: claude code
-    cmd = ["claude", "--print", "--dangerously-skip-permissions"]
-    if agent_name:
-        cmd.extend(["--agent", agent_name])
-    cmd.append(prompt)
-    return cmd
+    """AI_COMMAND_TYPEに応じた実行コマンドを構築する。
+
+    実装は ai-command-builder.py に委譲。
+    """
+    global _ai_command_builder
+    if _ai_command_builder is None:
+        _ai_command_builder = _load_ai_command_builder()
+    return _ai_command_builder.build_ai_command(prompt, agent_name=agent_name)
 
 
 def run_ai_command(prompt: str, log_file: Path, agent_name: str = "") -> bool:

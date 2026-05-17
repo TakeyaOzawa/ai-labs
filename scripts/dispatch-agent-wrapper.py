@@ -163,33 +163,22 @@ def main() -> None:
     # 環境変数ロード
     load_env()
 
-    # AI コマンド構築
-    ai_type = os.environ.get("AI_COMMAND_TYPE", "claude")
+    # AI コマンド構築（ai-command-builder.py に委譲）
+    from importlib.util import module_from_spec, spec_from_file_location
+    _spec = spec_from_file_location("ai_command_builder", SCRIPTS_DIR / "ai-command-builder.py")
+    _mod = module_from_spec(_spec)  # type: ignore[arg-type]
+    _spec.loader.exec_module(_mod)  # type: ignore[union-attr]
 
     # dispatch経由であることをエージェントに伝える引き継ぎ事項を付与
     # （エージェント自身による Slack 通知 / Phase 4 をスキップさせる）
     prompt_with_note = args.prompt + DISPATCH_HANDOFF_NOTE
 
-    if ai_type == "kiro-cli":
-        cmd = ["kiro-cli", "chat", "--trust-all-tools", "--no-interactive"]
-        if args.session_id:
-            cmd.extend(["--resume-id", args.session_id])
-        else:
-            cmd.extend(["--agent", args.agent])
-        cmd.append(prompt_with_note)
-    else:
-        if args.session_id:
-            cmd = [
-                "claude", "--print", "--dangerously-skip-permissions",
-                "--output-format", "json",
-                "--resume", args.session_id, prompt_with_note,
-            ]
-        else:
-            cmd = [
-                "claude", "--print", "--dangerously-skip-permissions",
-                "--output-format", "json",
-                "--agent", args.agent, prompt_with_note,
-            ]
+    cmd = _mod.build_ai_command(
+        prompt_with_note,
+        agent_name=args.agent,
+        session_id=args.session_id or "",
+        output_format="json" if _mod.get_ai_type() == "claude" else "",
+    )
 
     # エージェント実行（同期: 完了を待つ）
     # 実行前のログファイル行数を記録（自分が書いた部分のみ解析するため）

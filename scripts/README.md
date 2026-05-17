@@ -56,6 +56,9 @@ AI_COMMAND_TYPE
 | `setup-shared-ai.py` | 統合セットアップ（環境変数チェック + symlink構築） |
 | `check-env.py` | 環境変数の設定状況チェック |
 | `setup-symlinks.py` | AIツール symlink 構築（.shared-ai → 各ツール設定ディレクトリ） |
+| `verify-shared-ai-structure.py` | .shared-ai 階層構造の整合性検証（構造・steering・symlink・旧パス等） |
+| `ai-command-builder.py` | AIコマンド構築ユーティリティ（claude / kiro-cli 対応） |
+| `resolve-shared-ai-rules.py` | ファイルパスに対応するルール/リファレンスを解決 |
 | `run-daily-pipeline.py` | デイリーパイプライン実行 |
 | `run-weekly-pipeline.py` | ウィークリーパイプライン実行 |
 | `run-gws-trend-scout-pipeline.py` | Google Workspace トレンドスカウト |
