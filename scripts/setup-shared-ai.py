@@ -79,6 +79,15 @@ def main() -> None:
     if rc != 0:
         has_error = True
 
+    # Step 3: 構造検証
+    if not args.dry_run:
+        print()
+        print("─" * 50)
+        print()
+        rc = run_script("verify-shared-ai-structure.py", ["--quick"])
+        if rc != 0:
+            has_error = True
+
     # 結果サマリー
     print()
     if has_error:
