@@ -1,5 +1,15 @@
 # extract-agent-common-module: エージェントプロンプト共通部分の agent-common.md 切り出し
 
+## ステータス
+
+**Task 1〜6: 完了** — agent-common.md 作成、28ファイルのプロンプト置き換え、ガイド更新済み。
+
+**未完了タスクは以下の別issueに分離:**
+- `issues/agent-params-schema.md` — Task 8, 9, 15（パラメータ体系の導入）
+- `issues/pipeline-redesign.md` — Task 10, 11, 12, 13, 14（パイプライン再設計）
+
+**Task 7（動作確認）** は代表的なエージェント実行で確認する。手動で実施のこと。
+
 ## 変更種別
 
 refactor
