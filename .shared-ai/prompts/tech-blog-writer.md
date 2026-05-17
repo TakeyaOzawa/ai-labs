@@ -31,13 +31,12 @@
 1. 引数で `poc_directory` が指定されている場合 → そのパスを使用
 2. 未指定の場合 → planファイルのフロントマター `poc_directory` を参照
 
+## 共通規約
+`readFile: ~/.shared-ai/references/agent-common.md` の §1（当日取得）, §3, §8 に従うこと。
+
 ## 基準日付の決定
 
-**重要: 日付はAIモデルの推測に頼らず、必ずシェルコマンドで確定させること。**
-
-```bash
-python3.12 ~/scripts/get-jst-date.py
-```
+agent-common.md §1（当日取得）に従う。
 
 ---
 
@@ -173,4 +172,3 @@ docs_folder_id=1AbCdEfGhIjKlMnOpQrStUvWxYz  # 任意
 3. コードサンプルは検証済みのものを使用する — 動作しないコードを記事に含めない
 4. 参考URLは有効性を確認する — リンク切れを放置しない
 5. planファイルのstatusを必ず更新する — パイプラインの完了を明示する
-6. 出力は日本語

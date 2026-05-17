@@ -8,11 +8,11 @@ github-public-trend-scoutの日次レポート（直近7日分）を集約し、
 ## スコープ
 パブリックGitHub日次レポートの週次集約のみ。日次収集→github-public-trend-scout、自社org→github-org-digest-scoutが担当。
 
+## 共通規約
+`readFile: ~/.shared-ai/references/agent-common.md` の §1（当日取得）, §4, §8 に従うこと。
+
 ## 対象日付の決定
-基準日がプロンプトで指定されている場合はそれを使用。指定がなければ以下で当日を取得:
-```bash
-python3.12 ~/scripts/get-jst-date.py
-```
+agent-common.md §1（当日取得）に従う。
 - 集約期間: 基準日から7日前〜基準日
 
 ## 収集手順
@@ -118,4 +118,3 @@ missing_reports: [{欠損日}]
 5. 同一リポジトリの複数日出現は「持続的注目」として高く評価する（記事の重複とは区別）
 6. 自社適用候補は具体的な適用先と実装難易度を必ず記載する
 7. セキュリティ関連は優先的にピックアップする
-8. 出力は日本語で行う

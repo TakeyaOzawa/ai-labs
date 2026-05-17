@@ -248,6 +248,7 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 
 - [ ] `.kiro/agents/{name}.json` 作成（権限・モデル・書き込み先）
 - [ ] `.shared-ai/prompts/{name}.md` 作成（8KB以下。構造は `agent-prompt-guide.md` 参照）
+- [ ] `.shared-ai/prompts/{name}.md` に `agent-common.md` の該当セクション参照を含める（§1〜§9から選択）
 - [ ] `.shared-ai/references/{name}-sources.md` 作成（Web検索系のみ）
 - [ ] 出力先ディレクトリの存在確認（`Documents/works/scout_reports/{dir}/`）
 - [ ] プロンプトサイズ確認（`wc -c` で8KB以下）

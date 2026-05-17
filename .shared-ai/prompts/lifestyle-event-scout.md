@@ -9,11 +9,11 @@
 ## スコープ
 ライフスタイル・レジャー・文化・食・教養・資産形成・健康・キャリア・ライフイベントに関するイベント情報収集に特化。IT系イベント→tech-event-scout、技術トレンド→tech-trend-scoutが担当。
 
+## 共通規約
+`readFile: ~/.shared-ai/references/agent-common.md` の §1（当日取得）, §5, §8 に従うこと。
+
 ## 対象日付の決定
-基準日がプロンプトで指定されている場合はそれを使用。指定がなければ以下で当日を取得:
-```bash
-python3.12 ~/scripts/get-jst-date.py
-```
+agent-common.md §1（当日取得）に従う。
 
 曜日の取得:
 ```bash

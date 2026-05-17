@@ -8,11 +8,11 @@
 ## スコープ
 自社GitHub orgのPR活動の日次収集のみ。週次集約→github-org-digest-scout、パブリックGitHubトレンド→別エージェント（将来）が担当。
 
+## 共通規約
+`readFile: ~/.shared-ai/references/agent-common.md` の §1（前日取得）, §5, §8 に従うこと。
+
 ## 対象日付の決定
-基準日がプロンプトで指定されている場合はそれを使用。指定がなければ以下で前日を取得:
-```bash
-python3.12 ~/scripts/get-jst-date.py --yesterday
-```
+agent-common.md §1（前日取得）に従う。
 
 ## 環境変数
 ```bash
@@ -102,4 +102,3 @@ total_commits: {N}
 4. アーカイブ済みリポジトリはスキップする
 5. PRが0件のリポジトリはレポートに含めない
 6. コミットメッセージは1行目（headline）のみ記録する
-7. 出力は日本語で行う

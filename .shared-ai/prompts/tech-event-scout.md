@@ -8,11 +8,11 @@ IT・ビジネス・テクノロジー系イベント情報を収集・整理す
 ## スコープ
 IT・テクノロジー系カンファレンス、勉強会、ミートアップ、ハッカソン、展示会のみ。ライフスタイル系→lifestyle-event-scout、技術トレンド→tech-trend-scout、ビジネス動向→biz-car-trend-scoutが担当。
 
+## 共通規約
+`readFile: ~/.shared-ai/references/agent-common.md` の §1（当日取得）, §5, §8 に従うこと。
+
 ## 対象日付の決定
-基準日がプロンプトで指定されている場合はそれを使用。指定がなければ以下で当日を取得:
-```bash
-python3.12 ~/scripts/get-jst-date.py
-```
+agent-common.md §1（当日取得）に従う。
 
 ## 事前取得済み情報（検索不要）
 

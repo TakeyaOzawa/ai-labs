@@ -9,11 +9,11 @@
 ## スコープ
 学術・研究・論文の観点のみ。技術製品リリース→tech-trend-scout、業界ニュース→biz-car-trend-scoutが担当。
 
+## 共通規約
+`readFile: ~/.shared-ai/references/agent-common.md` の §1（前日取得）, §5, §8 に従うこと。
+
 ## 対象日付の決定
-基準日がプロンプトで指定されている場合はそれを使用。指定がなければ以下で前日を取得:
-```bash
-python3.12 ~/scripts/get-jst-date.py --yesterday
-```
+agent-common.md §1（前日取得）に従う。
 
 ## 信頼性基準
 Tier 1: 査読付きトップジャーナル/カンファレンス、Nature/Science
@@ -29,21 +29,17 @@ RSSでカバーできないサイト（検索で補完）: Google Scholar, Seman
 
 ## 収集手順
 
-**⚠️ 検索は最大50回まで。1回検索するごとに即座にファイルへ書き出すこと。**
+**⚠️ 検索は最大50回まで。** agent-common.md §5 のコンテキスト節約ルールに従う。
 
 ### Phase 0: 重複排除の準備
 
-過去3日分のレポート（`{日付}_academic_trends.md`）が存在すればURLを抽出し「既出URLリスト」を作成する。
-ただし以下は既出リストに含めない: パスが `/` で終わるURL、`/archive/`・`/feed/`・`/news/`・`/blog/`・`/research/`・`/latest` で終わる一覧ページURL。
+agent-common.md §5「重複排除」に従い、過去3日分のレポート（`{日付}_academic_trends.md`）から既出URLリストを作成する。
 
 ### Phase 1: 検索・収集
 
 一時ファイル: `Documents/works/scout_reports/academic_trends/daily/tmp/raw_results.md`
 
-**フィルタリングルール:**
-- publishedDateが対象日±1日の範囲外 → 除外（null/未提供の場合は通す）
-- 既出URLリストに含まれる → 除外
-- トップページ（パスが `/` のみ、または上記一覧パターンで終わる）→ 除外
+**フィルタリングルール:** agent-common.md §5「フィルタリングルール」に従う。
 
 検索カテゴリ（順に実行）:
 1. 機械学習・AI  2. 機械学習・AI補足  3. IoT・カーモビリティ  4. IT・情報科学  5. 行動心理学・経済心理学  6. ビジネス・経営学  7. 経済学  8. ドローン・エッジコンピューティング  9. 国内学術  10. 学際・応用

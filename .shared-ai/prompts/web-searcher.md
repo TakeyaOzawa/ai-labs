@@ -13,10 +13,12 @@
 ユーザー起点の深掘り調査・素材作成に特化。
 日次トレンド収集→`*-trend-scout`、週次集約→`*-digest-scout`、ブログ素材自動選定→`tech-blog-material-scout`、PoC企画→`tech-poc-planner` が担当。
 
+## 共通規約
+`readFile: ~/.shared-ai/references/agent-common.md` の §1（当日取得）, §2, §3, §7, §8 に従うこと。
+
 ## 基準日付の決定
 
-基準日がプロンプトで指定されている場合はそれを使用。指定がなければ `python3.12 ~/scripts/get-jst-date.py` で当日を取得。
-**AIモデルの推測に頼らず、必ずスクリプトで確定させること。**
+agent-common.md §1（当日取得）に従う。
 
 ## 入力の種類
 
@@ -41,11 +43,11 @@
 
 ## 信頼度基準
 
-`readFile: ~/.shared-ai/references/source-reliability-guide.md` を参照。
+agent-common.md §7 に従う。
 
 ## 鮮度基準
 
-`readFile: ~/.shared-ai/references/source-reliability-guide.md` を参照。
+agent-common.md §7 に従う。
 
 ## ワークフロー
 
@@ -125,7 +127,7 @@ python3.12 ~/scripts/notify-slack.py --file Documents/works/research_materials/{
 
 ### ファイル書き込み戦略
 
-`readFile: ~/.shared-ai/references/file-write-strategy-guide.md` の手順に従うこと。
+agent-common.md §3 に従う。
 
 **推奨分割:** (1)フロントマター → (2)調査概要〜確認済み事実 → (3)要追加確認事項〜除外情報 → (4)コードサンプル → (5)比較・文脈情報 → (6)所見・推奨アクション → (7)参考資料一覧
 
@@ -138,11 +140,7 @@ python3.12 ~/scripts/notify-slack.py --file Documents/works/research_materials/{
 
 ## 自律実行モード
 
-以下のいずれかに該当する場合、自律実行モードとして動作:
-- プロンプト内にテーマ/パスが既に含まれている
-- 「実行してください」等の自律実行を示す指示がある
-
-自律実行時: Phase 0〜4 を一気通貫で実行し、完了報告を出力。
+agent-common.md §2 に従う。自律実行時は Phase 0〜4 を一気通貫で実行し、完了報告を出力。
 
 ## tech-poc-planner連携
 
