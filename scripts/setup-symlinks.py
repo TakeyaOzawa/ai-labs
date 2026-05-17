@@ -19,6 +19,7 @@ from pathlib import Path
 
 HOME = Path.home()
 SHARED_AI = HOME / ".shared-ai"
+SCRIPTS_DIR = Path(__file__).parent
 
 
 # === symlink定義 ===
@@ -53,6 +54,11 @@ FILE_SYMLINKS = [
         "link": HOME / ".codex" / "rules" / "command-dispatcher.md",
         "target": SHARED_AI / "rules" / "command-dispatcher.md",
         "description": "Codex rule: command-dispatcher",
+    },
+    {
+        "link": HOME / ".git" / "hooks" / "pre-commit",
+        "target": SCRIPTS_DIR / "git-hooks" / "pre-commit",
+        "description": "git pre-commit hook (構造検証)",
     },
 ]
 

@@ -9,9 +9,17 @@ description: .shared-ai配下の階層構造変更時に、構造検証スクリ
 `.shared-ai/` 配下のルール・lookups・references を変更しました。
 以下の検証を実施してください。
 
-## 必須: 静的構造検証
+## 必須: 静的構造検証（軽量）
 
 変更完了後、以下を実行して全チェック PASS を確認すること:
+
+```bash
+python3.12 ~/scripts/verify-shared-ai-structure.py --quick
+```
+
+## 推奨: フル検証（手動実行時）
+
+コミット前やパス変更を伴う大きな変更の場合は、フル検証を推奨:
 
 ```bash
 python3.12 ~/scripts/verify-shared-ai-structure.py

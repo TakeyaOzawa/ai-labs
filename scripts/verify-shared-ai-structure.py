@@ -15,6 +15,7 @@ verify-shared-ai-structure: .shared-ai 階層構造の整合性を検証する
 
 Usage:
     python3.12 ~/scripts/verify-shared-ai-structure.py
+    python3.12 ~/scripts/verify-shared-ai-structure.py --quick
     python3.12 ~/scripts/verify-shared-ai-structure.py --verbose
     python3.12 ~/scripts/verify-shared-ai-structure.py --check structure
     python3.12 ~/scripts/verify-shared-ai-structure.py --check steering
@@ -673,17 +674,23 @@ def check_ai_config_refs(verbose: bool) -> VerifyResult:
 
 # ─── メイン ──────────────────────────────────────────────────────
 
-ALL_CHECKS = {
+# チェック分類: quick = 軽量（静的検証のみ）、full = 重量（外部プロセス実行を含む）
+QUICK_CHECKS = {
     "structure": check_structure,
     "steering": check_steering,
-    "resolve": check_resolve,
-    "symlinks": check_symlinks,
     "legacy": check_legacy,
-    "dispatcher": check_dispatcher,
-    "consistency": check_steering_resolve_consistency,
     "command-dispatcher": check_command_dispatcher,
     "ai-config": check_ai_config_refs,
 }
+
+FULL_CHECKS = {
+    "resolve": check_resolve,
+    "symlinks": check_symlinks,
+    "dispatcher": check_dispatcher,
+    "consistency": check_steering_resolve_consistency,
+}
+
+ALL_CHECKS = {**QUICK_CHECKS, **FULL_CHECKS}
 
 
 def main() -> None:
@@ -695,6 +702,10 @@ def main() -> None:
         help="特定のチェックのみ実行（省略時: 全チェック）",
     )
     parser.add_argument(
+        "--quick", "-q", action="store_true",
+        help="軽量チェックのみ実行（外部プロセス実行を伴うチェックをスキップ）",
+    )
+    parser.add_argument(
         "--verbose", "-v", action="store_true",
         help="詳細出力",
     )
@@ -702,10 +713,14 @@ def main() -> None:
 
     print("=" * 60)
     print("  verify-shared-ai-structure: 階層構造整合性検証")
+    if args.quick:
+        print("  (--quick: 軽量チェックのみ)")
     print("=" * 60)
 
     if args.check:
         checks = {args.check: ALL_CHECKS[args.check]}
+    elif args.quick:
+        checks = QUICK_CHECKS
     else:
         checks = ALL_CHECKS
 

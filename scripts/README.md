@@ -68,3 +68,12 @@ AI_COMMAND_TYPE
 | `find-job.py` / `update-job.py` | ジョブ検索・更新 |
 | `create-daily-jobs.py` / `create-weekly-jobs.py` | 定期ジョブ生成 |
 | `manage-scheduler.py` | launchd スケジューラ管理 |
+
+## git-hooks/
+
+`scripts/git-hooks/` にはバージョン管理対象の git hook 本体を配置する。
+`.git/hooks/` への symlink は `setup-symlinks.py` が管理する。
+
+| フック | 説明 |
+|--------|------|
+| `pre-commit` | `.shared-ai/` 配下の変更時に `verify-shared-ai-structure.py` を自動実行 |
