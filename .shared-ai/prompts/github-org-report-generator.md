@@ -42,7 +42,7 @@ active_repos: {N}
 total_prs: {N}
 total_commits: {N}
 ---
-# GitHub Org 日次レポート: {YYYY-MM-DD}
+# GitHub Org トレンド: {YYYY-MM-DD}
 
 ## 📊 サマリー
 - 対象org: {ORG_NAME}
@@ -77,7 +77,7 @@ active_repos: 0
 total_prs: 0
 total_commits: 0
 ---
-# GitHub Org 日次レポート: {YYYY-MM-DD}
+# GitHub Org トレンド: {YYYY-MM-DD}
 
 ## 📊 サマリー
 - 対象org: {ORG_NAME}

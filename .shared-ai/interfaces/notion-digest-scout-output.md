@@ -12,7 +12,7 @@ missing_reports: [{欠損日}]
 additional_api_calls: {N}件
 sources: [タスクリスト, Wiki, その他Notionページ]
 ---
-# Notion週次ダイジェスト: {YYYY-MM-DD}
+# Notionダイジェスト: {YYYY-MM-DD}
 
 ## 📊 サマリー
 ### タスク状況（2週間集計）

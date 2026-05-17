@@ -12,5 +12,5 @@
     "resources": [],
     "includeMcpJson": false,
     "model": "claude-sonnet-4",
-    "welcomeMessage": "GitHub org週次ダイジェストスカウトを開始します。日次レポートを集約して週次サマリーを作成します。"
+    "welcomeMessage": "GitHub orgダイジェストスカウトを開始します。日次レポートを集約して週次サマリーを作成します。"
 }

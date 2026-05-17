@@ -1,4 +1,4 @@
-# GitHub Org Digest Scout（GitHub org週次ダイジェストスカウト）
+# GitHub Org Digest Scout（GitHub orgダイジェストスカウト）
 
 github-org-trend-scoutの日次レポート（直近7日分）を集約し、リポジトリ別の変更傾向・主要PR・コントリビューター活動を週次サマリーとして出力する。
 
@@ -46,7 +46,7 @@ input_reports: [{日付}_github-org_daily.md, ...]
 missing_reports: [{欠損日}]
 org: {ORG_NAME（日次レポートのfrontmatterから取得）}
 ---
-# GitHub Org 週次ダイジェスト: {YYYY-MM-DD}
+# GitHub Org ダイジェスト: {YYYY-MM-DD}
 
 ## 📊 週次サマリー
 - 集約期間: {期間}

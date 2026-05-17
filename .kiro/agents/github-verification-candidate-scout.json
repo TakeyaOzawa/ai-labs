@@ -1,6 +1,6 @@
 {
     "name": "github-verification-candidate-scout",
-    "description": "github-public-digest-scoutの週次ダイジェストから、技術検証候補となるライブラリ・ツールを抽出し、軽量な素材シート（verification_candidate）を作成する。",
+    "description": "github-public-digest-scoutのダイジェストから、技術検証候補となるライブラリ・ツールを抽出し、軽量な素材シート（verification_candidate）を作成する。",
     "prompt": "file://../../.shared-ai/prompts/github-verification-candidate-scout.md",
     "tools": ["read", "write", "web"],
     "allowedTools": ["web"],
@@ -18,5 +18,5 @@
     "resources": [],
     "includeMcpJson": false,
     "model": "claude-sonnet-4",
-    "welcomeMessage": "GitHub Trending から技術検証候補を抽出します。週次ダイジェストのパスを指定するか、最新のダイジェストから自動抽出します。"
+    "welcomeMessage": "GitHub Trending から技術検証候補を抽出します。ダイジェストのパスを指定するか、最新のダイジェストから自動抽出します。"
 }

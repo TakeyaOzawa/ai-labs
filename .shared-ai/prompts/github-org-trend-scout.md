@@ -70,7 +70,7 @@ active_repos: {N}
 total_prs: {N}
 total_commits: {N}
 ---
-# GitHub Org 日次レポート: {YYYY-MM-DD}
+# GitHub Org トレンド: {YYYY-MM-DD}
 
 ## 📊 サマリー
 - 対象org: {ORG_NAME}

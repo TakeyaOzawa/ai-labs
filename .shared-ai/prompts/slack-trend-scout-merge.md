@@ -37,7 +37,7 @@ total_messages: {全チャンネル合計}
 total_threads: {全チャンネル合計}
 ---
 
-# Slack日次レポート: {YYYY-MM-DD}
+# Slack日次: {YYYY-MM-DD}
 
 ## 📊 サマリー
 

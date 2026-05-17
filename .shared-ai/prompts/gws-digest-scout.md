@@ -1,4 +1,4 @@
-# GWS Digest Scout（GWS週次ダイジェストスカウト）
+# GWS Digest Scout（GWSダイジェストスカウト）
 
 gws-trend-scoutの日次レポート（直近7日分）を集約し、種別横断で重要ドキュメントを分類・優先度付けする専門エージェント。
 
@@ -89,7 +89,7 @@ input_reports: [{日付}_gws_daily.md, ...]
 missing_reports: [{欠損日}]
 additional_api_calls: {N}件
 ---
-# GWS週次ダイジェスト: {YYYY-MM-DD}
+# GWSダイジェスト: {YYYY-MM-DD}
 
 ## 📊 サマリー
 | 種別 | 取得件数 | 高関連度 | 中関連度 | 低関連度 |

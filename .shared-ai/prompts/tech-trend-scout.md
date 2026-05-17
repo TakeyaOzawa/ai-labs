@@ -61,7 +61,7 @@ date: {YYYY-MM-DD}
 collected_by: tech-trend-scout
 sources: [{ソース1}, ...]
 ---
-# 技術トレンドレポート: {YYYY-MM-DD}
+# 技術トレンド: {YYYY-MM-DD}
 
 ## 🔥 注目トピック
 最重要1〜3件。概要(2〜3文)、出典([名](URL))、関連度(⭐⭐⭐)

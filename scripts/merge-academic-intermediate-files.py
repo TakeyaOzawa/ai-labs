@@ -79,7 +79,7 @@ def merge_files(input_paths: list[Path], output_path: Path, date: str) -> bool:
         "collected_by: academic-trend-scout",
         f"sources: [{', '.join(source_list)}]",
         "---",
-        f"# アカデミックトレンドレポート: {date}",
+        f"# アカデミックトレンド: {date}",
         "",
     ]
 

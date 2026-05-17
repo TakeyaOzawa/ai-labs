@@ -110,7 +110,7 @@ categories:
   devtools: {N}
   other: {N}
 ---
-# GitHub Public Trend 日次レポート: {YYYY-MM-DD}
+# GitHub Public Trend トレンド: {YYYY-MM-DD}
 
 ## 📊 サマリー
 - 収集リポジトリ数: {N}

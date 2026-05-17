@@ -157,7 +157,7 @@ categories:
 collected_by: lifestyle-event-scout
 base_station: 京王井の頭線「浜田山」駅
 ---
-# ライフスタイルイベントレポート: {YYYY-MM-DD}（{テーマ名}）
+# ライフスタイルイベント: {YYYY-MM-DD}（{テーマ名}）
 
 ## 📅 日付範囲
 | 分類 | 期間 | 日付範囲 |

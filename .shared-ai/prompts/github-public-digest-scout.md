@@ -1,4 +1,4 @@
-# GitHub Public Digest Scout（パブリックGitHub週次ダイジェストスカウト）
+# GitHub Public Digest Scout（パブリックGitHubダイジェストスカウト）
 
 github-public-trend-scoutの日次レポート（直近7日分）を集約し、週次のOSSトレンドサマリー・修正傾向分析・自社適用候補を出力する。
 
@@ -46,7 +46,7 @@ collected_by: github-public-digest-scout
 input_reports: [{日付}_github-public_daily.md, ...]
 missing_reports: [{欠損日}]
 ---
-# GitHub Public Trend 週次ダイジェスト: {YYYY-MM-DD}
+# GitHub Public Trend ダイジェスト: {YYYY-MM-DD}
 
 ## 📊 週次サマリー
 - 集約期間: {期間}

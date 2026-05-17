@@ -66,7 +66,7 @@ date: {YYYY-MM-DD}
 collected_by: academic-trend-scout
 sources: [{ソース1}, ...]
 ---
-# アカデミックトレンドレポート: {YYYY-MM-DD}
+# アカデミックトレンド: {YYYY-MM-DD}
 
 ## 🔥 注目論文・研究
 最重要1〜3件。著者、掲載先、信頼性Tier、概要(3〜5文: 目的・手法・発見・定量結果)、出典、応用可能性(⭐⭐⭐)

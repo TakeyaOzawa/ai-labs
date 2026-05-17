@@ -61,7 +61,7 @@ date: {YYYY-MM-DD}
 collected_by: biz-car-trend-scout
 sources: [{ソース1}, ...]
 ---
-# 自動車産業DXビジネストレンドレポート: {YYYY-MM-DD}
+# 自動車産業DXビジネストレンド: {YYYY-MM-DD}
 
 ## 🔥 注目トピック
 最重要1〜3件。概要(2〜3文)、出典([名](URL))、関連度(⭐⭐⭐)

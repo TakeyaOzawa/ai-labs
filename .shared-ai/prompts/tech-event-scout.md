@@ -91,7 +91,7 @@ date: {YYYY-MM-DD}
 collected_by: tech-event-scout
 base_station: 京王井の頭線「浜田山」駅
 ---
-# イベントスカウトレポート: {YYYY-MM-DD}
+# イベントスカウト: {YYYY-MM-DD}
 
 ## 📅 日付範囲
 | 分類 | 期間 | 日付範囲 |
