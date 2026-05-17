@@ -14,7 +14,7 @@ Usage:
 例:
     python3.12 ~/scripts/resolve-shared-ai-rules.py "scripts/run-tech-pipeline.py"
     # 出力:
-    # /Users/.../rules/contextual/python-coding-standards.md
+    # /Users/.../rules/quality/python-coding-standards.md
     # /Users/.../.shared-ai/references/script-first-guide.md
     # /Users/.../.shared-ai/references/agent-pipeline-run-script-guide.md
 
@@ -35,17 +35,17 @@ SHARED_AI = HOME / ".shared-ai"
 # (glob_pattern, target_path) のリスト
 # 上から順に評価し、マッチした全てのターゲットを出力する（複数マッチあり）
 RULES: list[tuple[str, Path]] = [
-    ("**/*.py", SHARED_AI / "rules" / "contextual" / "python-coding-standards.md"),
+    ("**/*.py", SHARED_AI / "rules" / "quality" / "python-coding-standards.md"),
     ("scripts/*.py", SHARED_AI / "references" / "script-first-guide.md"),
     ("**/scripts/run-*-pipeline.py", SHARED_AI / "references" / "agent-pipeline-run-script-guide.md"),
-    ("**/*.sh", SHARED_AI / "rules" / "contextual" / "shell-coding-standards.md"),
-    (".zshrc", SHARED_AI / "rules" / "contextual" / "env-sync.md"),
-    (".bashrc", SHARED_AI / "rules" / "contextual" / "env-sync.md"),
+    ("**/*.sh", SHARED_AI / "rules" / "quality" / "shell-coding-standards.md"),
+    (".zshrc", SHARED_AI / "rules" / "critical" / "env-sync.md"),
+    (".bashrc", SHARED_AI / "rules" / "critical" / "env-sync.md"),
     (".shared-ai/prompts/*.md", SHARED_AI / "references" / "prompt-editing-guide.md"),
     (".shared-ai/references/*-guide.md", SHARED_AI / "references" / "reference-format-guide.md"),
-    ("tests/**/*Test.php", SHARED_AI / "rules" / "contextual" / "test-db-guard.md"),
-    ("docs/domain/**/*.md", SHARED_AI / "rules" / "contextual" / "domain-frontmatter.md"),
-    (".kiro/specs/**/*.md", SHARED_AI / "rules" / "contextual" / "spec-frontmatter.md"),
+    ("tests/**/*Test.php", SHARED_AI / "rules" / "critical" / "test-db-guard.md"),
+    ("docs/domain/**/*.md", SHARED_AI / "rules" / "critical" / "domain-frontmatter.md"),
+    (".kiro/specs/**/*.md", SHARED_AI / "rules" / "critical" / "spec-frontmatter.md"),
     (".kiro/specs/**/design.md", SHARED_AI / "references" / "spec-design-guide.md"),
     (".kiro/specs/**/requirements.md", SHARED_AI / "references" / "spec-requirements-guide.md"),
     (".kiro/specs/**/tasks.md", SHARED_AI / "references" / "spec-tasks-guide.md"),
@@ -55,7 +55,7 @@ RULES: list[tuple[str, Path]] = [
     (".kiro/**/*.hook", SHARED_AI / "references" / "ai-architecture-guide.md"),
     ("works/poc-something/**/SUMMARY.md", SHARED_AI / "references" / "poc-writer-guide.md"),
     (".shared-ai/**/*.md", SHARED_AI / "references" / "shared-ai-directory-guide.md"),
-    ("**/README.md", SHARED_AI / "rules" / "contextual" / "readme-guide.md"),
+    ("**/README.md", SHARED_AI / "rules" / "quality" / "readme-guide.md"),
 ]
 
 

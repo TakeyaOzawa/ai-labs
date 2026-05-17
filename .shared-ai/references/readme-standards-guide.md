@@ -1,6 +1,6 @@
 # README 準拠規格・設計根拠ガイド
 
-README記述ルール（`rules/contextual/readme-guide.md`）の設計根拠と準拠規格の詳細。
+README記述ルール（`rules/quality/readme-guide.md`）の設計根拠と準拠規格の詳細。
 
 ## IEEE 1063:2001 からの採用要素
 

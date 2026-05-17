@@ -7,4 +7,4 @@ description: specファイルのfront-matter必須フィールド確認とupdate
 # Spec Front-matter チェック
 
 以下のファイルをreadFileで読み込み、その指示に従うこと:
-- `~/.shared-ai/rules/contextual/spec-frontmatter.md`
+- `~/.shared-ai/rules/critical/spec-frontmatter.md`

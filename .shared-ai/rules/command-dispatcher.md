@@ -8,10 +8,10 @@
 
 | 操作・コマンド | readFile対象 |
 |---|---|
-| Python実行（python3.12, pip, スクリプト実行等） | `~/.shared-ai/rules/contextual/dev-environment.md` |
-| GWSサービス操作（Gmail, Drive, Calendar, Docs, Sheets等） | `~/.shared-ai/rules/contextual/gws-integration.md` |
-| PR作成・ブランチ操作・コミット | `~/.shared-ai/rules/contextual/pr-creation.md` |
-| 環境変数の追加・変更（export行の編集等） | `~/.shared-ai/rules/contextual/env-sync.md` |
+| Python実行（python3.12, pip, スクリプト実行等） | `~/.shared-ai/rules/critical/dev-environment.md` |
+| GWSサービス操作（Gmail, Drive, Calendar, Docs, Sheets等） | `~/.shared-ai/rules/quality/gws-integration.md` |
+| PR作成・ブランチ操作・コミット | `~/.shared-ai/rules/quality/pr-creation.md` |
+| 環境変数の追加・変更（export行の編集等） | `~/.shared-ai/rules/critical/env-sync.md` |
 | Slack操作（メッセージ送信、チャンネル操作、ユーザー検索等） | `~/.shared-ai/lookups/slack-user-lookup.md`, `~/.shared-ai/lookups/slack-channel-mapping.md` |
 | Notion操作（ページ作成、DB操作、ユーザー検索等） | `~/.shared-ai/lookups/notion-user-lookup.md` |
 | .shared-ai/配下へのファイル追加・移動 | `~/.shared-ai/references/shared-ai-directory-guide.md` |

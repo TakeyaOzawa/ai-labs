@@ -8,8 +8,10 @@
 ~/.shared-ai/
 ├── README.md              # 本ファイル
 ├── rules/
-│   ├── always/            # ディスパッチャー（常時読み込み）
-│   └── contextual/        # 条件付きルール（dispatcher経由で読み込み）
+│   ├── filematch-dispatcher.md  # ファイルパターン別ルール解決（常時参照）
+│   ├── command-dispatcher.md    # コマンド/操作別ルール解決（常時参照）
+│   ├── critical/          # 違反時に即座に問題が起きるルール
+│   └── quality/           # 品質を一定に保つルール
 ├── lookups/               # マスタデータ（ID逆引き、チャンネル一覧等）
 ├── prompts/               # エージェントプロンプト（薄いラッパー）
 ├── references/            # 設計ガイド・手順書・パターン集（本体）
@@ -22,8 +24,9 @@
 
 | ディレクトリ | 性質 | 内容 | 例 |
 |---|---|---|---|
-| `rules/always/` | **ディスパッチャー** | 常時読み込み。条件に応じてcontextual/やlookups/への参照を指示 | filematch-dispatcher.md, command-dispatcher.md |
-| `rules/contextual/` | **行動制約** | 該当時に必ず守るべきルール・コーディング規約（禁止・命令） | dev-environment.md, python-coding-standards.md |
+| `rules/` (直下) | **ディスパッチャー** | 常時読み込み。条件に応じてcritical/quality/やlookups/への参照を指示 | filematch-dispatcher.md, command-dispatcher.md |
+| `rules/critical/` | **致命的制約** | 違反時に即座に問題が起きるルール | dev-environment.md, test-db-guard.md |
+| `rules/quality/` | **品質維持** | 品質を一定に保つルール・コーディング規約 | python-coding-standards.md, readme-guide.md |
 | `lookups/` | **参照データ** | ID→名前の対応表、チャンネル一覧等のマスタデータ | slack-user-lookup.md, slack-channel-mapping.md |
 | `prompts/` | **実行指示** | エージェント固有のワークフロー（薄いラッパー → references参照） | agent-creator.md, agent-output-reviewer.md |
 | `references/` | **参照知識** | 設計ガイド、パターン集、手順書（本体） | agent-creation-guide.md, agent-prompt-guide.md |
@@ -41,7 +44,7 @@
 
 ## steering（.kiro/steering/）の設計
 
-steeringは**薄いラッパー**として機能し、本体は `rules/contextual/` または `references/` に配置する。
+steeringは**薄いラッパー**として機能し、本体は `rules/critical/`、`rules/quality/` または `references/` に配置する。
 設計原則・inclusion type選択基準・Wrapper_Fileテンプレートの詳細は `steering-reference-guide.md` を参照。
 
 ### steering → shared-ai 対応表
@@ -52,20 +55,25 @@ steeringは**薄いラッパー**として機能し、本体は `rules/contextua
 
 | steering | 本体（shared-ai） |
 |---|---|
-| `filematch-dispatcher.md` | `rules/always/filematch-dispatcher.md` |
-| `command-dispatcher.md` | `rules/always/command-dispatcher.md` |
+| `filematch-dispatcher.md` | `rules/filematch-dispatcher.md` |
+| `command-dispatcher.md` | `rules/command-dispatcher.md` |
 
-#### ルール参照型（contextual）
+#### ルール参照型（critical）
 
 | steering | 本体（shared-ai） | 配置先 |
 |---|---|---|
-| `py-standards.md` | `python-coding-standards.md` | `rules/contextual/` |
-| `sh-standards.md` | `shell-coding-standards.md` | `rules/contextual/` |
-| `pr-creation.md` | `pr-creation.md` | `rules/contextual/` |
-| `env-sync.md` | `env-sync.md` | `rules/contextual/` |
-| `domain-frontmatter.md` | `domain-frontmatter.md` | `rules/contextual/` |
-| `test-db-guard.md` | `test-db-guard.md` | `rules/contextual/` |
-| `spec-frontmatter.md` | `spec-frontmatter.md` | `rules/contextual/` |
+| `env-sync.md` | `env-sync.md` | `rules/critical/` |
+| `domain-frontmatter.md` | `domain-frontmatter.md` | `rules/critical/` |
+| `test-db-guard.md` | `test-db-guard.md` | `rules/critical/` |
+| `spec-frontmatter.md` | `spec-frontmatter.md` | `rules/critical/` |
+
+#### ルール参照型（quality）
+
+| steering | 本体（shared-ai） | 配置先 |
+|---|---|---|
+| `py-standards.md` | `python-coding-standards.md` | `rules/quality/` |
+| `sh-standards.md` | `shell-coding-standards.md` | `rules/quality/` |
+| `pr-creation.md` | `pr-creation.md` | `rules/quality/` |
 
 #### ガイド参照型（references）
 
@@ -97,7 +105,7 @@ steeringは**薄いラッパー**として機能し、本体は `rules/contextua
 
 このディレクトリ内のファイルを直接編集する。変更は全ツールに自動反映される。
 
-### 新しいcontextualルールを追加する場合
+### 新しいルールを追加する場合
 
 `shared-ai-directory-guide.md` の「ルール追加時の手順」を参照。
 

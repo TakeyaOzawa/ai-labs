@@ -98,7 +98,7 @@ python3.12 ~/scripts/resolve-shared-ai-rules.py "<対象ファイルパス>"
 ### 設計原則
 
 - `always` 側は可能な限り薄くする（「readFileで○○を読め」または「スクリプトを実行せよ」の1行程度）
-- 本体のルール・ガイドは `~/.shared-ai/rules/contextual/` や `~/.shared-ai/references/` に配置し、必要時のみ読み込ませる
+- 本体のルール・ガイドは `~/.shared-ai/rules/critical/`、`~/.shared-ai/rules/quality/`、`~/.shared-ai/references/` に配置し、必要時のみ読み込ませる
 - `fileMatch` を新規追加した場合は `~/scripts/resolve-shared-ai-rules.py` のRULESリストにも追記する
 - `fileMatchPattern` で複数パターンを指定する場合は配列形式 `["pattern1", "pattern2"]` を使用する（カンマ区切り文字列は非推奨）
 - `auto` を使用する場合は `name` と `description` を必ず指定する
@@ -118,7 +118,7 @@ description: {ルールの説明}
 # {タイトル}
 
 以下のファイルをreadFileで読み込み、その指示に従うこと:
-- `~/.shared-ai/rules/always/{filename}.md`
+- `~/.shared-ai/rules/{filename}.md`
 ```
 
 #### auto（意図ベースのトリガー）
@@ -148,7 +148,7 @@ description: {ルールの説明}
 # {タイトル}
 
 以下のファイルをreadFileで読み込み、その指示に従うこと:
-- `~/.shared-ai/rules/contextual/{filename}.md`
+- `~/.shared-ai/rules/critical/{filename}.md` または `~/.shared-ai/rules/quality/{filename}.md`
 ```
 
 #### manual（ユーザー明示指定）

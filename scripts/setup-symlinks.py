@@ -46,12 +46,12 @@ DIRECTORY_SYMLINKS = [
 FILE_SYMLINKS = [
     {
         "link": HOME / ".codex" / "rules" / "filematch-dispatcher.md",
-        "target": SHARED_AI / "rules" / "always" / "filematch-dispatcher.md",
+        "target": SHARED_AI / "rules" / "filematch-dispatcher.md",
         "description": "Codex rule: filematch-dispatcher",
     },
     {
         "link": HOME / ".codex" / "rules" / "command-dispatcher.md",
-        "target": SHARED_AI / "rules" / "always" / "command-dispatcher.md",
+        "target": SHARED_AI / "rules" / "command-dispatcher.md",
         "description": "Codex rule: command-dispatcher",
     },
 ]
@@ -211,8 +211,8 @@ def setup(dry_run: bool) -> None:
         print(f"✗ エラー: {SHARED_AI / 'skills'} が存在しません。")
         sys.exit(1)
 
-    if not (SHARED_AI / "rules" / "always").exists():
-        print(f"✗ エラー: {SHARED_AI / 'rules' / 'always'} が存在しません。")
+    if not (SHARED_AI / "rules" / "filematch-dispatcher.md").exists():
+        print(f"✗ エラー: {SHARED_AI / 'rules' / 'filematch-dispatcher.md'} が存在しません。")
         sys.exit(1)
 
     # 旧symlink削除
