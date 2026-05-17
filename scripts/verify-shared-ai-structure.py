@@ -9,6 +9,9 @@ verify-shared-ai-structure: .shared-ai 階層構造の整合性を検証する
 4. setup-symlinks.py --verify の実行
 5. 旧パス（rules/always/, rules/contextual/）への参照がないことをgrep確認
 6. claude / kiro-cli 両方でdispatcherが正しく読み込まれるか検証
+7. steering fileMatch と resolve-shared-ai-rules.py の出力整合性検証
+8. command-dispatcher.md 内の参照先パス実在検証
+9. AI設定ファイル（CLAUDE.md, GEMINI.md, AGENTS.md）の参照先パス実在検証
 
 Usage:
     python3.12 ~/scripts/verify-shared-ai-structure.py
@@ -19,8 +22,11 @@ Usage:
     python3.12 ~/scripts/verify-shared-ai-structure.py --check symlinks
     python3.12 ~/scripts/verify-shared-ai-structure.py --check legacy
     python3.12 ~/scripts/verify-shared-ai-structure.py --check dispatcher
+    python3.12 ~/scripts/verify-shared-ai-structure.py --check consistency
+    python3.12 ~/scripts/verify-shared-ai-structure.py --check command-dispatcher
+    python3.12 ~/scripts/verify-shared-ai-structure.py --check ai-config
 
-依存: 標準ライブラリのみ（+ 同ディレクトリの resolve-shared-ai-rules.py, ai-command-builder.py）
+依存: 標準ライブラリのみ（+ 同ディレクトリの resolve-shared-ai-rules.py, ai-cli-utils.py）
 """
 
 import argparse
@@ -73,49 +79,83 @@ def check_structure(verbose: bool) -> VerifyResult:
     result = VerifyResult()
     print("\n[1] ディレクトリ構造検証")
 
-    # dispatcher が rules/ 直下に存在すること
-    for name in ("filematch-dispatcher.md", "command-dispatcher.md"):
-        path = SHARED_AI / "rules" / name
-        if path.exists():
-            result.ok(f"rules/{name} 存在")
-        else:
-            result.fail(f"rules/{name} が存在しない")
+    # dispatcher が rules/ 直下に存在すること（双方向チェック）
+    rules_dir = SHARED_AI / "rules"
+    expected_dispatchers = {
+        "filematch-dispatcher.md",
+        "command-dispatcher.md",
+    }
+    actual_dispatchers = {f.name for f in rules_dir.glob("*.md")}
+    for name in sorted(expected_dispatchers - actual_dispatchers):
+        result.fail(
+            f"rules/{name} が存在しない"
+            f"（ファイル削除済みなら expected_dispatchers から削除してください）"
+        )
+    for name in sorted(actual_dispatchers - expected_dispatchers):
+        result.fail(
+            f"rules/{name} が expected_dispatchers に未登録"
+            f"（expected_dispatchers に追記してください）"
+        )
+    for name in sorted(expected_dispatchers & actual_dispatchers):
+        result.ok(f"rules/{name} 存在")
 
-    # critical/ ディレクトリとその中身
+    # critical/ ディレクトリとその中身（双方向チェック）
     critical_dir = SHARED_AI / "rules" / "critical"
-    expected_critical = [
+    expected_critical = {
         "dev-environment.md",
         "test-db-guard.md",
         "env-sync.md",
         "spec-frontmatter.md",
         "domain-frontmatter.md",
-    ]
+    }
     if critical_dir.is_dir():
         result.ok("rules/critical/ ディレクトリ存在")
-        for name in expected_critical:
-            if (critical_dir / name).exists():
-                result.ok(f"rules/critical/{name} 存在")
-            else:
-                result.fail(f"rules/critical/{name} が存在しない")
+        actual_critical = {f.name for f in critical_dir.glob("*.md")}
+        # リストにあるが実ファイルがない → 削除されたのにリスト未更新
+        for name in sorted(expected_critical - actual_critical):
+            result.fail(
+                f"rules/critical/{name} が存在しない"
+                f"（ファイル削除済みなら expected_critical から削除してください）"
+            )
+        # 実ファイルがあるがリストにない → 追加されたのにリスト未更新
+        for name in sorted(actual_critical - expected_critical):
+            result.fail(
+                f"rules/critical/{name} が expected_critical に未登録"
+                f"（expected_critical に追記してください）"
+            )
+        # 両方に存在するもの
+        for name in sorted(expected_critical & actual_critical):
+            result.ok(f"rules/critical/{name} 存在")
     else:
         result.fail("rules/critical/ ディレクトリが存在しない")
 
-    # quality/ ディレクトリとその中身
+    # quality/ ディレクトリとその中身（双方向チェック）
     quality_dir = SHARED_AI / "rules" / "quality"
-    expected_quality = [
+    expected_quality = {
         "python-coding-standards.md",
         "shell-coding-standards.md",
         "readme-guide.md",
         "pr-creation.md",
         "gws-integration.md",
-    ]
+    }
     if quality_dir.is_dir():
         result.ok("rules/quality/ ディレクトリ存在")
-        for name in expected_quality:
-            if (quality_dir / name).exists():
-                result.ok(f"rules/quality/{name} 存在")
-            else:
-                result.fail(f"rules/quality/{name} が存在しない")
+        actual_quality = {f.name for f in quality_dir.glob("*.md")}
+        # リストにあるが実ファイルがない → 削除されたのにリスト未更新
+        for name in sorted(expected_quality - actual_quality):
+            result.fail(
+                f"rules/quality/{name} が存在しない"
+                f"（ファイル削除済みなら expected_quality から削除してください）"
+            )
+        # 実ファイルがあるがリストにない → 追加されたのにリスト未更新
+        for name in sorted(actual_quality - expected_quality):
+            result.fail(
+                f"rules/quality/{name} が expected_quality に未登録"
+                f"（expected_quality に追記してください）"
+            )
+        # 両方に存在するもの
+        for name in sorted(expected_quality & actual_quality):
+            result.ok(f"rules/quality/{name} 存在")
     else:
         result.fail("rules/quality/ ディレクトリが存在しない")
 
@@ -344,12 +384,12 @@ def check_legacy(verbose: bool) -> VerifyResult:
 def check_dispatcher(verbose: bool) -> VerifyResult:
     """claude / kiro-cli 両方でdispatcherが正しくコマンド構築されるか検証する。"""
     result = VerifyResult()
-    print("\n[6] dispatcher コマンド構築検証 (ai-command-builder.py)")
+    print("\n[6] dispatcher コマンド構築検証 (ai-cli-utils.py)")
 
-    # ai-command-builder.py を import
-    builder_script = SCRIPTS_DIR / "ai-command-builder.py"
+    # ai-cli-utils.py を import
+    builder_script = SCRIPTS_DIR / "ai-cli-utils.py"
     if not builder_script.exists():
-        result.fail("ai-command-builder.py が存在しない")
+        result.fail("ai-cli-utils.py が存在しない")
         for line in result.details:
             print(line)
         print(f"  → {result.summary()}")
@@ -357,9 +397,9 @@ def check_dispatcher(verbose: bool) -> VerifyResult:
 
     # import via importlib
     import importlib.util
-    spec = importlib.util.spec_from_file_location("ai_command_builder", builder_script)
+    spec = importlib.util.spec_from_file_location("ai_cli_utils", builder_script)
     if spec is None or spec.loader is None:
-        result.fail("ai-command-builder.py の読み込みに失敗")
+        result.fail("ai-cli-utils.py の読み込みに失敗")
         for line in result.details:
             print(line)
         print(f"  → {result.summary()}")
@@ -423,6 +463,214 @@ def check_dispatcher(verbose: bool) -> VerifyResult:
     return result
 
 
+# ─── Check 7: steering fileMatch ↔ resolve 整合性 ───────────────
+
+def check_steering_resolve_consistency(verbose: bool) -> VerifyResult:
+    """steering の fileMatchPattern と resolve-shared-ai-rules.py の出力が整合するか検証する。
+
+    「あるファイルパスに対して steering が発火するルール」と
+    「resolve-shared-ai-rules.py が返すルール」が一致することを確認する。
+    これにより、Kiro 環境と非 Kiro 環境（claude 等）で同じルールが適用されることを保証する。
+    """
+    result = VerifyResult()
+    print("\n[7] steering fileMatch ↔ resolve 整合性検証")
+
+    resolve_script = SCRIPTS_DIR / "resolve-shared-ai-rules.py"
+    if not resolve_script.exists():
+        result.fail("resolve-shared-ai-rules.py が存在しない")
+        for line in result.details:
+            print(line)
+        print(f"  → {result.summary()}")
+        return result
+
+    if not STEERING_DIR.is_dir():
+        result.fail(f"steering ディレクトリが存在しない: {STEERING_DIR}")
+        for line in result.details:
+            print(line)
+        print(f"  → {result.summary()}")
+        return result
+
+    # テストケース: (入力ファイルパス, 発火すべきsteering, steeringが参照するルールパスの部分文字列)
+    # steering の fileMatchPattern に基づいて、resolve の出力にも同じルールが含まれるか確認
+    test_cases: list[tuple[str, str, str]] = [
+        # env-sync.md: **/.zshrc, **/.bashrc, .shared-ai/prompts/*.md
+        (".zshrc", "env-sync.md", "rules/critical/env-sync.md"),
+        (".bashrc", "env-sync.md", "rules/critical/env-sync.md"),
+        # py-standards.md: **/*.py
+        ("scripts/check-env.py", "py-standards.md", "rules/quality/python-coding-standards.md"),
+        # sh-standards.md: **/*.sh
+        ("deploy.sh", "sh-standards.md", "rules/quality/shell-coding-standards.md"),
+        # pipeline-run-script.md: **/scripts/run-*-pipeline.py
+        ("scripts/run-daily-pipeline.py", "pipeline-run-script.md", "agent-pipeline-run-script-guide.md"),
+        # script-first-rule.md: scripts/*.py, .shared-ai/prompts/*.md
+        ("scripts/check-env.py", "script-first-rule.md", "references/script-first-guide.md"),
+        # test-db-guard.md: tests/**/*Test.php
+        ("tests/Unit/UserTest.php", "test-db-guard.md", "rules/critical/test-db-guard.md"),
+        # domain-frontmatter.md: docs/domain/**/*.md
+        ("docs/domain/sales/overview.md", "domain-frontmatter.md", "rules/critical/domain-frontmatter.md"),
+        # spec-frontmatter.md: .kiro/specs/**/*.md
+        (".kiro/specs/feature/tasks.md", "spec-frontmatter.md", "rules/critical/spec-frontmatter.md"),
+        # design-format.md: .kiro/specs/**/design.md
+        (".kiro/specs/feature/design.md", "design-format.md", "references/spec-design-guide.md"),
+        # req-format.md: .kiro/specs/**/requirements.md
+        (".kiro/specs/feature/requirements.md", "req-format.md", "references/spec-requirements-guide.md"),
+        # tasks-format.md: .kiro/specs/**/tasks.md
+        (".kiro/specs/feature/tasks.md", "tasks-format.md", "references/spec-tasks-guide.md"),
+        # steering-ref.md: .kiro/steering/*.md
+        (".kiro/steering/my-rule.md", "steering-ref.md", "references/steering-reference-guide.md"),
+        # kiro-arch.md: .kiro/**/*.md, .kiro/**/*.json, .kiro/**/*.hook
+        (".kiro/agents/my-agent.json", "kiro-arch.md", "references/ai-architecture-guide.md"),
+        # prompt-editing.md: .shared-ai/prompts/*.md
+        (".shared-ai/prompts/my-prompt.md", "prompt-editing.md", "references/prompt-editing-guide.md"),
+        # ref-format.md: .shared-ai/references/*-guide.md
+        (".shared-ai/references/new-guide.md", "ref-format.md", "references/reference-format-guide.md"),
+        # poc-writer.md: works/poc-something/**/SUMMARY.md
+        ("works/poc-something/v1/SUMMARY.md", "poc-writer.md", "references/poc-writer-guide.md"),
+        # README.md → dispatcher経由（fileMatch steering なし）
+        ("README.md", "(dispatcher)", "rules/quality/readme-guide.md"),
+    ]
+
+    # readFile参照パターン
+    ref_pattern = re.compile(r"`(~/[^`]+)`")
+
+    for input_path, expected_steering, expected_rule_fragment in test_cases:
+        # 1. resolve-shared-ai-rules.py の出力を確認
+        proc = subprocess.run(
+            ["python3.12", str(resolve_script), input_path],
+            capture_output=True, text=True,
+        )
+        resolve_output = proc.stdout.strip().splitlines() if proc.stdout.strip() else []
+
+        resolve_has_rule = any(expected_rule_fragment in line for line in resolve_output)
+
+        # 2. steering の fileMatchPattern 確認（dispatcher 経由のものはスキップ）
+        if expected_steering == "(dispatcher)":
+            # dispatcher 経由でのみ到達するケース: resolve の出力のみ確認
+            if resolve_has_rule:
+                result.ok(f"{input_path} → resolve: {expected_rule_fragment} ✓ (dispatcher経由)")
+            else:
+                result.fail(f"{input_path} → resolve に {expected_rule_fragment} が含まれない")
+            continue
+
+        # steering ファイルの readFile 参照先を取得
+        steering_file = STEERING_DIR / expected_steering
+        if not steering_file.exists():
+            result.fail(f"{input_path} → steering {expected_steering} が存在しない")
+            continue
+
+        steering_content = steering_file.read_text(encoding="utf-8")
+        steering_refs = ref_pattern.findall(steering_content)
+        steering_has_rule = any(expected_rule_fragment in ref for ref in steering_refs)
+
+        # 3. 両方が同じルールを指しているか確認
+        if steering_has_rule and resolve_has_rule:
+            result.ok(f"{input_path} → steering({expected_steering}) + resolve 両方一致: {expected_rule_fragment}")
+        elif steering_has_rule and not resolve_has_rule:
+            result.fail(f"{input_path} → steering は {expected_rule_fragment} を参照するが resolve に含まれない")
+        elif not steering_has_rule and resolve_has_rule:
+            result.fail(f"{input_path} → resolve は {expected_rule_fragment} を返すが steering({expected_steering}) に含まれない")
+        else:
+            result.fail(f"{input_path} → steering/resolve 両方に {expected_rule_fragment} が見つからない")
+
+    for line in result.details:
+        print(line)
+    print(f"  → {result.summary()}")
+    return result
+
+
+# ─── Check 8: command-dispatcher 参照先検証 ──────────────────────
+
+def check_command_dispatcher(verbose: bool) -> VerifyResult:
+    """command-dispatcher.md 内のreadFile対象パスが全て実在するか検証する。
+
+    command-dispatcher は「操作の種類」に応じてルールを読み込む仕組みで、
+    ファイルパスベースの fileMatch とは異なる。テーブル内の全参照先が
+    実在することを確認する。
+    """
+    result = VerifyResult()
+    print("\n[8] command-dispatcher 参照先検証")
+
+    cmd_dispatcher = SHARED_AI / "rules" / "command-dispatcher.md"
+    if not cmd_dispatcher.exists():
+        result.fail("command-dispatcher.md が存在しない")
+        for line in result.details:
+            print(line)
+        print(f"  → {result.summary()}")
+        return result
+
+    content = cmd_dispatcher.read_text(encoding="utf-8")
+
+    # テーブル内の `~/...` パスを全て抽出
+    ref_pattern = re.compile(r"`(~/[^`]+)`")
+    refs = ref_pattern.findall(content)
+
+    if not refs:
+        result.fail("command-dispatcher.md 内に readFile 参照が見つからない")
+        for line in result.details:
+            print(line)
+        print(f"  → {result.summary()}")
+        return result
+
+    for ref in refs:
+        expanded = Path(ref.replace("~", str(HOME)))
+        if expanded.exists():
+            result.ok(f"{ref} → 存在")
+        else:
+            result.fail(f"{ref} → 存在しない")
+
+    for line in result.details:
+        print(line)
+    print(f"  → {result.summary()}")
+    return result
+
+
+# ─── Check 9: AI設定ファイル参照先検証 ───────────────────────────
+
+def check_ai_config_refs(verbose: bool) -> VerifyResult:
+    """各AIツールの設定ファイル内のreadFile参照先が実在するか検証する。
+
+    .claude/CLAUDE.md, .gemini/GEMINI.md, .codex/AGENTS.md 内の
+    `~/...` パス参照が全て実在することを確認する。
+    """
+    result = VerifyResult()
+    print("\n[9] AI設定ファイル参照先検証")
+
+    # 検証対象ファイル
+    config_files = [
+        HOME / ".claude" / "CLAUDE.md",
+        HOME / ".gemini" / "GEMINI.md",
+        HOME / ".codex" / "AGENTS.md",
+    ]
+
+    ref_pattern = re.compile(r"`(~/[^`]+)`")
+
+    for config_file in config_files:
+        if not config_file.exists():
+            if verbose:
+                result.warn(f"{config_file.name}: ファイルが存在しない（スキップ）")
+            continue
+
+        content = config_file.read_text(encoding="utf-8")
+        refs = ref_pattern.findall(content)
+
+        if not refs:
+            if verbose:
+                result.ok(f"{config_file.name}: 参照なし（スキップ）")
+            continue
+
+        for ref in refs:
+            expanded = Path(ref.replace("~", str(HOME)))
+            if expanded.exists():
+                result.ok(f"{config_file.name}: {ref} → 存在")
+            else:
+                result.fail(f"{config_file.name}: {ref} → 存在しない")
+
+    for line in result.details:
+        print(line)
+    print(f"  → {result.summary()}")
+    return result
+
+
 # ─── メイン ──────────────────────────────────────────────────────
 
 ALL_CHECKS = {
@@ -432,6 +680,9 @@ ALL_CHECKS = {
     "symlinks": check_symlinks,
     "legacy": check_legacy,
     "dispatcher": check_dispatcher,
+    "consistency": check_steering_resolve_consistency,
+    "command-dispatcher": check_command_dispatcher,
+    "ai-config": check_ai_config_refs,
 }
 
 

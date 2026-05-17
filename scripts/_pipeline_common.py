@@ -114,11 +114,11 @@ def load_env() -> None:
 
 
 def _load_ai_command_builder():
-    """ai-command-builder.py モジュールを遅延ロードしてキャッシュする。"""
+    """ai-cli-utils.py モジュールを遅延ロードしてキャッシュする。"""
     from importlib.util import module_from_spec, spec_from_file_location
 
-    builder_path = SCRIPTS_DIR / "ai-command-builder.py"
-    spec = spec_from_file_location("ai_command_builder", builder_path)
+    builder_path = SCRIPTS_DIR / "ai-cli-utils.py"
+    spec = spec_from_file_location("ai_cli_utils", builder_path)
     mod = module_from_spec(spec)  # type: ignore[arg-type]
     spec.loader.exec_module(mod)  # type: ignore[union-attr]
     return mod
@@ -130,7 +130,7 @@ _ai_command_builder = None
 def _build_ai_command(prompt: str, agent_name: str = "") -> list[str]:
     """AI_COMMAND_TYPEに応じた実行コマンドを構築する。
 
-    実装は ai-command-builder.py に委譲。
+    実装は ai-cli-utils.py に委譲。
     """
     global _ai_command_builder
     if _ai_command_builder is None:

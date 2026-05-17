@@ -163,9 +163,9 @@ def main() -> None:
     # 環境変数ロード
     load_env()
 
-    # AI コマンド構築（ai-command-builder.py に委譲）
+    # AI コマンド構築（ai-cli-utils.py に委譲）
     from importlib.util import module_from_spec, spec_from_file_location
-    _spec = spec_from_file_location("ai_command_builder", SCRIPTS_DIR / "ai-command-builder.py")
+    _spec = spec_from_file_location("ai_cli_utils", SCRIPTS_DIR / "ai-cli-utils.py")
     _mod = module_from_spec(_spec)  # type: ignore[arg-type]
     _spec.loader.exec_module(_mod)  # type: ignore[union-attr]
 

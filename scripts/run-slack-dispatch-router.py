@@ -58,12 +58,12 @@ REQUEST_TIMEOUT = 30
 MAX_LOG_LINES = 500
 
 
-# ─── ai-command-builder 遅延ロード ───────────────────────────────
+# ─── ai-cli-utils 遅延ロード ─────────────────────────────────────
 
 def _get_ai_command_builder():
-    """ai-command-builder.py モジュールを遅延ロードする。"""
+    """ai-cli-utils.py モジュールを遅延ロードする。"""
     from importlib.util import module_from_spec, spec_from_file_location
-    spec = spec_from_file_location("ai_command_builder", SCRIPTS_DIR / "ai-command-builder.py")
+    spec = spec_from_file_location("ai_cli_utils", SCRIPTS_DIR / "ai-cli-utils.py")
     mod = module_from_spec(spec)  # type: ignore[arg-type]
     spec.loader.exec_module(mod)  # type: ignore[union-attr]
     return mod
@@ -73,7 +73,7 @@ _ai_cmd_builder = None
 
 
 def _ai_builder():
-    """キャッシュ付きでai-command-builderモジュールを返す。"""
+    """キャッシュ付きでai-cli-utilsモジュールを返す。"""
     global _ai_cmd_builder
     if _ai_cmd_builder is None:
         _ai_cmd_builder = _get_ai_command_builder()
@@ -398,30 +398,6 @@ def handle_expired_thread_replies(
 
 # ─── エージェント一覧取得 ────────────────────────────────────────
 
-def _extract_pipeline_description(script_path: Path) -> str:
-    """パイプラインスクリプトの docstring から説明行を抽出する。
-
-    "name: description" 形式の最初の有意義な行を返す。
-    """
-    try:
-        lines = script_path.read_text(encoding="utf-8").splitlines()
-        in_docstring = False
-        for line in lines[:25]:
-            stripped = line.strip()
-            if not in_docstring:
-                if stripped.startswith('"""') or stripped.startswith("'''"):
-                    in_docstring = True
-                continue
-            if stripped and not stripped.startswith('"""') and not stripped.startswith("'''"):
-                # "name: description" 形式ならコロン以降を返す
-                if ": " in stripped:
-                    return stripped.split(": ", 1)[1].strip()
-                return stripped
-    except OSError:
-        pass
-    return ""
-
-
 def _is_pipeline_target(agent_name: str) -> bool:
     """エージェント名が scripts/ 直下のパイプラインスクリプトを指しているか判定する。"""
     return (SCRIPTS_DIR / f"{agent_name}.py").exists()
@@ -444,54 +420,12 @@ def scan_agents() -> list[dict]:
 
     AI_COMMAND_TYPE に応じて .kiro/agents/ または .claude/agents/ をスキャンし、
     さらに scripts/run-*-pipeline.py も対象として追加する。
+    実装は ai-cli-utils.py に委譲。
 
     Returns:
         [{"name": "...", "description": "..."}, ...] のリスト
     """
-    ai_type = _ai_builder().get_ai_type()
-    agents: list[dict] = []
-
-    if ai_type == "kiro-cli":
-        # .kiro/agents/*.json をスキャン
-        if KIRO_AGENTS_DIR.exists():
-            for f in sorted(KIRO_AGENTS_DIR.glob("*.json")):
-                if f.name.startswith("agent_config"):
-                    continue
-                try:
-                    data = json.loads(f.read_text(encoding="utf-8"))
-                    name = data.get("name", f.stem)
-                    desc = data.get("description", "")
-                    agents.append({"name": name, "description": desc})
-                except (json.JSONDecodeError, OSError):
-                    continue
-    else:
-        # .claude/agents/*.md をスキャン（ファイル名がエージェント名）
-        if CLAUDE_AGENTS_DIR.exists():
-            for f in sorted(CLAUDE_AGENTS_DIR.glob("*.md")):
-                name = f.stem
-                # 先頭行からdescriptionを抽出
-                try:
-                    first_lines = f.read_text(encoding="utf-8").split("\n")[:5]
-                    desc = ""
-                    for line in first_lines:
-                        if line.startswith("# "):
-                            desc = line[2:].strip()
-                            break
-                    agents.append({"name": name, "description": desc})
-                except OSError:
-                    agents.append({"name": name, "description": ""})
-
-    # run-*-pipeline.py をスキャン（エージェントと並列の起動対象として追加）
-    # run-github-repo-analysis-pipeline は必須引数(repo_url)が必要なため除外
-    EXCLUDED_PIPELINES = {"run-github-repo-analysis-pipeline"}
-    for f in sorted(SCRIPTS_DIR.glob("run-*-pipeline.py")):
-        name = f.stem
-        if name in EXCLUDED_PIPELINES:
-            continue
-        desc = _extract_pipeline_description(f)
-        agents.append({"name": name, "description": desc})
-
-    return agents
+    return _ai_builder().scan_agents()
 
 
 # ─── LLM判定 ─────────────────────────────────────────────────────
