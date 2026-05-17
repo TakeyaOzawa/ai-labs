@@ -55,6 +55,11 @@ def strip_frontmatter(text: str) -> str:
     return text
 
 
+def _escape_mrkdwn_bold(text: str) -> str:
+    """見出しテキスト内の * を全角 ＊ に置換し、太字マーカーの崩れを防ぐ。"""
+    return text.replace("*", "＊")
+
+
 def convert_md_to_mrkdwn(text: str) -> str:
     """MarkdownテキストをSlack mrkdwn形式に変換する。
 
@@ -86,7 +91,7 @@ def convert_md_to_mrkdwn(text: str) -> str:
 
         # H1 → 装飾付きタイトルバー
         if line.startswith("# "):
-            title = line[2:].strip()
+            title = _escape_mrkdwn_bold(line[2:].strip())
             bar = TITLE_BAR_CHAR * TITLE_BAR_LENGTH
             result.append(bar)
             result.append("\u3000")
@@ -97,13 +102,19 @@ def convert_md_to_mrkdwn(text: str) -> str:
 
         # H2 → ■■ 見出し ■■
         if line.startswith("## "):
-            heading = line[3:].strip()
+            heading = _escape_mrkdwn_bold(line[3:].strip())
             result.append(f"*■■ {heading} ■■*")
+            continue
+
+        # H4 → ⚪︎ 見出し
+        if line.startswith("#### "):
+            heading = _escape_mrkdwn_bold(line[5:].strip())
+            result.append(f"  ⚪︎ *{heading}*")
             continue
 
         # H3 → ◆ 見出し
         if line.startswith("### "):
-            heading = line[4:].strip()
+            heading = _escape_mrkdwn_bold(line[4:].strip())
             result.append(f"*◆ {heading}*")
             continue
 

@@ -1,5 +1,6 @@
 ---
 inclusion: auto
+name: impl-plan
 description: spec未使用の軽量な変更に適用する実装プランガイド。issues/配下へのプランファイル作成手順とフォーマットを定義する
 ---
 

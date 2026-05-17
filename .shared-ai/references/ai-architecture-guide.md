@@ -60,7 +60,7 @@
 新しいAIツールを導入する場合:
 
 1. ツール固有の設定ファイル（CLAUDE.md相当）に shared-ai 参照パスを記載
-2. skills が必要なら symlink を作成し、`setup-shared-ai.py` に定義を追加
+2. skills が必要なら symlink を作成し、`setup-symlinks.py` に定義を追加
 3. ルートREADME §4.2 の参照方式テーブルに追記
 
 ## チェック項目

@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: ".kiro/**/*.{md,json,hook}"
+fileMatchPattern: [".kiro/**/*.md", ".kiro/**/*.json", ".kiro/**/*.hook"]
 ---
 
 # Kiro アーキテクチャルール

@@ -1,5 +1,6 @@
 ---
 inclusion: auto
+name: knowledge-mgmt
 description: ドメイン知識、実装パターン、AI指示の配置先ルールと、docs/domain/への集約方針を定義する
 ---
 

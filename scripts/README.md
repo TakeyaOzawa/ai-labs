@@ -24,8 +24,9 @@
 | `SLACK_REFERENCE_BOT_TOKEN` | Slack参照用Bot Token | — |
 | `SLACK_REFERENCE_TEAM_ID` | Slack参照用チームID | — |
 | `AI_COMMAND_TYPE` | AI CLIの種類（`claude` or `kiro-cli`） | `claude` |
-| `GITHUB_TOKEN` | GitHub API トークン | — |
-| `NOTION_TOKEN` | Notion API トークン | — |
+| `GH_REFERENCE_TOKEN` | GitHub Personal Access Token | — |
+| `DEVELOPER_AI_NOTION_TOKEN` | Notion API トークン | — |
+| `GITHUB_ORG_NAME` | GitHub Organization名 | — |
 
 ### `platform-commands.sh source-env` で管理される変数
 
@@ -37,8 +38,10 @@ SLACK_REFERENCE_BOT_TOKEN
 SLACK_REFERENCE_TEAM_ID
 SLACK_DISPATCH_DM_CHANNEL
 SLACK_DISPATCH_TARGET_USER
-GITHUB_TOKEN
-NOTION_TOKEN
+GH_REFERENCE_TOKEN
+DEVELOPER_AI_NOTION_TOKEN
+GITHUB_ORG_NAME
+AI_COMMAND_TYPE
 ```
 
 新しい環境変数を追加する場合は、`.zshrc` への export 追加に加えて、`platform-commands.sh` 内の grep パターン（2箇所: eval行とenv行）にも追加すること。
@@ -50,7 +53,7 @@ NOTION_TOKEN
 | `run-slack-dispatch-router.py` | Slack DMポーリング → LLM判定 → エージェント/パイプライン起動 |
 | `dispatch-agent-wrapper.py` | エージェント実行ラッパー（完了後にSlack通知） |
 | `notify-slack.py` | 汎用Slack通知（Markdown→mrkdwn変換、分割投稿） |
-| `setup.py` | 統合セットアップ（環境変数チェック + symlink構築） |
+| `setup-shared-ai.py` | 統合セットアップ（環境変数チェック + symlink構築） |
 | `check-env.py` | 環境変数の設定状況チェック |
 | `setup-symlinks.py` | AIツール symlink 構築（.shared-ai → 各ツール設定ディレクトリ） |
 | `run-daily-pipeline.py` | デイリーパイプライン実行 |

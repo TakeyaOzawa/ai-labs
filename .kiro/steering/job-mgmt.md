@@ -1,5 +1,6 @@
 ---
 inclusion: auto
+name: job-mgmt
 description: scoutパイプラインのジョブ管理スクリプト（find-job.py / update-job.py）のインターフェース仕様
 ---
 
