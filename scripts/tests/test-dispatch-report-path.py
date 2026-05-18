@@ -1,11 +1,11 @@
 #!/usr/bin/env python3.12
 """
-test_dispatch_report_path: dispatch-agent-wrapper のレポートパス検出ロジックのテスト
+test-dispatch-report-path: dispatch-agent-wrapper のレポートパス検出ロジックのテスト
 
 対象: dispatch-agent-wrapper.py の extract_report_path / _find_path_in_text / _resolve_path
 
 使い方:
-    python3.12 scripts/tests/test_dispatch_report_path.py
+    python3.12 scripts/tests/test-dispatch-report-path.py
 
 テスト観点:
     - キーワード付きパターン（出力/保存先/レポート/ファイル）

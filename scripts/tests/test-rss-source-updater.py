@@ -1,11 +1,11 @@
 #!/usr/bin/env python3.12
 """
-test_rss_source_updater: rss_source_updater.py のURL抽出・ドメイン分析ロジックのテスト
+test-rss-source-updater: rss-source-updater.py のURL抽出・ドメイン分析ロジックのテスト
 
-対象: scripts/rss_source_updater.py の extract_urls / get_domain / is_excluded_domain
+対象: scripts/rss-source-updater.py の extract_urls / get_domain / is_excluded_domain
 
 使い方:
-    python3.12 scripts/tests/test_rss_source_updater.py
+    python3.12 scripts/tests/test-rss-source-updater.py
 
 テスト観点:
     - Markdown link形式からのURL抽出
@@ -21,7 +21,7 @@ import urllib.parse
 from pathlib import Path
 from typing import Set
 
-# ─── テスト対象のロジック（rss_source_updater.py から抽出） ─────
+# ─── テスト対象のロジック（rss-source-updater.py から抽出） ─────
 
 EXCLUDED_DOMAINS = {
     "notion.so", "github.com", "slack.com", "localhost",
@@ -105,7 +105,7 @@ def assert_not_contains(test_name: str, collection: set, item: str) -> None:
 # ─── テスト実行 ──────────────────────────────────────────────────
 
 print("=" * 60)
-print("rss_source_updater URL抽出・ドメイン分析テスト")
+print("rss-source-updater URL抽出・ドメイン分析テスト")
 print("=" * 60)
 
 # --- Section 1: Markdown link形式 ---

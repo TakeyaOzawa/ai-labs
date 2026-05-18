@@ -106,3 +106,10 @@
 | `interfaces/` | `{エージェント名}-output.md` / `{エージェント名}-resources.md` | `notion-trend-scout-output.md` |
 | `templates/` | `{対象}.md` | `spec-design.md`, `reference-guide.md` |
 | `lookups/` | `{サービス}-{種別}.md` | `slack-user-lookup.md`, `slack-channel-mapping.md` |
+
+`interfaces/` の追加パターン（エージェント固有でない場合）:
+
+| パターン | 用途 | 例 |
+|---|---|---|
+| `{topic}-schema.md` | 共通スキーマ定義 | `agent-params-schema.md` |
+| `{pipeline}-report-format.md` | パイプライン固有のレポートフォーマット | `github-repo-analysis-report-format.md` |

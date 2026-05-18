@@ -1,0 +1,16 @@
+{
+    "name": "slack-trend-scout-merge",
+    "description": "Slack日次トレンドスカウト（統合）。チャンネル別中間ファイルを読み込み、統合された日次レポートを生成する。slack-trend-scoutオーケストレーターから呼び出される。",
+    "prompt": "file://../../.shared-ai/prompts/slack-trend-scout-merge.md",
+    "tools": ["read", "write"],
+    "allowedTools": [],
+    "toolsSettings": {
+        "write": {
+            "allowedPaths": ["~/Documents/works/scout_reports/slack_trends/daily/**"]
+        }
+    },
+    "resources": [],
+    "includeMcpJson": false,
+    "model": "claude-sonnet-4",
+    "welcomeMessage": "Slack日次レポートの統合を開始します。中間ファイルを読み込んで統合レポートを作成します。"
+}

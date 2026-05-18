@@ -98,6 +98,7 @@ steeringは**薄いラッパー**として機能し、本体は `rules/critical/
 |---|---|---|
 | `kiro-arch.md` | .kiro/配下の設計原則チェック | `.kiro/**/*.{md,json,hook}` |
 | `spec-completion.md` | 全タスク完了時の提案 | `.kiro/specs/**/tasks.md` |
+| `shared-ai-verify.md` | .shared-ai/配下の構造変更時に検証スクリプト実行を促す | `.shared-ai/rules/**/*.md`, `.shared-ai/lookups/*.md`, `.shared-ai/references/*-guide.md` |
 
 ## 更新手順
 
