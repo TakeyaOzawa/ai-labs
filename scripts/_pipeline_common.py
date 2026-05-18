@@ -1,18 +1,23 @@
 """
-_pipeline_common: パイプラインスクリプト共通モジュール
+_pipeline_common: パイプラインスクリプト共通モジュール（統一ステップモデル）
 
-日次・週次パイプラインで共有するユーティリティ関数群と
-共通実行フロー（run_pipeline）を提供する。
+宣言的な Step / Executor / StepParams による統一パイプライン実行基盤。
+各パイプラインスクリプトは build_steps() で Step ツリーを定義し、
+run_pipeline() が再帰的に実行する。
 """
+
+from __future__ import annotations
 
 import json
 import os
 import subprocess
 import sys
+import time
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Callable, NamedTuple
+from typing import Callable
 
 from logger import (
     PipelineLogger,
@@ -31,77 +36,162 @@ MAX_LOG_LINES = 1000
 MAX_AGENT_LOG_LINES = 500
 
 
-# ─── パイプライン設定 ────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════
+# データモデル: Step / Executor / StepParams
+# ═══════════════════════════════════════════════════════════════════
 
-class NotifyEntry(NamedTuple):
-    """エージェント通知設定。"""
+@dataclass
+class RetryPolicy:
+    """リトライポリシー。"""
+    max_attempts: int = 1       # 最大試行回数（1=リトライなし）
+    delay: int = 30             # リトライ間隔（秒）
+    backoff: str = "fixed"      # "fixed" | "exponential"
 
-    template: str       # 出力ファイルテンプレート（{date}プレースホルダ）
-    enabled: bool = True  # 通知を実行するか
+
+# ─── Executor 種別 ───────────────────────────────────────────────
+
+@dataclass
+class Executor:
+    """実行方式の基底。"""
+    type: str = ""
 
 
-def _default_build_prompt(agent: str, base_date: str) -> str:
-    """デフォルトのプロンプト構築。"""
-    return (
-        f"基準日は {base_date} です。"
-        f"日付をシェルコマンドで取得する代わりに、この基準日を使用してください。"
-    )
+@dataclass
+class AgentExecutor(Executor):
+    """AI CLIエージェント実行。"""
+    type: str = field(default="agent", init=False)
+    agent_name: str = ""
+    prompt_text: str = ""
+
+
+@dataclass
+class ScriptExecutor(Executor):
+    """Python/シェルスクリプト実行。"""
+    type: str = field(default="script", init=False)
+    command: str = ""
+    env: dict[str, str] | None = None
+
+
+@dataclass
+class CompositeExecutor(Executor):
+    """子ステップを順次実行する複合ステップ。"""
+    type: str = field(default="composite", init=False)
+
+
+# ─── StepParams ──────────────────────────────────────────────────
+
+@dataclass
+class InputParams:
+    """入力パラメータ。"""
+    source_type: str = "none"       # "file" | "theme" | "url" | "none"
+    source_path: str = ""
+    source_theme: str = ""
+    source_url: str = ""
+    format_ref: str = ""
+
+
+@dataclass
+class OutputParams:
+    """出力パラメータ。"""
+    enabled: bool = True
+    path: str = ""
+    format_ref: str = ""
+
+
+@dataclass
+class LogParams:
+    """ログパラメータ。"""
+    enabled: bool = True
+    path: str = ""
+    level: str = "info"             # "debug" | "info" | "error"
+
+
+@dataclass
+class SlackParams:
+    """Slack通知パラメータ。"""
+    enabled: bool = True
+    channel: str = ""               # 空=デフォルト（SLACK_DISPATCH_DM_CHANNEL）
+    thread_mode: str = "compact"    # "compact" | "sequential"
+    thread_ts: str = ""             # 既存スレッドへ返信時
+    source: str = "output"          # "output" | "text"
+    source_text: str = ""
+    token_env: str = "MY_SLACK_OAUTH_TOKEN"
+    level: str = "info"             # "debug" | "info" | "error"
+
+
+@dataclass
+class JobParams:
+    """ジョブ管理パラメータ。"""
+    enabled: bool = False
+    file: str = ""
+    id: str = ""
+    level: str = "info"             # "debug" | "info" | "error"
+
+
+@dataclass
+class StepParams:
+    """全executor共通のパラメータ。"""
+    input: InputParams | None = None
+    output: OutputParams | None = None
+    log: LogParams | None = None
+    slack: SlackParams | None = None
+    job: JobParams | None = None
+
+
+# ─── Step ────────────────────────────────────────────────────────
+
+@dataclass
+class Step:
+    """パイプラインの1実行単位（再帰的にネスト可能）。"""
+    name: str
+    executor: Executor
+
+    # 実行制御
+    mode: str = "sync"              # "sync" | "async"
+    timeout: int = 300              # タイムアウト秒（0=無制限）
+    retry: RetryPolicy | None = None
+    depends_on: list[str] | None = None
+
+    # 入出力パラメータ
+    params: StepParams | None = None
+
+    # ネスト（サブパイプライン相当）
+    steps: list[Step] | None = None
+
+
+# ─── PipelineConfig / PipelineContext ────────────────────────────
+
+@dataclass
+class PipelineContext:
+    """run_pipeline() が構築し build_steps に渡すランタイム情報。"""
+    base_date: str
+    log_dir: Path
+    use_job_file: bool
+    slack_channel: str = ""
+    slack_thread_ts: str = ""
 
 
 @dataclass
 class PipelineConfig:
-    """各パイプラインが定義する設定。"""
-
-    name: str                                # "daily" | "weekly"
-    log_dir: Path                            # ログ出力ディレクトリ
-    agents: list[str]                        # エージェント名 or パイプラインスクリプト名（.py）
-    notify_file_map: dict[str, str | NotifyEntry]  # エージェント名 → 通知設定
-    create_jobs_script: str                  # ジョブファイル生成スクリプト名
-    default_base_date: Callable[[], str]     # 基準日デフォルト計算
-
-    # パイプライン起動直後フック: (base_date, scripts_dir) -> None
-    # ジョブファイル生成より前に実行される。AIエージェント定義同期など。
-    pre_pipeline_hook: Callable[[str, Path], None] | None = None
-
-    # RSS取得フック: 各パイプラインがRSS取得ステップ全体を定義
-    rss_fetch_hook: Callable[[str, Path], None] | None = None
-
-    # プロンプト構築: (agent, base_date) -> prompt
-    build_prompt: Callable[[str, str], str] = field(default=_default_build_prompt)
-
-    # 通知ファイルパス解決: (agent, base_date) -> Path | None
-    # Noneを返すとNOTIFY_FILE_MAPのテンプレートを使用、Pathを返すとそれを使用
-    resolve_notify_path: Callable[[str, str], Path | None] | None = None
-
-    # エージェント実行前フック: (agent, base_date) -> HookResult | None
-    # None → 通常実行（AI_COMMAND_TYPEに応じたCLIでエージェントを実行）
-    # str → スキップ（成功扱い、理由表示）— 後方互換
-    # (str, True) → 委譲成功（パイプライン等で処理完了）
-    # (str, False) → 委譲失敗（パイプライン等で処理失敗）
-    pre_agent_hook: Callable[[str, str], "tuple[str, bool] | str | None"] | None = None
-
-    # 全エージェント実行後の追加ステップ
-    post_agents_hook: Callable[[str], None] | None = None
-
-    # 通知後の追加ステップ
-    post_notify_hook: Callable[[str], None] | None = None
+    """各パイプラインが定義する設定（最小化）。"""
+    name: str
+    build_steps: Callable[[str, PipelineContext], list[Step]]
+    default_base_date: Callable[[], str]
 
 
-# ─── ユーティリティ関数 ──────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════
+# ユーティリティ関数
+# ═══════════════════════════════════════════════════════════════════
 
 def now_jst() -> str:
     """現在時刻をJST ISO形式で返す。"""
     return datetime.now(tz=JST).strftime("%Y-%m-%dT%H:%M:%S+09:00")
 
 
-# rotate_log は logger.py から import済み（後方互換シグネチャ維持）
-
-
 def load_env() -> None:
     """環境変数をロードする（launchd環境対応）。"""
     if os.environ.get("MY_SLACK_OAUTH_TOKEN"):
         return
-
     result = subprocess.run(
         [str(PLATFORM_CMD), "source-env"],
         capture_output=True, text=True,
@@ -113,10 +203,16 @@ def load_env() -> None:
                 os.environ[key] = value
 
 
-def _load_ai_command_builder():
-    """ai-cli-utils.py モジュールを遅延ロードしてキャッシュする。"""
-    from importlib.util import module_from_spec, spec_from_file_location
+def generate_id() -> str:
+    """ジョブID用のユニークIDを生成する。"""
+    return uuid.uuid4().hex[:12]
 
+
+# ─── AI コマンド実行 ─────────────────────────────────────────────
+
+def _load_ai_command_builder():
+    """ai-cli-utils.py モジュールを遅延ロードする。"""
+    from importlib.util import module_from_spec, spec_from_file_location
     builder_path = SCRIPTS_DIR / "ai-cli-utils.py"
     spec = spec_from_file_location("ai_cli_utils", builder_path)
     mod = module_from_spec(spec)  # type: ignore[arg-type]
@@ -127,63 +223,134 @@ def _load_ai_command_builder():
 _ai_command_builder = None
 
 
-def _build_ai_command(prompt: str, agent_name: str = "") -> list[str]:
-    """AI_COMMAND_TYPEに応じた実行コマンドを構築する。
-
-    実装は ai-cli-utils.py に委譲。
-    """
+def _get_ai_builder():
+    """AI コマンドビルダーを取得（キャッシュ付き）。"""
     global _ai_command_builder
     if _ai_command_builder is None:
         _ai_command_builder = _load_ai_command_builder()
-    return _ai_command_builder.build_ai_command(prompt, agent_name=agent_name)
+    return _ai_command_builder
 
 
-def run_ai_command(prompt: str, log_file: Path, agent_name: str = "") -> bool:
-    """AI_COMMAND_TYPE環境変数に応じてkiro-cliまたはclaude codeを実行し、成功/失敗を返す。
+def build_agent_prompt_with_params(step: Step) -> str:
+    """Step の params から agent_params YAMLブロックを生成し、prompt_text に結合する。"""
+    executor = step.executor
+    if not isinstance(executor, AgentExecutor):
+        return ""
 
-    AI_COMMAND_TYPE=claude（既定）→ `claude --print --dangerously-skip-permissions`
-    AI_COMMAND_TYPE=kiro-cli       → `kiro-cli chat --trust-all-tools --no-interactive`
+    prompt = executor.prompt_text
+    params = step.params
+
+    # agent_params ブロック生成（input/output のみエージェントに渡す）
+    if params and (params.input or params.output):
+        yaml_lines = ["---", "agent_params:"]
+
+        if params.input:
+            inp = params.input
+            yaml_lines.append("  input:")
+            yaml_lines.append(f"    source_type: {inp.source_type}")
+            if inp.source_path:
+                yaml_lines.append(f'    source_path: "{inp.source_path}"')
+            if inp.source_theme:
+                yaml_lines.append(f'    source_theme: "{inp.source_theme}"')
+            if inp.source_url:
+                yaml_lines.append(f'    source_url: "{inp.source_url}"')
+            if inp.format_ref:
+                yaml_lines.append(f'    format_ref: "{inp.format_ref}"')
+
+        if params.output:
+            out = params.output
+            yaml_lines.append("  output:")
+            yaml_lines.append(f"    enabled: {str(out.enabled).lower()}")
+            if out.path:
+                yaml_lines.append(f'    path: "{out.path}"')
+            if out.format_ref:
+                yaml_lines.append(f'    format_ref: "{out.format_ref}"')
+
+        yaml_lines.append("---")
+        yaml_block = "\n".join(yaml_lines)
+        prompt = f"{yaml_block}\n{prompt}"
+
+    return prompt
+
+
+def run_ai_command(prompt: str, log_file: Path, agent_name: str = "",
+                   timeout: int = 0) -> tuple[bool, str]:
+    """AIコマンドを実行し、(成功フラグ, 詳細理由) を返す。
+
+    Returns:
+        (True, ""): 成功
+        (False, reason): 失敗（理由付き）
     """
-    cmd = _build_ai_command(prompt, agent_name)
+    builder = _get_ai_builder()
+    cmd = builder.build_ai_command(prompt, agent_name=agent_name)
+    try:
+        with open(log_file, "a", encoding="utf-8") as f:
+            result = subprocess.run(
+                cmd, stdout=f, stderr=subprocess.STDOUT,
+                timeout=timeout if timeout > 0 else None,
+            )
+        if result.returncode == 0:
+            return True, ""
+        ai_type = os.environ.get("AI_COMMAND_TYPE", "claude")
+        return False, f"{ai_type} exit non-zero"
+    except subprocess.TimeoutExpired:
+        return False, f"timeout ({timeout}s)"
+
+
+# ─── Slack通知 ───────────────────────────────────────────────────
+
+def run_slack_notify_async(
+    file_path: Path,
+    log_file: Path,
+    channel: str = "",
+    thread: str = "",
+) -> int:
+    """notify-slack.pyを新規プロセスで非同期に実行する（fire-and-forget）。"""
+    cmd = [
+        "python3.12",
+        str(SCRIPTS_DIR / "notify-slack.py"),
+        "--file", str(file_path),
+    ]
+    if channel:
+        cmd.extend(["--channel", channel])
+    if thread:
+        cmd.extend(["--thread", thread])
+    try:
+        with open(log_file, "a", encoding="utf-8") as f:
+            proc = subprocess.Popen(
+                cmd, stdout=f, stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+        return proc.pid
+    except OSError:
+        return 0
+
+
+def run_slack_notify(
+    file_path: Path,
+    log_file: Path,
+    channel: str = "",
+    thread: str = "",
+) -> bool:
+    """notify-slack.pyを同期実行する。"""
+    cmd = [
+        "python3.12",
+        str(SCRIPTS_DIR / "notify-slack.py"),
+        "--file", str(file_path),
+    ]
+    if channel:
+        cmd.extend(["--channel", channel])
+    if thread:
+        cmd.extend(["--thread", thread])
     with open(log_file, "a", encoding="utf-8") as f:
         result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
     return result.returncode == 0
 
 
-def run_sub_pipeline(script: Path, base_date: str, log_file: Path,
-                     job_file: Path | None = None,
-                     parent_job_id: str = "") -> bool:
-    """サブパイプラインスクリプトを実行し、成功/失敗を返す。"""
-    cmd = ["python3.12", str(script), base_date]
-    env = os.environ.copy()
-    if job_file:
-        env["PIPELINE_JOB_FILE"] = str(job_file)
-    if parent_job_id:
-        env["PIPELINE_PARENT_JOB_ID"] = parent_job_id
-    with open(log_file, "a", encoding="utf-8") as f:
-        result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, env=env)
-    return result.returncode == 0
-
-
-def is_pipeline_entry(entry: str) -> bool:
-    """AGENTSリストのエントリがパイプラインスクリプトか判定する。"""
-    return entry.endswith(".py")
-
-
-# log_error は logger.py から import済み（後方互換シグネチャ維持）
-
-
 def _notify_slack_reply(
-    text: str,
-    channel: str,
-    thread_ts: str,
-    log_file: Path,
+    text: str, channel: str, thread_ts: str, log_file: Path,
 ) -> None:
-    """Slackスレッドにテキスト返信する（同期）。
-
-    ディスパッチャー経由で起動されたパイプラインが、元DMスレッドへの
-    開始・完了通知を送るために使用する。
-    """
+    """Slackスレッドにテキスト返信する（同期）。"""
     notify_script = SCRIPTS_DIR / "notify-slack.py"
     if not notify_script.exists():
         return
@@ -195,76 +362,6 @@ def _notify_slack_reply(
     ]
     with open(log_file, "a", encoding="utf-8") as f:
         subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
-
-
-def run_slack_notify(
-    file_path: Path,
-    log_file: Path,
-    channel: str = "",
-    thread: str = "",
-) -> bool:
-    """notify-slack.pyを呼び出してSlack通知を実行する。
-
-    Args:
-        file_path: 投稿するMarkdownファイルパス
-        log_file: ログ出力先
-        channel: 投稿先チャンネルID（省略時: スクリプトのデフォルト）
-        thread: スレッドモード（"compact" / thread_ts / 省略）
-
-    Returns:
-        成功時True
-    """
-    cmd = [
-        "python3.12",
-        str(SCRIPTS_DIR / "notify-slack.py"),
-        "--file", str(file_path),
-    ]
-    if channel:
-        cmd.extend(["--channel", channel])
-    if thread:
-        cmd.extend(["--thread", thread])
-
-    with open(log_file, "a", encoding="utf-8") as f:
-        result = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT)
-    return result.returncode == 0
-
-
-def run_slack_notify_async(
-    file_path: Path,
-    log_file: Path,
-    channel: str = "",
-    thread: str = "",
-) -> int:
-    """notify-slack.pyを新規プロセスで非同期に実行する（fire-and-forget）。
-
-    Args:
-        file_path: 投稿するMarkdownファイルパス
-        log_file: ログ出力先
-        channel: 投稿先チャンネルID（省略時: スクリプトのデフォルト）
-        thread: スレッドモード（"compact" / thread_ts / 省略）
-
-    Returns:
-        起動したプロセスのPID（起動失敗時は0）
-    """
-    cmd = [
-        "python3.12",
-        str(SCRIPTS_DIR / "notify-slack.py"),
-        "--file", str(file_path),
-    ]
-    if channel:
-        cmd.extend(["--channel", channel])
-    if thread:
-        cmd.extend(["--thread", thread])
-
-    try:
-        with open(log_file, "a", encoding="utf-8") as f:
-            proc = subprocess.Popen(
-                cmd, stdout=f, stderr=subprocess.STDOUT,
-                start_new_session=True,
-            )
-        return proc.pid
-    except OSError:
-        return 0
 
 
 # ─── ヘルパー関数 ────────────────────────────────────────────────
@@ -288,6 +385,72 @@ def stop_caffeinate(cafe_pid: str) -> None:
         )
 
 
+# ═══════════════════════════════════════════════════════════════════
+# ジョブファイル自動生成
+# ═══════════════════════════════════════════════════════════════════
+
+def generate_job_file(
+    pipeline_name: str, base_date: str, steps: list[Step],
+) -> Path:
+    """Step ツリーからジョブファイルを自動生成する。"""
+    job_dir = HOME / "Documents" / "works" / "jobs"
+    job_dir.mkdir(parents=True, exist_ok=True)
+
+    parent_id = generate_id()
+    parent_job = {
+        "job_id": parent_id,
+        "job_name": pipeline_name,
+        "base_date": base_date,
+        "status": "running",
+        "started_at": now_jst(),
+        "timeout": sum(s.timeout for s in steps),
+        "child_jobs": [_step_to_job(s) for s in steps],
+    }
+
+    file_path = job_dir / f"{base_date}_{pipeline_name}.json"
+    file_path.write_text(
+        json.dumps(parent_job, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return file_path
+
+
+def _step_to_job(step: Step) -> dict:
+    """Step → ジョブ定義の変換（再帰的）。"""
+    job: dict = {
+        "job_id": generate_id(),
+        "job_name": step.name,
+        "status": "pending",
+        "timeout": step.timeout,
+    }
+    if step.retry:
+        job["retry_delay"] = step.retry.delay
+        job["max_attempts"] = step.retry.max_attempts
+    if step.depends_on:
+        job["depends_on"] = step.depends_on
+    if step.steps:
+        job["child_jobs"] = [_step_to_job(s) for s in step.steps]
+    return job
+
+
+# ─── ジョブ更新 ──────────────────────────────────────────────────
+
+def update_job(job_file: Path, job_id: str = "", scope: str = "child",
+               updates: dict | None = None) -> None:
+    """ジョブを更新する。"""
+    if updates is None:
+        return
+    cmd = [
+        "python3.12", str(SCRIPTS_DIR / "update-job.py"),
+        "--job-file", str(job_file),
+        "--scope", scope if scope == "parent" else "child",
+        "--set", json.dumps(updates, ensure_ascii=False),
+    ]
+    if scope != "parent" and job_id:
+        cmd.extend(["--job-id", job_id])
+    subprocess.run(cmd, capture_output=True, text=True)
+
+
 def get_child_job_id(job_file: Path, job_name: str) -> str:
     """ジョブファイルから指定ジョブ名のIDを再帰検索で取得する。"""
     with open(job_file, encoding="utf-8") as f:
@@ -306,202 +469,213 @@ def _find_job_id_by_name(jobs: list[dict], job_name: str) -> str:
     return ""
 
 
-def update_job(job_file: Path, job_id: str = "", scope: str = "child",
-               updates: dict | None = None) -> None:
-    """ジョブを更新する。"""
-    if updates is None:
-        return
-
-    cmd = [
-        "python3.12", str(SCRIPTS_DIR / "update-job.py"),
-        "--job-file", str(job_file),
-        "--scope", scope if scope == "parent" else "child",
-        "--set", json.dumps(updates, ensure_ascii=False),
-    ]
-    if scope != "parent" and job_id:
-        cmd.extend(["--job-id", job_id])
-
-    subprocess.run(cmd, capture_output=True, text=True)
-
-
-# ─── 内部ヘルパー ────────────────────────────────────────────────
-
-def _create_job_file(config: PipelineConfig, base_date: str) -> Path | None:
-    """ジョブファイルを生成し、パスを返す。"""
-    result = subprocess.run(
-        ["python3.12", str(SCRIPTS_DIR / config.create_jobs_script), base_date],
-        capture_output=True, text=True,
-    )
-    if result.returncode != 0:
-        return None
-
-    for line in result.stdout.splitlines():
-        if "ファイル:" in line:
-            path_str = line.split("ファイル:")[1].strip()
-            path = Path(path_str)
-            if path.exists():
-                return path
-    return None
-
-
-# ─── 共通runner関数 ──────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════
+# ステップ実行エンジン
+# ═══════════════════════════════════════════════════════════════════
 
 @dataclass
-class _EntryResult:
-    """エージェント/パイプライン実行結果。"""
-
-    success: bool
-    reason: str = ""
-
-
-def _resolve_entry_name(agent: str) -> str:
-    """AGENTSリストのエントリから表示名を生成する。
-
-    パイプラインスクリプト（.py）の場合、拡張子を除去し、
-    さらに 'run-' プレフィックスがあれば除去する。
-    """
-    if is_pipeline_entry(agent):
-        name = Path(agent).stem
-        if name.startswith("run-"):
-            name = name[4:]
-        return name
-    return agent
+class ExecutionContext:
+    """ステップ実行時の共有コンテキスト。"""
+    job_file: Path | None
+    use_job_file: bool
+    base_date: str
+    plogger: PipelineLogger
+    completed_names: set[str] = field(default_factory=set)
+    slack_channel: str = ""
+    slack_thread_ts: str = ""
 
 
-def _get_child_job(job_file: Path, job_name: str) -> dict | None:
-    """ジョブファイルから指定ジョブ名のジョブ辞書を再帰検索で取得する。"""
-    with open(job_file, encoding="utf-8") as f:
-        data = json.load(f)
-    return _find_job_by_name(data.get("child_jobs", []), job_name)
 
-
-def _find_job_by_name(jobs: list[dict], job_name: str) -> dict | None:
-    """ジョブツリーを再帰的に探索し、指定名のジョブ辞書を返す。"""
-    for job in jobs:
-        if job.get("job_name") == job_name:
-            return job
-        found = _find_job_by_name(job.get("child_jobs", []), job_name)
-        if found:
-            return found
-    return None
-
-
-def _check_dependencies(
-    job_file: Path | None, use_job_file: bool, entry_name: str,
-    completed_names: set[str],
-) -> tuple[bool, list[str]]:
-    """依存先が全て完了しているか確認する。
+def execute_steps(
+    steps: list[Step], context: ExecutionContext,
+) -> tuple[int, int, int]:
+    """ステップリストを順次実行する（再帰対応）。
 
     Returns:
-        (satisfied, unmet_deps): 依存充足フラグと未完了の依存先リスト
+        (success_count, failed_count, skipped_count)
     """
-    if not use_job_file or not job_file:
-        return True, []
+    success = 0
+    failed = 0
+    skipped = 0
 
-    job = _get_child_job(job_file, entry_name)
-    if not job:
-        return True, []
+    for step in steps:
+        # 依存チェック
+        if step.depends_on:
+            unmet = [d for d in step.depends_on if d not in context.completed_names]
+            if unmet:
+                context.plogger.info(
+                    f"⏭️  {step.name} スキップ"
+                    f"（未完了の依存先: {', '.join(unmet)}）"
+                )
+                skipped += 1
+                continue
 
-    depends_on = job.get("depends_on")
-    if not depends_on:
-        return True, []
+        context.plogger.info(f"🔄 {step.name} 実行中...")
 
-    # depends_on は配列（create-jobs.py で正規化済み）
-    # 後方互換: 古いジョブファイルで文字列が残っている場合も対応
-    if isinstance(depends_on, str):
-        depends_on = [depends_on]
+        # ジョブステータス更新: running
+        child_job_id = ""
+        if context.use_job_file and context.job_file:
+            child_job_id = get_child_job_id(context.job_file, step.name)
+            if child_job_id:
+                update_job(context.job_file, job_id=child_job_id,
+                           updates={"status": "running", "started_at": now_jst()})
+                update_job(context.job_file, scope="parent",
+                           updates={"status_detail": f"{step.name} 実行中"})
 
-    unmet = [dep for dep in depends_on if dep not in completed_names]
-    return len(unmet) == 0, unmet
+        # 実行（リトライ対応）
+        max_attempts = step.retry.max_attempts if step.retry else 1
+        delay = step.retry.delay if step.retry else 30
+        ok = False
+        reason = ""
 
+        for attempt in range(max_attempts):
+            if attempt > 0:
+                context.plogger.info(
+                    f"   🔁 {step.name} リトライ ({attempt + 1}/{max_attempts})..."
+                )
+                time.sleep(delay)
+                if step.retry and step.retry.backoff == "exponential":
+                    delay *= 2
 
-def _mark_job_running(
-    job_file: Path | None, use_job_file: bool, entry_name: str,
-) -> str:
-    """ジョブファイルを running に更新し、child_job_id を返す。"""
-    if not use_job_file or not job_file:
-        return ""
-    child_job_id = get_child_job_id(job_file, entry_name)
-    if child_job_id:
-        update_job(job_file, job_id=child_job_id,
-                   updates={"status": "running", "started_at": now_jst()})
-        update_job(job_file, scope="parent",
-                   updates={"status_detail": f"{entry_name} 実行中"})
-    return child_job_id
+            ok, reason = _execute_step(step, context)
+            if ok:
+                break
 
-
-def _mark_job_done(
-    job_file: Path | None, use_job_file: bool,
-    child_job_id: str, success: bool, detail: str,
-) -> None:
-    """ジョブファイルを completed/failed に更新する。"""
-    if not use_job_file or not job_file or not child_job_id:
-        return
-    if success:
-        update_job(job_file, job_id=child_job_id, updates={
-            "status": "completed", "completed_at": now_jst(),
-            "status_detail": detail,
-        })
-    else:
-        update_job(job_file, job_id=child_job_id, updates={
-            "status": "failed", "completed_at": now_jst(),
-            "error": detail,
-        })
-
-
-def _run_hook(config: PipelineConfig, agent: str, base_date: str) -> _EntryResult | None:
-    """pre_agent_hook を実行する。None=通常実行に進む、_EntryResult=処理済み。"""
-    if not config.pre_agent_hook:
-        return None
-    hook_result = config.pre_agent_hook(agent, base_date)
-    if hook_result is None:
-        return None
-    # 戻り値の正規化: str → (str, True)（後方互換）
-    if isinstance(hook_result, str):
-        return _EntryResult(success=True, reason=hook_result)
-    reason, hook_success = hook_result
-    return _EntryResult(success=hook_success, reason=reason)
-
-
-def _run_entry(config: PipelineConfig, agent: str, base_date: str,
-               log_file: Path, job_file: Path | None = None,
-               child_job_id: str = "") -> _EntryResult:
-    """エージェントまたはパイプラインスクリプトを実行する。"""
-    if is_pipeline_entry(agent):
-        script_path = SCRIPTS_DIR / agent
-        ok = run_sub_pipeline(
-            script_path, base_date, log_file,
-            job_file=job_file, parent_job_id=child_job_id,
-        )
+        # 結果処理
         if ok:
-            return _EntryResult(success=True)
-        return _EntryResult(success=False, reason="sub-pipeline exit non-zero")
+            context.plogger.info(f"   ✅ {step.name} 完了")
+            success += 1
+            context.completed_names.add(step.name)
+            if context.use_job_file and context.job_file and child_job_id:
+                update_job(context.job_file, job_id=child_job_id, updates={
+                    "status": "completed", "completed_at": now_jst(),
+                })
+            # Slack通知（非同期）
+            _notify_step_completion(step, context)
+        else:
+            context.plogger.error(f"   {step.name} 失敗: {reason}")
+            context.plogger.log_error(step.name, reason)
+            failed += 1
+            if context.use_job_file and context.job_file and child_job_id:
+                update_job(context.job_file, job_id=child_job_id, updates={
+                    "status": "failed", "completed_at": now_jst(),
+                    "error": reason,
+                })
 
-    prompt = config.build_prompt(agent, base_date)
-    ok = run_ai_command(prompt, log_file, agent_name=agent)
-    if ok:
-        return _EntryResult(success=True)
-    ai_type = os.environ.get("AI_COMMAND_TYPE", "claude")
-    return _EntryResult(success=False, reason=f"{ai_type} exit non-zero")
+    return success, failed, skipped
 
 
-def _print_retry_hint(agent: str, entry_name: str, base_date: str,
-                      config: PipelineConfig) -> None:
-    """失敗時の再実行ヒントを表示する。"""
-    if is_pipeline_entry(agent):
-        script_path = SCRIPTS_DIR / agent
-        print(f"[{now_jst()}]    💡 再実行: python3.12 {script_path} {base_date}")
-    else:
-        prompt = config.build_prompt(agent, base_date)
-        cmd = _build_ai_command(prompt, agent_name=agent)
-        cmd_str = " ".join(cmd[:-1] + [f'"{cmd[-1]}"'])
-        print(f"[{now_jst()}]    💡 再実行: {cmd_str}")
+def _execute_step(
+    step: Step, context: ExecutionContext,
+) -> tuple[bool, str]:
+    """単一ステップを実行する。Returns: (success, reason)。"""
+    executor = step.executor
 
+    if isinstance(executor, CompositeExecutor):
+        # 子ステップを再帰実行
+        if not step.steps:
+            return True, ""
+        child_context = ExecutionContext(
+            job_file=context.job_file,
+            use_job_file=context.use_job_file,
+            base_date=context.base_date,
+            plogger=context.plogger,
+            completed_names=set(),
+            slack_channel=context.slack_channel,
+            slack_thread_ts=context.slack_thread_ts,
+        )
+        s, f, _ = execute_steps(step.steps, child_context)
+        if f > 0:
+            return False, f"{f} sub-steps failed"
+        return True, ""
+
+    if isinstance(executor, ScriptExecutor):
+        return _execute_script(executor, step, context)
+
+    if isinstance(executor, AgentExecutor):
+        return _execute_agent(executor, step, context)
+
+    return False, f"unknown executor type: {executor.type}"
+
+
+def _execute_script(
+    executor: ScriptExecutor, step: Step, context: ExecutionContext,
+) -> tuple[bool, str]:
+    """ScriptExecutor を実行する。"""
+    log_file = context.plogger.get_agent_log(step.name)
+    env = os.environ.copy()
+    if executor.env:
+        env.update(executor.env)
+
+    cmd_parts = executor.command.split()
+    try:
+        with open(log_file, "a", encoding="utf-8") as f:
+            result = subprocess.run(
+                cmd_parts, stdout=f, stderr=subprocess.STDOUT,
+                env=env,
+                timeout=step.timeout if step.timeout > 0 else None,
+            )
+        if result.returncode == 0:
+            return True, ""
+        return False, f"script exit code {result.returncode}"
+    except subprocess.TimeoutExpired:
+        return False, f"timeout ({step.timeout}s)"
+    except OSError as e:
+        return False, f"OSError: {e}"
+
+
+def _execute_agent(
+    executor: AgentExecutor, step: Step, context: ExecutionContext,
+) -> tuple[bool, str]:
+    """AgentExecutor を実行する。"""
+    log_file = context.plogger.get_agent_log(step.name)
+    prompt = build_agent_prompt_with_params(step)
+    return run_ai_command(
+        prompt, log_file, agent_name=executor.agent_name,
+        timeout=step.timeout,
+    )
+
+
+def _notify_step_completion(step: Step, context: ExecutionContext) -> None:
+    """ステップ完了後のSlack通知を実行する。"""
+    params = step.params
+    if not params or not params.slack or not params.slack.enabled:
+        return
+    if not params.output or not params.output.path:
+        return
+
+    slack = params.slack
+    output_path = Path(params.output.path)
+    if not output_path.is_absolute():
+        output_path = HOME / output_path
+
+    if not output_path.exists():
+        return
+
+    notify_log = context.plogger.get_notify_log()
+
+    # thread 引数の決定
+    thread = ""
+    if slack.thread_ts:
+        thread = slack.thread_ts
+    elif context.slack_thread_ts:
+        thread = context.slack_thread_ts
+    elif slack.thread_mode == "compact":
+        thread = "compact"
+
+    channel = slack.channel or context.slack_channel or ""
+
+    run_slack_notify_async(output_path, notify_log, channel=channel, thread=thread)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# run_pipeline: メインエントリポイント
+# ═══════════════════════════════════════════════════════════════════
 
 def run_pipeline(config: PipelineConfig) -> None:
     """パイプラインの共通実行フロー。"""
 
-    # オプション解析
+    # ─── オプション解析 ───────────────────────────────────────
     use_job_file = True
     slack_channel: str = ""
     slack_thread_ts: str = ""
@@ -524,230 +698,93 @@ def run_pipeline(config: PipelineConfig) -> None:
         i += 1
 
     # 基準日
-    if positional_args:
-        base_date = positional_args[0]
-    else:
-        base_date = config.default_base_date()
+    base_date = positional_args[0] if positional_args else config.default_base_date()
 
-    # ─── PipelineLogger 初期化 ────────────────────────────────────
-    config.log_dir.mkdir(parents=True, exist_ok=True)
+    # ─── ログ初期化 ──────────────────────────────────────────
+    log_dir = HOME / "logs" / "jobs" / config.name
+    log_dir.mkdir(parents=True, exist_ok=True)
     plogger = PipelineLogger(
-        config.name, log_dir=config.log_dir,
+        config.name, log_dir=log_dir,
         max_lines=MAX_LOG_LINES, keep_lines=200,
         agent_max_lines=MAX_AGENT_LOG_LINES, agent_keep_lines=100,
     )
     plogger.rotate_all()
 
-    # スリープ防止
+    # ─── 環境準備 ────────────────────────────────────────────
     caffeinate_pid = start_caffeinate()
-
-    # 環境変数ロード
     load_env()
 
     # 収集フェーズ用の環境変数設定
     os.environ["SLACK_BOT_TOKEN"] = os.environ.get("SLACK_REFERENCE_BOT_TOKEN", "")
     os.environ["SLACK_TEAM_ID"] = os.environ.get("SLACK_REFERENCE_TEAM_ID", "")
 
-    label = "日次" if config.name == "daily" else "週次"
-    # notify_log はディスパッチャー開始通知と Step 4 Slack通知の両方で使用
+    label = config.name
     notify_log = plogger.get_notify_log()
-    plogger.info(f"{label}scoutパイプライン起動（基準日: {base_date}）")
+    plogger.info(f"{label}パイプライン起動（基準日: {base_date}）")
 
-    # ディスパッチャー経由で起動された場合: 元DMスレッドへ開始通知
+    # ディスパッチャー経由: 開始通知
     if slack_channel and slack_thread_ts:
         _notify_slack_reply(
             f"🚀 {label}パイプライン開始（基準日: {base_date}）",
             slack_channel, slack_thread_ts, notify_log,
         )
 
-    # ─── Pre-pipeline: 起動直後フック ─────────────────────────────
-    if config.pre_pipeline_hook:
-        config.pre_pipeline_hook(base_date, SCRIPTS_DIR)
+    # ─── ステップツリー生成 ───────────────────────────────────
+    pipeline_context = PipelineContext(
+        base_date=base_date,
+        log_dir=log_dir,
+        use_job_file=use_job_file,
+        slack_channel=slack_channel,
+        slack_thread_ts=slack_thread_ts,
+    )
+    steps = config.build_steps(base_date, pipeline_context)
 
-    # ─── Step 0: ジョブファイル生成 ───────────────────────────────
+    # ─── ジョブファイル自動生成 ───────────────────────────────
     job_file: Path | None = None
     if use_job_file:
-        plogger.info("Step 0: ジョブファイル生成...")
-        job_file = _create_job_file(config, base_date)
-        if job_file:
-            plogger.info(f"   ジョブファイル: {job_file}")
-            update_job(job_file, scope="parent",
-                       updates={"status": "running", "started_at": now_jst()})
-        else:
-            plogger.warning("ジョブファイル生成失敗。進捗管理なしで続行。")
-            use_job_file = False
+        plogger.info("ジョブファイル生成...")
+        job_file = generate_job_file(config.name, base_date, steps)
+        plogger.info(f"   ジョブファイル: {job_file}")
 
-    # ─── Step 1: RSSフィード事前取得 ─────────────────────────────
-    plogger.info("Step 1: RSSフィード事前取得...")
-    if config.rss_fetch_hook:
-        config.rss_fetch_hook(base_date, SCRIPTS_DIR)
-    else:
-        plogger.info("   ⏭️  RSSフック未定義（スキップ）")
+    # ─── ステップ実行 ────────────────────────────────────────
+    plogger.info("ステップ実行開始...")
+    exec_context = ExecutionContext(
+        job_file=job_file,
+        use_job_file=use_job_file,
+        base_date=base_date,
+        plogger=plogger,
+        slack_channel=slack_channel,
+        slack_thread_ts=slack_thread_ts,
+    )
+    success, failed_count, skipped_count = execute_steps(steps, exec_context)
 
-    # ─── Step 2: エージェント/パイプライン実行ループ ──────────────
-    plogger.info("Step 2: scoutエージェント実行開始...")
-
-    success = 0
-    failed = 0
-    skipped = 0
-    failed_names: list[str] = []
-    completed_names: set[str] = set()
-
-    for agent in config.agents:
-        entry_name = _resolve_entry_name(agent)
-
-        # 依存チェック: depends_on の全依存先が completed_names に含まれるか
-        deps_satisfied, unmet_deps = _check_dependencies(
-            job_file, use_job_file, entry_name, completed_names,
-        )
-        if not deps_satisfied:
-            plogger.info(
-                f"⏭️  {entry_name} スキップ"
-                f"（未完了の依存先: {', '.join(unmet_deps)}）"
-            )
-            skipped += 1
-            continue
-
-        plogger.info(f"🔄 {entry_name} 実行中...")
-
-        agent_log = plogger.get_agent_log(entry_name)
-
-        child_job_id = _mark_job_running(job_file, use_job_file, entry_name)
-
-        # pre_agent_hook
-        hook_result = _run_hook(config, agent, base_date)
-        if hook_result is not None:
-            result = hook_result
-        else:
-            result = _run_entry(config, agent, base_date, agent_log,
-                                job_file=job_file, child_job_id=child_job_id)
-
-        # 結果処理
-        if result.success:
-            plogger.info(f"   ✅ {entry_name} 完了")
-            success += 1
-            completed_names.add(entry_name)
-            _mark_job_done(job_file, use_job_file, child_job_id, True,
-                           result.reason or "完了")
-        else:
-            plogger.error(f"   {entry_name} 失敗（ログ: {agent_log}）")
-            _print_retry_hint(agent, entry_name, base_date, config)
-            plogger.log_error(entry_name, result.reason)
-            failed += 1
-            failed_names.append(entry_name)
-            _mark_job_done(job_file, use_job_file, child_job_id, False,
-                           result.reason)
-
-    # ─── Step 2.5: post_agents_hook ──────────────────────────────
-    if config.post_agents_hook:
-        config.post_agents_hook(base_date)
-
-    # ─── Step 3: 親タスク完了処理 ────────────────────────────────
-    end_now = now_jst()
-    total = success + failed + skipped
-
+    # ─── 親ジョブ完了処理 ────────────────────────────────────
+    total = success + failed_count + skipped_count
     if use_job_file and job_file:
-        if failed > 0 or skipped > 0:
-            parts = []
-            if failed > 0:
-                parts.append(f"{failed}件失敗: {' '.join(failed_names)}")
-            if skipped > 0:
-                parts.append(f"{skipped}件スキップ（依存未充足）")
+        if failed_count > 0:
             update_job(job_file, scope="parent", updates={
-                "status": "failed" if failed > 0 else "completed",
-                "completed_at": end_now,
-                "status_detail": " / ".join(parts),
-                "error": f"{failed}/{total} jobs failed" if failed > 0 else None,
+                "status": "failed", "completed_at": now_jst(),
+                "error": f"{failed_count}/{total} steps failed",
             })
         else:
             update_job(job_file, scope="parent", updates={
-                "status": "completed", "completed_at": end_now,
-                "status_detail": "全子タスク完了",
+                "status": "completed", "completed_at": now_jst(),
+                "status_detail": "全ステップ完了",
             })
 
-    # ─── Step 4: Slack通知（非同期） ──────────────────────────────
-    plogger.info("Step 4: Slack通知...")
-
-    notify_launched = 0
-    notify_skipped = 0
-    notify_disabled = 0
-
-    for agent in config.agents:
-        entry_name = _resolve_entry_name(agent)
-
-        # 通知ファイルパス解決
-        file_path: Path | None = None
-
-        if config.resolve_notify_path:
-            file_path = config.resolve_notify_path(agent, base_date)
-
-        if file_path is None:
-            entry = config.notify_file_map.get(entry_name)
-            if entry is None:
-                notify_skipped += 1
-                continue
-
-            # NotifyEntry or str（後方互換）
-            if isinstance(entry, NotifyEntry):
-                if not entry.enabled:
-                    notify_disabled += 1
-                    continue
-                template = entry.template
-            else:
-                template = entry
-
-            if not template:
-                notify_skipped += 1
-                continue
-            file_path = HOME / "Documents" / "works" / template.format(date=base_date)
-
-        if not file_path.exists():
-            plogger.info(f"   ⏭️  {entry_name}: 出力ファイルなし（スキップ）")
-            notify_skipped += 1
-            continue
-
-        plogger.info(f"   📨 {entry_name} 通知起動...")
-
-        if slack_channel and slack_thread_ts:
-            # dispatch経由: 元スレッドへ返信（thread_ts を直接指定）
-            pid = run_slack_notify_async(
-                file_path, notify_log,
-                channel=slack_channel, thread=slack_thread_ts,
-            )
-        else:
-            # 通常起動: compact形式で新規DM投稿
-            pid = run_slack_notify_async(file_path, notify_log, thread="compact")
-        if pid:
-            plogger.info(f"   ✅ {entry_name} 通知プロセス起動 (PID={pid})")
-            notify_launched += 1
-        else:
-            plogger.warning(f"   {entry_name} 通知プロセス起動失敗")
-            plogger.log_error(f"slack-notify:{entry_name}", "プロセス起動失敗")
-
-    parts = [f"🚀{notify_launched}件起動"]
-    if notify_disabled > 0:
-        parts.append(f"🔇{notify_disabled}件OFF")
-    parts.append(f"⏭️{notify_skipped}件スキップ")
-    plogger.info(f"📨 通知完了: {' / '.join(parts)}")
-
-    # ─── Step 5: post_notify_hook ────────────────────────────────
-    if config.post_notify_hook:
-        config.post_notify_hook(base_date)
-
-    # ─── Step 6: 完了サマリー ────────────────────────────────────
-    plogger.info(f"📊 実行完了: ✅{success}件 / ❌{failed}件 / ⏭️{skipped}件スキップ (全{total}件)")
-    if failed > 0:
-        plogger.info(f"   失敗: {' '.join(failed_names)}")
+    # ─── 完了サマリー ────────────────────────────────────────
+    plogger.info(
+        f"📊 実行完了: ✅{success}件 / ❌{failed_count}件 / ⏭️{skipped_count}件スキップ"
+        f" (全{total}件)"
+    )
     if use_job_file and job_file:
         plogger.info(f"   ジョブファイル: {job_file}")
-    plogger.info(f"✅ {label}scoutパイプライン完了（基準日: {base_date}）")
+    plogger.info(f"✅ {label}パイプライン完了（基準日: {base_date}）")
 
-    # ディスパッチャー経由で起動された場合: 元DMスレッドへ完了通知
+    # ディスパッチャー経由: 完了通知
     if slack_channel and slack_thread_ts:
         summary = f"✅ {label}パイプライン完了（基準日: {base_date}）\n"
-        summary += f"✅{success}件 / ❌{failed}件 / ⏭️{skipped}件スキップ"
-        if failed_names:
-            summary += f"\n失敗: {', '.join(failed_names)}"
+        summary += f"✅{success}件 / ❌{failed_count}件 / ⏭️{skipped_count}件スキップ"
         _notify_slack_reply(summary, slack_channel, slack_thread_ts, notify_log)
 
     # スリープ防止解除

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3.12
+# ⚠️ DEPRECATED: generate_job_file() で自動生成に移行済み（pipeline-redesign issue）
+# 動作確認完了後に削除予定
 """
 create-weekly-jobs: 週次scoutパイプラインのジョブファイルを生成する（create-jobs.pyラッパー）
 

@@ -1,9 +1,16 @@
-"""Python 3.12 バージョンガード。"""
+#!/usr/bin/env python3.12
+"""
+Version check utility for Python scripts
+"""
 
 import sys
 
+def check_python_version():
+    """Check if Python version is 3.12 or higher"""
+    if sys.version_info < (3, 12):
+        print(f"❌ Python 3.12以上が必要です。現在のバージョン: {sys.version}")
+        sys.exit(1)
 
-def check_python_version() -> None:
-    """Python 3.12 以外で実行された場合に終了する。"""
-    if sys.version_info[:2] != (3, 12):
-        sys.exit(f"Error: requires python3.12 (current: {sys.version_info.major}.{sys.version_info.minor})")
+if __name__ == "__main__":
+    check_python_version()
+    print("✅ Python version check passed")

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3.12
+# ⚠️ DEPRECATED: run-daily-pipeline.py にインライン化済み（pipeline-redesign issue）
+# 動作確認完了後に削除予定
 """
 run-academic-trend-scout-pipeline: アカデミックトレンドスカウトのパイプライン化実行
 
@@ -250,7 +252,7 @@ def step2_extract(
 
         print(f"[{now_jst()}]    🔄 {fc.name} ({fc.display_name}) searcher 実行中...")
 
-        if run_ai_command(prompt, log_file, agent_name="academic-trend-searcher"):
+        if run_ai_command(prompt, log_file, agent_name="academic-trend-searcher")[0]:
             if output_path.exists():
                 print(f"[{now_jst()}]    ✅ {fc.name} searcher 完了")
                 intermediate_paths[fc.name] = output_path
@@ -363,7 +365,7 @@ def _generate_highlights(report_path: Path, base_date: str, log_dir: Path) -> No
     )
 
     print(f"[{now_jst()}]    🔄 注目論文選定 + サマリ生成中...")
-    if run_ai_command(prompt, log_file, agent_name="academic-trend-searcher"):
+    if run_ai_command(prompt, log_file, agent_name="academic-trend-searcher")[0]:
         print(f"[{now_jst()}]    ✅ 注目論文 + サマリ追加完了")
     else:
         print(f"[{now_jst()}]    ⚠️  注目論文選定失敗（レポート本体は生成済み）")

@@ -100,22 +100,30 @@ def convert_md_to_mrkdwn(text: str) -> str:
             result.append(bar)
             continue
 
-        # H2 → ■■ 見出し ■■
-        if line.startswith("## "):
-            heading = _escape_mrkdwn_bold(line[3:].strip())
-            result.append(f"*■■ {heading} ■■*")
+
+        # H5 → * 見出し *
+        if line.startswith("##### "):
+            heading = _escape_mrkdwn_bold(line[6:].strip())
+            result.append(f"*   {heading} *")
             continue
 
         # H4 → ⚪︎ 見出し
         if line.startswith("#### "):
             heading = _escape_mrkdwn_bold(line[5:].strip())
-            result.append(f"  ⚪︎ *{heading}*")
+            result.append(f"*  ⚪︎⚪︎ {heading} ⚪︎⚪︎*")
             continue
 
         # H3 → ◆ 見出し
         if line.startswith("### "):
             heading = _escape_mrkdwn_bold(line[4:].strip())
+            result.append("\u3000")
             result.append(f"*◆ {heading}*")
+            continue
+        
+        # H2 → ■■ 見出し ■■
+        if line.startswith("## "):
+            heading = _escape_mrkdwn_bold(line[3:].strip())
+            result.append(f"*■■ {heading} ■■*")
             continue
 
         # リンク変換: [text](url) → <url|text>

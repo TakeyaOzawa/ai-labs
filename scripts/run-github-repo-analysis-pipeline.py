@@ -25,7 +25,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from _pipeline_common import run_ai_command, run_slack_notify
+from _pipeline_common import run_ai_command, run_slack_notify, load_env
 
 # ─── 定数 ────────────────────────────────────────────────────────
 
@@ -64,21 +64,6 @@ def parse_repo_url(url: str) -> tuple[str, str]:
         print(f"エラー: リポジトリURLを解析できません: {url}", file=sys.stderr)
         sys.exit(1)
     return match.group(1), match.group(2)
-
-
-def load_env() -> None:
-    """環境変数をロードする（launchd環境対応）。"""
-    if os.environ.get("MY_SLACK_OAUTH_TOKEN"):
-        return
-    result = subprocess.run(
-        [str(PLATFORM_CMD), "source-env"],
-        capture_output=True, text=True,
-    )
-    if result.returncode == 0:
-        for line in result.stdout.strip().splitlines():
-            if "=" in line:
-                key, _, value = line.partition("=")
-                os.environ[key] = value
 
 
 def rotate_log(log_file: Path, max_lines: int, keep_lines: int = 100) -> None:
@@ -149,7 +134,7 @@ def step1_github_analysis(
         f"出力先: {output_path}"
     )
     _log_agent_header(log_file, "github-repo-analyst", prompt)
-    ok = run_ai_command(prompt, log_file, agent_name="github-repo-analyst")
+    ok, _ = run_ai_command(prompt, log_file, agent_name="github-repo-analyst")
     if ok and output_path.exists():
         return output_path
     return None
@@ -191,7 +176,7 @@ def step2_refs_analysis(
         f"出力先: {output_path}"
     )
     _log_agent_header(log_file, "github-repo-analyst", prompt)
-    ok = run_ai_command(prompt, log_file, agent_name="github-repo-analyst")
+    ok, _ = run_ai_command(prompt, log_file, agent_name="github-repo-analyst")
     if ok and output_path.exists():
         return output_path
     return None
@@ -231,7 +216,7 @@ def step3_web_search(
         f"出力先: {output_path}"
     )
     _log_agent_header(log_file, "web-searcher", prompt)
-    ok = run_ai_command(prompt, log_file, agent_name="web-searcher")
+    ok, _ = run_ai_command(prompt, log_file, agent_name="web-searcher")
     if ok and output_path.exists():
         return output_path
     return None
@@ -273,7 +258,7 @@ def step4_code_analysis(
         f"出力先: {output_path}"
     )
     _log_agent_header(log_file, "code-analyst", prompt)
-    ok = run_ai_command(prompt, log_file, agent_name="code-analyst")
+    ok, _ = run_ai_command(prompt, log_file, agent_name="code-analyst")
     if ok and output_path.exists():
         return output_path
     return None
@@ -297,7 +282,7 @@ def step5_report_integration(
         f"対象期間: {base_date}"
     )
     _log_agent_header(log_file, "markdown-reporter", prompt)
-    ok = run_ai_command(prompt, log_file, agent_name="markdown-reporter")
+    ok, _ = run_ai_command(prompt, log_file, agent_name="markdown-reporter")
     if ok and output_path.exists():
         return output_path
     return None
@@ -311,7 +296,8 @@ def step6_review(report_path: Path, log_file: Path) -> bool:
         f"対象ファイル: {report_path}"
     )
     _log_agent_header(log_file, "agent-output-reviewer", prompt)
-    return run_ai_command(prompt, log_file, agent_name="agent-output-reviewer")
+    ok, _ = run_ai_command(prompt, log_file, agent_name="agent-output-reviewer")
+    return ok
 
 
 def step7_slack_notify(report_path: Path, log_file: Path) -> bool:

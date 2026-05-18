@@ -22,68 +22,80 @@ from pathlib import Path
 from _pipeline_common import (
     HOME,
     JST,
+    AgentExecutor,
+    OutputParams,
     PipelineConfig,
-    now_jst,
+    PipelineContext,
+    SlackParams,
+    Step,
+    StepParams,
     run_pipeline,
 )
 
-# ─── パイプライン設定 ────────────────────────────────────────────
-
-AGENTS = [
-    "github-org-repo-collector",
-    "github-org-pr-collector", 
-    "github-org-report-generator"
-]
-
-NOTIFY_FILE_MAP = {}  # Slack通知不要
 
 def _default_base_date() -> str:
     """基準日のデフォルト値を計算（前日）。"""
     yesterday = datetime.now(JST) - timedelta(days=1)
     return yesterday.strftime("%Y-%m-%d")
 
-def _rss_fetch_hook(base_date: str, scripts_dir: Path) -> None:
-    """RSS事前取得（不要）。"""
-    return None
 
-def _build_prompt(agent: str, base_date: str) -> str:
-    """エージェント実行プロンプト構築。"""
-    return f"対象日: {base_date}\n\n環境変数GITHUB_ORG_NAMEで指定されたGitHub organizationの{base_date}のPR活動を収集してください。"
+def build_steps(base_date: str, ctx: PipelineContext) -> list[Step]:
+    """GitHub org パイプラインのステップツリーを構築する。"""
+    prompt = (
+        f"対象日: {base_date}\n\n"
+        f"環境変数GITHUB_ORG_NAMEで指定されたGitHub organizationの"
+        f"{base_date}のPR活動を収集してください。"
+    )
 
-def _resolve_notify_path(agent: str, base_date: str) -> None:
-    """通知ファイルパス動的解決（不要）。"""
-    return None
+    # GITHUB_ORG_NAME 未設定チェックは ScriptExecutor で事前検証するか、
+    # エージェント側で処理する。ここでは Step を定義するのみ。
+    steps = [
+        Step(
+            name="github-org-repo-collector",
+            executor=AgentExecutor(
+                agent_name="github-org-repo-collector", prompt_text=prompt,
+            ),
+            timeout=900,
+            params=StepParams(slack=SlackParams(enabled=False)),
+        ),
+        Step(
+            name="github-org-pr-collector",
+            executor=AgentExecutor(
+                agent_name="github-org-pr-collector", prompt_text=prompt,
+            ),
+            timeout=900,
+            depends_on=["github-org-repo-collector"],
+            params=StepParams(slack=SlackParams(enabled=False)),
+        ),
+        Step(
+            name="github-org-report-generator",
+            executor=AgentExecutor(
+                agent_name="github-org-report-generator", prompt_text=prompt,
+            ),
+            timeout=900,
+            depends_on=["github-org-pr-collector"],
+            params=StepParams(
+                output=OutputParams(
+                    path=f"Documents/works/scout_reports/github_org_trends/daily/{base_date}_github-org_daily.md",
+                ),
+                slack=SlackParams(enabled=False),
+            ),
+        ),
+    ]
+    return steps
 
-def _pre_agent_hook(agent: str, base_date: str) -> tuple[str, bool] | str | None:
-    """エージェント実行前チェック。"""
-    if not os.getenv("GITHUB_ORG_NAME"):
-        return ("環境変数 GITHUB_ORG_NAME が未設定です", False)
-    return None
 
-def _post_agents_hook(base_date: str) -> None:
-    """全エージェント実行後の追加ステップ（不要）。"""
-    return None
+def main() -> None:
+    config = PipelineConfig(
+        name="scout_daily",
+        build_steps=build_steps,
+        default_base_date=_default_base_date,
+    )
+    run_pipeline(config)
 
-def _post_notify_hook(base_date: str) -> None:
-    """通知後の追加ステップ（不要）。"""
-    return None
 
-# ─── メイン実行 ──────────────────────────────────────────────────
+from _version_check import check_python_version
 
 if __name__ == "__main__":
-    config = PipelineConfig(
-        name="github-org-trend-scout-pipeline",
-        log_dir=HOME / "logs/jobs/scout_daily",
-        agents=AGENTS,
-        notify_file_map=NOTIFY_FILE_MAP,
-        create_jobs_script="create-jobs.py --pipeline github-org-trend-scout-pipeline",
-        default_base_date=_default_base_date,
-        rss_fetch_hook=_rss_fetch_hook,
-        build_prompt=_build_prompt,
-        resolve_notify_path=_resolve_notify_path,
-        pre_agent_hook=_pre_agent_hook,
-        post_agents_hook=_post_agents_hook,
-        post_notify_hook=_post_notify_hook,
-    )
-    
-    run_pipeline(config)
+    check_python_version()
+    main()

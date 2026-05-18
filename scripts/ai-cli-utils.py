@@ -88,6 +88,7 @@ def build_ai_command(
             cmd.extend(["--resume-id", session_id])
         elif agent_name:
             cmd.extend(["--agent", agent_name])
+        cmd.append("--")
         cmd.append(prompt)
         return cmd
 
@@ -102,6 +103,7 @@ def build_ai_command(
         cmd.extend(["--resume", session_id])
     elif agent_name:
         cmd.extend(["--agent", agent_name])
+    cmd.append("--")
     cmd.append(prompt)
     return cmd
 
@@ -138,7 +140,11 @@ def scan_agents(
         [{"name": "...", "description": "..."}, ...] のリスト
     """
     if excluded_pipelines is None:
-        excluded_pipelines = {"run-github-repo-analysis-pipeline"}
+        excluded_pipelines = {
+            "run-github-repo-analysis-pipeline",
+            "run-poc-planner-pipeline",
+            "run-freshness-pipeline",
+        }
 
     ai_type = get_ai_type()
     agents: list[dict] = []

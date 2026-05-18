@@ -19,4 +19,4 @@ Response, 日刊自動車新聞, くるまのニュース, MOBY, ベストカー
 Automotive News, Reuters Autos, S&P Global Mobility, Autoblog, Toyota Pressroom, CBT News, Automotive Manufacturing Solutions, Honda Global ニュースルーム, Benzinga
 
 ## ビジネスメディア
-Bloomberg, Forbes, TechCrunch, Reuters, 東洋経済オンライン, ダイヤモンド・オンライン, ITmedia, BRIDGE, CNBC, BusinessWire
+Bloomberg, Forbes, TechCrunch, Reuters, 東洋経済オンライン, ダイヤモンド・オンライン, ITmedia, BRIDGE, CNBC, BusinessWire, Car Repo, Honda Global, JALA, 日刊自動車新聞, PR Times, G.S.ブレインズ, JAF Training, JADA愛知, China EV Home, Top Gear Philippines

@@ -32,9 +32,9 @@ HOME = Path.home()
 SCRIPTS_DIR = Path(__file__).parent
 PLATFORM_CMD = SCRIPTS_DIR / "platform-commands.sh"
 
-# Slack設定
-DM_CHANNEL = os.environ["SLACK_DISPATCH_DM_CHANNEL"]
-TARGET_USER = os.environ["SLACK_DISPATCH_TARGET_USER"]
+# Slack設定（load_env() 後に参照するため、関数内で取得）
+DM_CHANNEL = ""
+TARGET_USER = ""
 FETCH_LIMIT = 10
 THREAD_LOOKBACK_DAYS = 7        # この日数以内のスレッドを返信追跡対象とする
 THREAD_REPLY_FETCH_LIMIT = 20   # スレッド返信の最大取得件数
@@ -696,6 +696,13 @@ def main() -> None:
 
     # 環境変数ロード
     load_env()
+
+    global DM_CHANNEL, TARGET_USER
+    DM_CHANNEL = os.environ.get("SLACK_DISPATCH_DM_CHANNEL", "")
+    TARGET_USER = os.environ.get("SLACK_DISPATCH_TARGET_USER", "")
+    if not DM_CHANNEL or not TARGET_USER:
+        log("❌ 環境変数 SLACK_DISPATCH_DM_CHANNEL / SLACK_DISPATCH_TARGET_USER が未設定です")
+        sys.exit(1)
 
     log("🚀 slack-dispatch-router 起動")
 

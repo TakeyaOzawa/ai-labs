@@ -1,4 +1,6 @@
 #!/usr/bin/env python3.12
+# ⚠️ DEPRECATED: run-daily-pipeline.py にインライン化済み（pipeline-redesign issue）
+# 動作確認完了後に削除予定
 """
 run-gws-trend-scout-pipeline: GWSトレンドスカウトのパイプライン化実行
 
@@ -388,7 +390,7 @@ def step3_collect(
 
         print(f"[{now_jst()}]    🔄 {tc.name} extractor 実行中...")
 
-        if run_ai_command(prompt, log_file, agent_name="gws-trend-extractor"):
+        if run_ai_command(prompt, log_file, agent_name="gws-trend-extractor")[0]:
             if output_path.exists():
                 print(f"[{now_jst()}]    ✅ {tc.name} extractor 完了")
                 intermediate_paths[tc.name] = output_path

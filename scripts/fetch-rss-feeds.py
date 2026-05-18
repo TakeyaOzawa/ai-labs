@@ -310,6 +310,36 @@ FEEDS = {
             "url": "https://kde.org/index.xml",
             "type": "rss",
         },
+        {
+            "name": "Cloudflare Blog",
+            "url": "https://blog.cloudflare.com/rss/",
+            "type": "rss",
+        },
+        {
+            "name": "CrowdStrike Blog",
+            "url": "https://www.crowdstrike.com/en-us/blog/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "DevOps.com",
+            "url": "https://devops.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "Bernat Tech Blog",
+            "url": "https://bernat.tech/feed.xml",
+            "type": "rss",
+        },
+        {
+            "name": "Unsloth AI Blog",
+            "url": "https://unsloth.ai/blog/feed",
+            "type": "rss",
+        },
+        {
+            "name": "Socket.dev Blog", 
+            "url": "https://socket.dev/blog/feed",
+            "type": "rss",
+        },
     ],
     "biz_car": [
         {
@@ -402,6 +432,21 @@ FEEDS = {
             "url": "https://innovatopia.jp/feed/",
             "type": "rss",
         },
+        {
+            "name": "Benzinga",
+            "url": "https://www.benzinga.com/feed",
+            "type": "rss",
+        },
+        {
+            "name": "Autoc-one",
+            "url": "https://autoc-one.jp/feed",
+            "type": "rss",
+        },
+        {
+            "name": "Autoblog",
+            "url": "https://www.autoblog.com/rss.xml",
+            "type": "rss",
+        },
     ],
     "academic": [
         {
@@ -457,6 +502,11 @@ FEEDS = {
         {
             "name": "Nature",
             "url": "http://feeds.nature.com/nature/rss/current",
+            "type": "rss",
+        },
+        {
+            "name": "Liberty Street Economics",
+            "url": "https://libertystreeteconomics.newyorkfed.org/feed/",
             "type": "rss",
         },
     ],
