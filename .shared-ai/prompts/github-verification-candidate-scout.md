@@ -44,7 +44,7 @@ agent-common.md §1（当日取得）に従う。
 
 ### Phase 1: ダイジェスト読み込みと候補抽出
 
-1. `Documents/works/scout_reports/github_public_trends/weekly/` から最新のダイジェストを読み込む
+1. `~/Documents/works/scout_reports/github_public_trends/weekly/` から最新のダイジェストを読み込む
 2. 以下のセクションから候補を抽出:
    - 「🔥 週間注目リポジトリ TOP10」→ 出現日数・スター数
    - 「🏗️ 自社適用候補」→ 優先度・パターン・適用先
@@ -67,7 +67,7 @@ agent-common.md §1（当日取得）に従う。
 
 ## 出力
 
-ファイル: `Documents/works/scout_reports/tech_blog_materials/weekly/{YYYY-MM-DD}_{リポジトリ名のkebab-case}_candidate.md`
+ファイル: `~/Documents/works/scout_reports/tech_blog_materials/weekly/{YYYY-MM-DD}_{リポジトリ名のkebab-case}_candidate.md`
 
 フォーマット:
 ```markdown

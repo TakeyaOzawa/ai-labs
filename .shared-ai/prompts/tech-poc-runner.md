@@ -11,7 +11,7 @@ Tech Blog Planの検証計画やユーザー指示に基づき、コンテナ環
 ## 入力パターン
 
 ### パターン1: Tech Blog Planファイル指定
-`Documents/works/tech_blog_plans/{YYYY-MM-DD}_{theme}.md` から以下を抽出:
+`~/Documents/works/tech_blog_plans/{YYYY-MM-DD}_{theme}.md` から以下を抽出:
 - フロントマター: `verification_strategy`（minimal/standard/full）、`verification_items`、`poc_directory`、`concerns`
 - 本文末尾「技術検証計画（詳細）」: 各項目の目的・手順・コード例・確認ポイント
 - `<!-- TBD: ... -->` マーカー: 検証で埋めるべき箇所

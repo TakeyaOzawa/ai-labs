@@ -7,8 +7,8 @@
     "toolsSettings": {
         "read": {
             "allowedPaths": [
-                "Documents/works/scout_reports/**",
-                "Documents/works/research_materials/**",
+                "~/Documents/works/scout_reports/**",
+                "~/Documents/works/research_materials/**",
                 ".shared-ai/prompts/**",
                 ".shared-ai/interfaces/**",
                 ".shared-ai/references/**"
@@ -16,8 +16,8 @@
         },
         "write": {
             "allowedPaths": [
-                "Documents/works/research_materials/**",
-                "Documents/works/scout_reports/github_repo_analysis/**"
+                "~/Documents/works/research_materials/**",
+                "~/Documents/works/scout_reports/github_repo_analysis/**"
             ]
         }
     },

@@ -19,6 +19,7 @@ invoke-agent: 手動実行用CLIラッパー
 """
 
 import argparse
+import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -146,6 +147,10 @@ def main() -> None:
     # 環境準備
     load_env()
     caffeinate_pid = start_caffeinate()
+
+    # MCP用環境変数設定（kiro-cliは${VAR}形式の展開を未サポートのため直接設定）
+    os.environ["SLACK_BOT_TOKEN"] = os.environ.get("SLACK_REFERENCE_BOT_TOKEN", "")
+    os.environ["SLACK_TEAM_ID"] = os.environ.get("SLACK_REFERENCE_TEAM_ID", "")
 
     # ログ
     log_dir = HOME / "logs" / "jobs" / "invoke-agent"

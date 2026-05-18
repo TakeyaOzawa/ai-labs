@@ -40,7 +40,7 @@ agent-common.md §1（前日取得）に従う。
    gh api repos/{owner}/{repo}/commits --method GET -f per_page=30 --jq '.[] | {sha: .sha[0:7], message: .commit.message | split("\n")[0], author: .commit.author.name, date: .commit.author.date}'
    ```
 
-3. 各リポジトリの情報を収集したら即座にfsAppendで一時ファイル（`Documents/works/scout_reports/github_public_trends/daily/tmp/raw_results.md`）に書き出す（コンテキスト節約）
+3. 各リポジトリの情報を収集したら即座にfsAppendで一時ファイル（`~/Documents/works/scout_reports/github_public_trends/daily/tmp/raw_results.md`）に書き出す（コンテキスト節約）
 
 **コンテキスト節約ルール:**
 - PR情報は番号+タイトルのみ記録（bodyは取得しない）
@@ -91,10 +91,10 @@ agent-common.md §1（前日取得）に従う。
 3. perf / refactor prefix のコミット
 4. その他の実質的変更
 
-完了後、一時ファイル（`Documents/works/scout_reports/github_public_trends/daily/tmp/raw_results.md`）を削除。
+完了後、一時ファイル（`~/Documents/works/scout_reports/github_public_trends/daily/tmp/raw_results.md`）を削除。
 
 ## 出力
-ファイル: `Documents/works/scout_reports/github_public_trends/daily/{YYYY-MM-DD}_github-public_daily.md`
+ファイル: `~/Documents/works/scout_reports/github_public_trends/daily/{YYYY-MM-DD}_github-public_daily.md`
 
 フォーマット:
 ```markdown

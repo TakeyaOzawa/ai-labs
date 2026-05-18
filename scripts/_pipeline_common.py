@@ -288,6 +288,7 @@ def run_ai_command(prompt: str, log_file: Path, agent_name: str = "",
             result = subprocess.run(
                 cmd, stdout=f, stderr=subprocess.STDOUT,
                 timeout=timeout if timeout > 0 else None,
+                cwd=str(HOME),
             )
         if result.returncode == 0:
             return True, ""

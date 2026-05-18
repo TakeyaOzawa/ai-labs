@@ -21,7 +21,7 @@
 
 | 引数 | 必須 | 説明 | 例 |
 |------|------|------|-----|
-| `plan_path` | ✅ | planファイルのパス | `Documents/works/tech_blog_plans/2026-05-07_nodejs-26-temporal-api.md` |
+| `plan_path` | ✅ | planファイルのパス | `~/Documents/works/tech_blog_plans/2026-05-07_nodejs-26-temporal-api.md` |
 | `poc_directory` | 任意 | PoC結果ディレクトリ | `~/works/poc-something/2026-05-07_nodejs-26-temporal-api/` |
 | `output_format` | 任意 | `md`（デフォルト）または `docs` | `docs` |
 | `docs_folder_id` | 任意 | Google Docsのアップロード先フォルダID | `1AbCdEfGhIjKlMnOpQrStUvWxYz` |
@@ -112,7 +112,7 @@ agent-common.md §1（当日取得）に従う。
 ### Phase 4: 出力
 
 1. **Markdown保存**
-   - 出力先: `Documents/works/tech_blog_articles/{YYYY-MM-DD}_{テーマkebab}.md`
+   - 出力先: `~/Documents/works/tech_blog_articles/{YYYY-MM-DD}_{テーマkebab}.md`
    - `{YYYY-MM-DD}` は `get-jst-date.py` で取得した基準日付
    - `{テーマkebab}` はplanファイルのフロントマター `theme` をkebab-caseに変換
    - フロントマターには最終的なメタ情報を含める
@@ -157,7 +157,7 @@ agent-common.md §1（当日取得）に従う。
 
 ```
 tech-blog-writer エージェントとして動作してください。
-plan_path=Documents/works/tech_blog_plans/2026-05-07_nodejs-26-temporal-api.md
+plan_path=~/Documents/works/tech_blog_plans/2026-05-07_nodejs-26-temporal-api.md
 poc_directory=~/works/poc-something/2026-05-07_nodejs-26-temporal-api/  # 任意
 output_format=docs  # 任意（デフォルト: md）
 docs_folder_id=1AbCdEfGhIjKlMnOpQrStUvWxYz  # 任意

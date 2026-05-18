@@ -36,7 +36,7 @@ python3.12 ~/scripts/get-jst-date.py --weekday
 
 ## 事前取得済み情報（検索不要）
 
-以下のサイトはRSSフィードで事前取得済み。`Documents/works/scout_reports/lifestyle_events/daily/tmp/feeds.md` に格納されている。
+以下のサイトはRSSフィードで事前取得済み。`~/Documents/works/scout_reports/lifestyle_events/daily/tmp/feeds.md` に格納されている。
 Phase 1の検索ではこれらと重複しないソースに集中すること。
 事前取得済み: Walker plus イベント（東京近郊）, レッツエンジョイ東京, Peatix 東京イベント
 
@@ -74,9 +74,9 @@ RSSでカバーできないサイト（検索で補完）: じゃらんイベン
 
 ### Phase 1: 検索・収集
 
-一時ファイル: `Documents/works/scout_reports/lifestyle_events/daily/tmp/raw_results.md`
+一時ファイル: `~/Documents/works/scout_reports/lifestyle_events/daily/tmp/raw_results.md`
 
-1. まず事前取得フィード `Documents/works/scout_reports/lifestyle_events/daily/tmp/feeds.md` を確認（存在すれば）
+1. まず事前取得フィード `~/Documents/works/scout_reports/lifestyle_events/daily/tmp/feeds.md` を確認（存在すれば）
 2. 当日テーマの2カテゴリについて検索（最大50回、1カテゴリ10〜20回）:
 
    **月曜日（お出かけ）:**
@@ -118,8 +118,8 @@ RSSでカバーできないサイト（検索で補完）: じゃらんイベン
 
 ### Phase 2: レポート生成
 
-1. 事前取得済みフィードファイル `Documents/works/scout_reports/lifestyle_events/daily/tmp/feeds.md` をreadFileで読み込む（存在すれば）
-2. 検索結果の一時ファイル `Documents/works/scout_reports/lifestyle_events/daily/tmp/raw_results.md` をreadFileで読み込む
+1. 事前取得済みフィードファイル `~/Documents/works/scout_reports/lifestyle_events/daily/tmp/feeds.md` をreadFileで読み込む（存在すれば）
+2. 検索結果の一時ファイル `~/Documents/works/scout_reports/lifestyle_events/daily/tmp/raw_results.md` をreadFileで読み込む
 3. **両方の情報を統合して**出力フォーマットに従いレポートを作成（当日テーマのカテゴリのみ）
 4. 完了後、`raw_results.md` を削除
 
@@ -133,7 +133,7 @@ RSSでカバーできないサイト（検索で補完）: じゃらんイベン
 - アクセス: 浜田山駅起点。電車（必須）、他は省略可
 
 ## 出力
-ファイル: `Documents/works/scout_reports/lifestyle_events/daily/{YYYY-MM-DD}_lifestyle_{テーマ英名}.md`
+ファイル: `~/Documents/works/scout_reports/lifestyle_events/daily/{YYYY-MM-DD}_lifestyle_{テーマ英名}.md`
 
 テーマ英名マッピング:
 | 曜日 | テーマ英名 |
@@ -202,12 +202,12 @@ base_station: 京王井の頭線「浜田山」駅
 
 ### 手順
 1. 直近の月〜土のdailyレポートを読み込む:
-   `Documents/works/scout_reports/lifestyle_events/daily/{各日付}_lifestyle_*.md`
+   `~/Documents/works/scout_reports/lifestyle_events/daily/{各日付}_lifestyle_*.md`
 2. 全カテゴリのイベントを開催時期別に再整理
 3. 週次サマリーファイルを出力
 
 ### 出力
-ファイル: `Documents/works/scout_reports/lifestyle_events/weekly/{YYYY-MM-DD}_lifestyle_weekly_summary.md`
+ファイル: `~/Documents/works/scout_reports/lifestyle_events/weekly/{YYYY-MM-DD}_lifestyle_weekly_summary.md`
 
 フォーマット:
 ```markdown
@@ -260,4 +260,4 @@ base_station: 京王井の頭線「浜田山」駅
 | 🟢 先 | 126〜175日後 | 大型フェス・旅行フェア等 |
 
 ※ 15〜20日後、36〜125日後は収集対象外。各分類で最低3件目標。
-出力先: `Documents/works/scout_reports/lifestyle_events/daily/`。完了後、出力ファイルパスを明示する。
+出力先: `~/Documents/works/scout_reports/lifestyle_events/daily/`。完了後、出力ファイルパスを明示する。

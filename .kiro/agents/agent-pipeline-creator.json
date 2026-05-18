@@ -6,7 +6,7 @@
   "allowedTools": [],
   "toolsSettings": {
     "write": {
-      "allowedPaths": ["scripts/**", ".shared-ai/**", ".kiro/**", "Documents/works/jobs/**", "Library/LaunchAgents/**"]
+      "allowedPaths": ["scripts/**", ".shared-ai/**", ".kiro/**", "~/Documents/works/jobs/**", "Library/LaunchAgents/**"]
     }
   },
   "resources": [],

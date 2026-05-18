@@ -2,15 +2,15 @@
     "name": "slack-trend-scout",
     "description": "Slack日次トレンドスカウト（オーケストレーター）。チャンネル別サブエージェントに収集を委譲し、マージサブエージェントで統合する。コンテキスト節約のため自身ではSlack APIを呼ばない。",
     "prompt": "file://../../.shared-ai/prompts/slack-trend-scout.md",
-    "tools": ["read", "write", "shell"],
+    "tools": ["read", "write", "shell", "@slack-reference-home"],
     "allowedTools": [],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_reports/slack_trends/daily/**"]
+            "allowedPaths": ["~/Documents/works/scout_reports/slack_trends/daily/**"]
         }
     },
     "resources": [],
-    "includeMcpJson": false,
+    "includeMcpJson": true,
     "model": "claude-sonnet-4",
     "welcomeMessage": "Slack日次トレンドスカウト（オーケストレーター）を開始します。チャンネル別サブエージェントに収集を委譲します。"
 }

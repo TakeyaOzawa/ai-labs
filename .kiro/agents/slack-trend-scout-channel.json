@@ -2,11 +2,11 @@
     "name": "slack-trend-scout-channel",
     "description": "Slack日次トレンドスカウト（チャンネル別収集）。指定チャンネルの前日投稿・スレッドを収集し中間ファイルに出力する。slack-trend-scoutオーケストレーターから呼び出される。",
     "prompt": "file://../../.shared-ai/prompts/slack-trend-scout-channel.md",
-    "tools": ["read", "write", "shell"],
+    "tools": ["read", "write", "shell", "@slack-reference-home"],
     "allowedTools": [],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_reports/slack_trends/daily/tmp/**"]
+            "allowedPaths": ["~/Documents/works/scout_reports/slack_trends/daily/tmp/**"]
         }
     },
     "resources": [],

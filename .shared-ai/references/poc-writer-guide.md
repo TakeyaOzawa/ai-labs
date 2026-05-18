@@ -20,7 +20,7 @@
 
 ユーザーが記事完成を希望した場合:
 - SUMMARY.mdのパスからpoc_directoryを特定
-- poc_directory名からplanファイルのパスを推定（Documents/works/tech_blog_plans/ 配下で日付+テーマが一致するもの）
+- poc_directory名からplanファイルのパスを推定（~/Documents/works/tech_blog_plans/ 配下で日付+テーマが一致するもの）
 - tech-blog-writer のワークフローに従い実行
 
 ## Step 2: マーカー除去

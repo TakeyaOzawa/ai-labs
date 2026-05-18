@@ -31,9 +31,9 @@ agent-common.md §1（当日取得）に従う。
 - プロンプトでmdファイルパスが指定されている場合 → そのファイルを使用
 - dailyパイプライン実行時（ファイル指定なし）→ 基準日から過去7日分のレポートを自動検出:
   ```
-  Documents/works/scout_reports/tech_trends/daily/{date}_tech_trends.md
-  Documents/works/scout_reports/biz_car_trends/daily/{date}_biz_car_trends.md
-  Documents/works/scout_reports/academic_trends/daily/{date}_academic_trends.md
+  ~/Documents/works/scout_reports/tech_trends/daily/{date}_tech_trends.md
+  ~/Documents/works/scout_reports/biz_car_trends/daily/{date}_biz_car_trends.md
+  ~/Documents/works/scout_reports/academic_trends/daily/{date}_academic_trends.md
   ```
   存在するファイルのみ処理。欠損日はスキップ。
 

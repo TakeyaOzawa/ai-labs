@@ -34,3 +34,13 @@
 
 プロンプト内に3行以上のコマンド列や日付計算・JSON加工が直書きされている場合、スクリプト化を検討すること。
 詳細は `~/.shared-ai/references/script-first-guide.md` のセクション6「チェックリスト」を参照。
+
+## ファイルパスの絶対パス指定
+
+プロンプト内でファイルパスを指定する場合、**必ず `~/` プレフィックス付きの絶対パス**を使用すること。
+
+- ✅ `~/Documents/works/scout_reports/tech_trends/daily/tmp/feeds.md`
+- ❌ `Documents/works/scout_reports/tech_trends/daily/tmp/feeds.md`
+
+**理由**: パイプラインがlaunchdから起動される場合、cwdが `/` になるため相対パスでは
+`/Documents/works/...` として解決され、macOSのSIPにより `Read-only file system` エラーが発生する。

@@ -2,11 +2,11 @@
     "name": "slack-digest-scout",
     "description": "Slackダイジェストスカウト。過去1週間のSlackチャンネルのやり取りをスレッド内の会話を含めて収集し、「確定事項」「継続議論」「未着手・要検討」の3軸で分類・優先度付けしたサマリーレポートを自動生成する。",
     "prompt": "file://../../.shared-ai/prompts/slack-digest-scout.md",
-    "tools": ["read", "write"],
+    "tools": ["read", "write", "@slack-reference-home"],
     "allowedTools": [],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_reports/slack_trends/weekly/**"]
+            "allowedPaths": ["~/Documents/works/scout_reports/slack_trends/weekly/**"]
         }
     },
     "resources": [],

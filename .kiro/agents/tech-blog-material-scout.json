@@ -7,12 +7,12 @@
     "toolsSettings": {
         "read": {
             "allowedPaths": [
-                "Documents/works/scout_reports/tech_trends/daily/**",
-                "Documents/works/scout_reports/tech_blog_materials/weekly/**"
+                "~/Documents/works/scout_reports/tech_trends/daily/**",
+                "~/Documents/works/scout_reports/tech_blog_materials/weekly/**"
             ]
         },
         "write": {
-            "allowedPaths": ["Documents/works/scout_reports/tech_blog_materials/weekly/**"]
+            "allowedPaths": ["~/Documents/works/scout_reports/tech_blog_materials/weekly/**"]
         }
     },
     "resources": [],

@@ -7,8 +7,8 @@
     "toolsSettings": {
         "write": {
             "allowedPaths": [
-                "Documents/works/scout_reports/lifestyle_events/daily/**",
-                "Documents/works/scout_reports/lifestyle_events/weekly/**"
+                "~/Documents/works/scout_reports/lifestyle_events/daily/**",
+                "~/Documents/works/scout_reports/lifestyle_events/weekly/**"
             ]
         }
     },

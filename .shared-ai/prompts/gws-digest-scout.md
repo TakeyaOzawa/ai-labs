@@ -23,7 +23,7 @@ agent-common.md §1（当日取得）に従う。
 | gws-trend-scoutの日次レポート | 直近1週間のドキュメント収集（主入力） | 過去7日分 |
 | gws CLI（追加調査） | 高関連度ドキュメントの最新内容取得 | 過去2週間 |
 
-入力ファイル: `Documents/works/scout_reports/gws_trends/daily/{YYYY-MM-DD}_gws_daily.md`
+入力ファイル: `~/Documents/works/scout_reports/gws_trends/daily/{YYYY-MM-DD}_gws_daily.md`
 
 ## 収集対象の種別
 
@@ -47,7 +47,7 @@ agent-common.md §1（当日取得）に従う。
 
 ### Phase 1: 日次レポート集約
 
-1. `Documents/works/scout_reports/gws_trends/daily/` 配下の直近7日分を読み込む
+1. `~/Documents/works/scout_reports/gws_trends/daily/` 配下の直近7日分を読み込む
 2. 各レポートからドキュメント情報を抽出（タイトル、種別、更新者、URL、概要、関連度）
 3. 同一ドキュメント（同じURL）が複数日に出現する場合は統合（最新情報を優先）
 4. 種別ごとに分類し、関連度を再評価（週次視点で重要度が変わる場合あり）
@@ -79,7 +79,7 @@ gws sheets spreadsheets get --params '{"spreadsheetId": "{ID}"}'
 **追加調査は上位5件に限定する（API呼び出し数の節約）。**
 
 ## 出力
-ファイル: `Documents/works/scout_reports/gws_trends/weekly/{YYYY-MM-DD}_gws_weekly_digest.md`
+ファイル: `~/Documents/works/scout_reports/gws_trends/weekly/{YYYY-MM-DD}_gws_weekly_digest.md`
 
 フォーマット:
 ```markdown

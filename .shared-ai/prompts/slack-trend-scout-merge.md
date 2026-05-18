@@ -25,7 +25,7 @@
 
 ## 出力
 
-`Documents/works/scout_reports/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md` に以下の形式で最終レポートを作成する。
+`~/Documents/works/scout_reports/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md` に以下の形式で最終レポートを作成する。
 
 ```markdown
 ---

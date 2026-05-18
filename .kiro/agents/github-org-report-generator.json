@@ -5,7 +5,7 @@
   "includeMcpJson": false,
   "toolsSettings": {
     "allowedPaths": {
-      "write": ["Documents/works/scout_reports/**"]
+      "write": ["~/Documents/works/scout_reports/**"]
     }
   }
 }

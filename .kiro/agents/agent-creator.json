@@ -12,7 +12,7 @@
                 ".kiro/hooks/**",
                 ".kiro/steering/**",
                 "scripts/**",
-                "Documents/works/**"
+                "~/Documents/works/**"
             ]
         },
         "write": {

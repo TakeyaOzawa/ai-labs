@@ -67,7 +67,7 @@ invokeSubAgent:
     対象日: {YYYY-MM-DD}
     チャンネルID: {channel_id}
     チャンネル名: {channel_name}
-    出力先: Documents/works/scout_reports/slack_trends/daily/tmp/{中間ファイル名}
+    出力先: ~/Documents/works/scout_reports/slack_trends/daily/tmp/{中間ファイル名}
     ユーザーディレクトリ: {slack_users_dir}
 
     ユーザーID解決の手順:
@@ -106,14 +106,14 @@ invokeSubAgent:
     slack-trend-scout-merge エージェントとしてプロンプトファイルに従い実行してください。
 
     対象日: {YYYY-MM-DD}
-    中間ファイルディレクトリ: Documents/works/scout_reports/slack_trends/daily/tmp/
-    出力先: Documents/works/scout_reports/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md
+    中間ファイルディレクトリ: ~/Documents/works/scout_reports/slack_trends/daily/tmp/
+    出力先: ~/Documents/works/scout_reports/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md
 
     中間ファイル一覧:
-    - Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C05B4AZ7ZMM.md（エンジニア用）
-    - Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C05TJBT6BM2.md（エンジニア他部署連絡用）
-    - Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C5L91295J.md（不具合報告）
-    - Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C02S55ZN0U9.md（作業依頼・質問）
+    - ~/Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C05B4AZ7ZMM.md（エンジニア用）
+    - ~/Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C05TJBT6BM2.md（エンジニア他部署連絡用）
+    - ~/Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C5L91295J.md（不具合報告）
+    - ~/Documents/works/scout_reports/slack_trends/daily/tmp/{YYYY-MM-DD}_ch_C02S55ZN0U9.md（作業依頼・質問）
 
     【重要: コンテキスト節約ルール】
     完了時は以下の形式のみで報告すること。レポート全文やファイル内容は絶対に返さないこと:
@@ -130,7 +130,7 @@ invokeSubAgent:
 
 ```
 ✅ slack-trend-scout 完了
-- 出力ファイル: Documents/works/scout_reports/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md
+- 出力ファイル: ~/Documents/works/scout_reports/slack_trends/daily/{YYYY-MM-DD}_slack_daily.md
 - 件数/概要: {合計メッセージ数}件のメッセージを{4}チャンネルから収集
 - エラー: なし / {エラー内容}
 ```
@@ -152,3 +152,12 @@ invokeSubAgent:
 2. **サブエージェントは1つずつ順番に実行する**。並列実行はしない
 3. **サブエージェントの戻り値は簡潔な報告のみ期待する**。レポート全文を受け取らない
 4. エラーが発生しても可能な限り処理を継続する
+
+## kiro-cli環境でのフォールバック
+
+`invokeSubAgent` が利用できない環境（kiro-cli等）では、以下のルールで直接実行する:
+
+1. **Slack MCPツールは利用可能である**。`slack_get_channel_history` 等を直接呼び出すこと
+2. 「Tool validation failed」エラーはサブエージェント機能の不在を意味するだけであり、**Slack MCPツールが使えないことを意味しない**
+3. `~/.shared-ai/prompts/slack-trend-scout-channel.md` の手順に従い、各チャンネルを順番に直接処理する
+4. 「MCPツールが利用できない」と判断してエラーファイルを作成してはならない。必ず `slack_get_channel_history` を実際に呼び出して確認すること

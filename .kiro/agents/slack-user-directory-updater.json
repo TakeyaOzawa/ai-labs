@@ -7,7 +7,7 @@
     "toolsSettings": {
         "write": {
             "allowedPaths": [
-                "Documents/works/slack_users/**",
+                "~/Documents/works/slack_users/**",
                 ".kiro/steering/slack-lookup.md"
             ]
         }

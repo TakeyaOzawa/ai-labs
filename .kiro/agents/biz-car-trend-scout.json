@@ -6,7 +6,7 @@
     "allowedTools": ["web"],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_reports/biz_car_trends/daily/**"]
+            "allowedPaths": ["~/Documents/works/scout_reports/biz_car_trends/daily/**"]
         }
     },
     "resources": [],

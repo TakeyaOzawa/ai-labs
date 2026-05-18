@@ -6,11 +6,11 @@
     "allowedTools": ["shell"],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/scout_reports/gws_trends/weekly/**"]
+            "allowedPaths": ["~/Documents/works/scout_reports/gws_trends/weekly/**"]
         },
         "read": {
             "allowedPaths": [
-                "Documents/works/scout_reports/gws_trends/**"
+                "~/Documents/works/scout_reports/gws_trends/**"
             ]
         }
     },

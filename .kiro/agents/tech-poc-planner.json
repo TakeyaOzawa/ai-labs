@@ -7,12 +7,12 @@
     "toolsSettings": {
         "read": {
             "allowedPaths": [
-                "Documents/works/scout_reports/tech_blog_materials/**",
-                "Documents/works/tech_poc_plans/**"
+                "~/Documents/works/scout_reports/tech_blog_materials/**",
+                "~/Documents/works/tech_poc_plans/**"
             ]
         },
         "write": {
-            "allowedPaths": ["Documents/works/tech_poc_plans/**"]
+            "allowedPaths": ["~/Documents/works/tech_poc_plans/**"]
         },
         "shell": {
             "allowedCommands": ["gws docs *", "gws schema *", "date *"]

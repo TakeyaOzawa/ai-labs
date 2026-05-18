@@ -23,7 +23,7 @@ agent-common.md §1（当日取得）に従う。
 | notion-trend-scoutの日次レポート | 直近14日間のタスク・ドキュメント更新（主入力） | 過去14日分 |
 | Notion API（追加調査） | ⚠️期限超過・🚫ブロック中タスクの最新状況確認 | 過去14日間 |
 
-入力ファイル: `Documents/works/scout_reports/notion_trends/daily/{YYYY-MM-DD}_notion_daily.md`
+入力ファイル: `~/Documents/works/scout_reports/notion_trends/daily/{YYYY-MM-DD}_notion_daily.md`
 
 ## 利用可能なMCPツール（追加調査用のみ）
 
@@ -45,7 +45,7 @@ agent-common.md §1（当日取得）に従う。
 
 ### Phase 0: 日次レポートの読み込みと集約
 
-1. `Documents/works/scout_reports/notion_trends/daily/` 配下の直近14日分を読み込む
+1. `~/Documents/works/scout_reports/notion_trends/daily/` 配下の直近14日分を読み込む
 2. 各レポートからセクション別にデータを抽出:
    - タスクリスト: ステータス別（✅完了 / 🔄進行中 / 🚫ブロック中 / ⚠️期限超過）
    - Wiki更新: 関連度別（⭐⭐⭐ / ⭐⭐ / ⭐）
@@ -108,7 +108,7 @@ Phase 0の集約結果 + Phase 1の追加調査結果を統合し、以下の観
 | 低 | ⭐ | 直接影響は低いが視野拡大に有用 |
 
 ## 出力
-ファイル: `Documents/works/scout_reports/notion_trends/weekly/{YYYY-MM-DD}_notion_weekly_digest.md`
+ファイル: `~/Documents/works/scout_reports/notion_trends/weekly/{YYYY-MM-DD}_notion_weekly_digest.md`
 
 出力フォーマットは `readFile: ~/.shared-ai/interfaces/notion-digest-scout-output.md` を参照すること。
 

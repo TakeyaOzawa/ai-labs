@@ -96,7 +96,7 @@ scoutパイプラインと同じタスクファイル形式で進捗を管理す
 ### タスクファイルの配置
 
 ```
-Documents/works/jobs/spec/{TASK_ID}_spec.json
+~/Documents/works/jobs/spec/{TASK_ID}_spec.json
 ```
 
 ### specパイプラインのタスクファイル例

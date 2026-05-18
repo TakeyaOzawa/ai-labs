@@ -7,7 +7,7 @@
     "toolsSettings": {
         "write": {
             "allowedPaths": [
-                "Documents/works/scout_reports/gws_trends/daily/**"
+                "~/Documents/works/scout_reports/gws_trends/daily/**"
             ]
         }
     },

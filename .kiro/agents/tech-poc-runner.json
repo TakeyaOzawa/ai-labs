@@ -7,14 +7,14 @@
     "toolsSettings": {
         "read": {
             "allowedPaths": [
-                "Documents/works/tech_blog_plans/**",
+                "~/Documents/works/tech_blog_plans/**",
                 "works/poc-something/**"
             ]
         },
         "write": {
             "allowedPaths": [
                 "works/poc-something/**",
-                "Documents/works/tech_blog_plans/**"
+                "~/Documents/works/tech_blog_plans/**"
             ]
         },
         "shell": {

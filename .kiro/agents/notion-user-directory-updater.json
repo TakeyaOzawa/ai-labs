@@ -6,7 +6,7 @@
     "allowedTools": [],
     "toolsSettings": {
         "write": {
-            "allowedPaths": ["Documents/works/notion_users/**"]
+            "allowedPaths": ["~/Documents/works/notion_users/**"]
         }
     },
     "resources": [],

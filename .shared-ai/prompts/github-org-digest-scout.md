@@ -19,7 +19,7 @@ agent-common.md §1（当日取得）に従う。
 
 ### Phase 1: 日次レポート集約
 
-1. `Documents/works/scout_reports/github_org_trends/daily/` 配下の直近7日分を読み込む
+1. `~/Documents/works/scout_reports/github_org_trends/daily/` 配下の直近7日分を読み込む
    - ファイル名パターン: `{YYYY-MM-DD}_github-org_daily.md`
 2. 各レポートからリポジトリ・PR・コミット情報を抽出
 3. リポジトリ単位で統合（同一PRは最新状態を採用）
@@ -34,7 +34,7 @@ agent-common.md §1（当日取得）に従う。
 4. **変更の傾向**: 多く変更されたリポジトリ・領域の特定
 
 ## 出力
-ファイル: `Documents/works/scout_reports/github_org_trends/weekly/{YYYY-MM-DD}_github-org_weekly_digest.md`
+ファイル: `~/Documents/works/scout_reports/github_org_trends/weekly/{YYYY-MM-DD}_github-org_weekly_digest.md`
 
 フォーマット:
 ```markdown

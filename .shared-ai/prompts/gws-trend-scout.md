@@ -58,7 +58,7 @@ agent-common.md §1（前日取得）に従う。
 ### Step 1: 中間出力ディレクトリの準備
 
 ```bash
-mkdir -p Documents/works/scout_reports/gws_trends/daily/tmp
+mkdir -p ~/Documents/works/scout_reports/gws_trends/daily/tmp
 ```
 
 ### Step 2: 種別ごとの収集（コンテキスト節約方式）
@@ -85,7 +85,7 @@ gws drive files list --page-all --page-limit 50 --params '{
   "pageSize": 100,
   "includeItemsFromAllDrives": true,
   "supportsAllDrives": true
-}' 2>/dev/null > Documents/works/scout_reports/gws_trends/daily/tmp/{種別}_metadata.ndjson
+}' 2>/dev/null > ~/Documents/works/scout_reports/gws_trends/daily/tmp/{種別}_metadata.ndjson
 ```
 
 **重要:**
@@ -97,8 +97,8 @@ gws drive files list --page-all --page-limit 50 --params '{
 
 ```bash
 python3.12 ~/scripts/filter-gws-drive-metadata.py \
-  --input Documents/works/scout_reports/gws_trends/daily/tmp/{種別}_metadata.ndjson \
-  --output Documents/works/scout_reports/gws_trends/daily/tmp/{種別}_filtered.json \
+  --input ~/Documents/works/scout_reports/gws_trends/daily/tmp/{種別}_metadata.ndjson \
+  --output ~/Documents/works/scout_reports/gws_trends/daily/tmp/{種別}_filtered.json \
   --owner-email takeya_ozawa@nyle.co.jp \
   --top {上位件数}
 ```
@@ -131,7 +131,7 @@ python3.12 ~/scripts/filter-gws-drive-metadata.py \
 スクリプトはAPIレスポンスからテキスト内容のみを抽出し、8KB以内に切り詰める。
 スタイル情報・レイアウト情報はコンテキストに流入させない。
 
-中間出力のベースパス: `Documents/works/scout_reports/gws_trends/daily/`
+中間出力のベースパス: `~/Documents/works/scout_reports/gws_trends/daily/`
 
 #### Docs: ミーティング議事録の特別処理
 
@@ -150,8 +150,8 @@ invokeSubAgent:
   prompt: |
     markdown-reporter エージェントとしてプロンプトファイルに従い実行してください。
 
-    入力ファイル: Documents/works/scout_reports/gws_trends/daily/tmp/docs.md, Documents/works/scout_reports/gws_trends/daily/tmp/slides.md, Documents/works/scout_reports/gws_trends/daily/tmp/sheets.md, Documents/works/scout_reports/gws_trends/daily/tmp/forms.md, Documents/works/scout_reports/gws_trends/daily/tmp/pdf.md
-    出力先: Documents/works/scout_reports/gws_trends/daily/{対象日}_gws_daily.md
+    入力ファイル: ~/Documents/works/scout_reports/gws_trends/daily/tmp/docs.md, ~/Documents/works/scout_reports/gws_trends/daily/tmp/slides.md, ~/Documents/works/scout_reports/gws_trends/daily/tmp/sheets.md, ~/Documents/works/scout_reports/gws_trends/daily/tmp/forms.md, ~/Documents/works/scout_reports/gws_trends/daily/tmp/pdf.md
+    出力先: ~/Documents/works/scout_reports/gws_trends/daily/{対象日}_gws_daily.md
     フォーマット指示ファイル: ~/.shared-ai/interfaces/gws-trend-report-output.md
 
     対象期間: {対象日}
@@ -170,7 +170,7 @@ invokeSubAgent:
 
 ```
 ✅ gws-trend-scout 完了
-- 出力ファイル: Documents/works/scout_reports/gws_trends/daily/{対象日}_gws_daily.md
+- 出力ファイル: ~/Documents/works/scout_reports/gws_trends/daily/{対象日}_gws_daily.md
 - 件数/概要: {種別ごとの件数サマリー}
 - エラー: なし / {エラー内容}
 ```
