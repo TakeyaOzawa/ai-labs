@@ -73,7 +73,7 @@ python3.12 scripts/update-slack-user-directory.py \
 
 ### 4. lookup-guideの件数更新
 
-分類結果の件数を確認し、`~/.kiro/steering/slack-lookup.md` の件数テーブルを更新する。
+分類結果の件数を確認し、`~/Documents/works/slack_users/latest-summary.md` を上書き更新する。
 
 ```bash
 TODAY=$(date +%Y-%m-%d)
@@ -83,11 +83,31 @@ for f in ${HOME}/Documents/works/slack_users/${TODAY}/active/*.md ${HOME}/Docume
 done
 ```
 
-上記の件数で `${HOME}/.kiro/steering/slack-lookup.md` の以下を更新する:
-- アクティブユーザーテーブルの人数列
-- 非アクティブユーザーテーブルの人数列
-- 全件数の記載（例: `全2,026件`）
-- 日付の例示（例: `2026-05-01`）
+上記の件数で `${HOME}/Documents/works/slack_users/latest-summary.md` を以下の形式で**上書き**する:
+
+```markdown
+# Slack User Directory Summary
+
+更新日: {TODAY}
+
+## アクティブユーザー
+
+| 事業部 | 人数 | ファイル |
+|---|---|---|
+| MDX | {n} | `~/Documents/works/slack_users/{TODAY}/active/mdx.md` |
+| DXM | {n} | `~/Documents/works/slack_users/{TODAY}/active/dxm.md` |
+| ... | ... | ... |
+
+## 非アクティブユーザー
+
+| 事業部 | 人数 | ファイル |
+|---|---|---|
+| ... | ... | ... |
+
+**全{N}件**（ボット除外後、{TODAY}時点）
+```
+
+**注意**: `~/.kiro/steering/` には出力しない。steering配下はAI指示用の静的ファイルのみ配置する。
 
 ### 5. 整合性チェック
 
