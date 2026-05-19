@@ -339,6 +339,21 @@ FEEDS = {
             "url": "https://socket.dev/blog/feed",
             "type": "rss",
         },
+        {
+            "name": "TechCrunch",
+            "url": "https://techcrunch.com/feed/",
+            "type": "rss",
+        },
+        {
+            "name": "Modal Blog",
+            "url": "https://modal.com/blog/feed",
+            "type": "rss",
+        },
+        {
+            "name": "OSNews",
+            "url": "https://www.osnews.com/feed/",
+            "type": "rss",
+        },
     ],
     "biz_car": [
         {

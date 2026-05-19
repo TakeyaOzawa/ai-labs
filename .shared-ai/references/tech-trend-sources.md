@@ -13,4 +13,4 @@ Laravel News, PHP公式, AWS公式ブログ, GitHub Blog, Google Developers Blog
 The Hacker News, SecurityWeek, CVE/NVD, Wiz Blog, Socket.dev
 
 ## その他
-Gihyo.jp, はてなブックマーク テクノロジー, TechCrunch, The Verge, Reddit (r/programming, r/webdev, r/laravel, r/php, r/node, r/typescript, r/dotnet, r/MachineLearning, r/computervision), Unsloth AI, Netflix Tech Blog, Anthropic Blog, Rocky Linux Blog, Metabase Blog, Cisco Security Advisory, ExploitBench, Microsoft Tech Community, Jiacai Liu's Blog, Arthur Pastel Blog, LLM Stats, Air Street Press, Releasebot, Picus Security, Julia Evans Blog, Zulip Blog
+Gihyo.jp, はてなブックマーク テクノロジー, TechCrunch, The Verge, Reddit (r/programming, r/webdev, r/laravel, r/php, r/node, r/typescript, r/dotnet, r/MachineLearning, r/computervision), Unsloth AI, Netflix Tech Blog, Anthropic Blog, Rocky Linux Blog, Metabase Blog, Cisco Security Advisory, ExploitBench, Microsoft Tech Community, Jiacai Liu's Blog, Arthur Pastel Blog, LLM Stats, Air Street Press, Releasebot, Picus Security, Julia Evans Blog, Zulip Blog, Odyssey ML, CNN

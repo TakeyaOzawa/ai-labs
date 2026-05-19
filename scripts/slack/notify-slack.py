@@ -122,6 +122,7 @@ def convert_md_to_mrkdwn(text: str) -> str:
         # H2 → ■■ 見出し ■■
         if line.startswith("## "):
             heading = _escape_mrkdwn_bold(line[3:].strip())
+            result.append("\u3000")
             result.append(f"*■■ {heading} ■■*")
             continue
 
