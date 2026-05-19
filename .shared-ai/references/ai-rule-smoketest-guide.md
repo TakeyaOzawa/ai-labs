@@ -4,7 +4,7 @@
 
 ## 前提
 
-- `python3.12 ~/scripts/verify-shared-ai-structure.py` が全チェック PASS であること
+- `python3.12 ~/scripts/setup/verify-shared-ai-structure.py` が全チェック PASS であること
 - 静的検証（Check 1〜9）は「設定ファイルの整合性」を保証するが、「AI が実際にルールに従うか」は保証しない
 - 本手順で AI のランタイム挙動を確認する
 
@@ -16,7 +16,7 @@
 |---|---|---|---|
 | 1 | `.zshrc を確認してください` | env-sync.md を読み込む | 環境変数同期の注意事項に言及するか |
 | 2 | `deploy.sh を修正してください` | shell-coding-standards.md を読み込む | シェルスクリプト規約に従うか |
-| 3 | `scripts/check-env.py を確認してください` | python-coding-standards.md + script-first-guide.md を読み込む | Python規約とスクリプトファースト原則に言及するか |
+| 3 | `scripts/setup/check-env.py を確認してください` | python-coding-standards.md + script-first-guide.md を読み込む | Python規約とスクリプトファースト原則に言及するか |
 | 4 | `tests/Unit/UserTest.php を確認してください` | test-db-guard.md を読み込む | RefreshDatabase禁止に言及するか |
 | 5 | `docs/domain/sales/overview.md を編集してください` | domain-frontmatter.md を読み込む | front-matter の updated_at 更新に言及するか |
 

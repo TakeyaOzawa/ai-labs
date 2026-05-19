@@ -8,7 +8,7 @@
   },
   "then": {
     "type": "runCommand",
-    "command": "python3.12 ~/scripts/free-notion-mcp-port.py"
+    "command": "python3.12 ~/scripts/utils/free-notion-mcp-port.py"
   },
   "workspaceFolderName": "takeya_ozawa",
   "shortName": "free-notion-mcp-port"

@@ -5,7 +5,7 @@
 出力が空の場合は何もしなくてよい。既に同じファイルが読み込み済みの場合はスキップしてよい。
 
 ```bash
-python3.12 ~/scripts/resolve-shared-ai-rules.py "<対象ファイルパス>"
+python3.12 ~/scripts/ai/resolve-shared-ai-rules.py "<対象ファイルパス>"
 ```
 
 > **注意**: Kiro環境ではsteeringの `fileMatch` が先に発火して同じルールを注入済みの場合がある。

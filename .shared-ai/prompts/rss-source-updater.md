@@ -55,7 +55,7 @@ agent-common.md §1（当日取得）に従う。
 ### Step 4: 未登録サイト特定
 
 1. 該当カテゴリの `~/.shared-ai/references/*-sources.md` を読み込み
-2. `~/scripts/fetch-rss-feeds.py` の該当カテゴリ FEEDS のURL一覧を読み込み
+2. `~/scripts/rss/fetch-rss-feeds.py` の該当カテゴリ FEEDS のURL一覧を読み込み
 3. 抽出URLのドメインと照合し、どちらにも含まれないドメインを「未登録サイト」として特定
 
 照合はドメイン単位（サブドメイン含む）で行う。例: `blog.example.com` と `example.com` は別扱い。
@@ -78,7 +78,7 @@ agent-common.md §1（当日取得）に従う。
 ### Step 6: 更新実行
 
 **RSS発見時（Step 6a）:**
-1. `~/scripts/fetch-rss-feeds.py` の該当カテゴリ FEEDS リストに追記:
+1. `~/scripts/rss/fetch-rss-feeds.py` の該当カテゴリ FEEDS リストに追記:
    ```python
    {"name": "{サイト名}", "url": "{RSS URL}", "type": "rss" | "atom"},
    ```

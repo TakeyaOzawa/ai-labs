@@ -34,7 +34,7 @@
 
 全AIツールは `rules/` 直下の2つのディスパッチャーを常時参照する:
 
-1. **filematch-dispatcher.md** — `~/scripts/resolve-shared-ai-rules.py` を実行し、ファイルパターンに基づくルール適用
+1. **filematch-dispatcher.md** — `~/scripts/ai/resolve-shared-ai-rules.py` を実行し、ファイルパターンに基づくルール適用
 2. **command-dispatcher.md** — コマンド/操作種別に基づくルール適用（lookups/含む）
 
 ### 各ツールの参照方式
@@ -51,7 +51,7 @@
 新しいルールを追加する場合:
 
 1. `rules/critical/` または `rules/quality/` に新しいmdファイルを作成
-2. `~/scripts/resolve-shared-ai-rules.py` のRULESリストにパターンとターゲットを追記
+2. `~/scripts/ai/resolve-shared-ai-rules.py` のRULESリストにパターンとターゲットを追記
 3. `rules/command-dispatcher.md` のテーブルに追記（コマンド/操作種別に紐づく場合のみ）
 4. （Kiroのみ・任意）`~/.kiro/steering/` にfileMatch Wrapper_Fileを作成
 

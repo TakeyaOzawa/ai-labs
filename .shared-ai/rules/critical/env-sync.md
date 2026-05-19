@@ -7,7 +7,7 @@
 ## 同期対象ファイル
 
 1. **`scripts/platform-commands.sh`** — `source-env` セクション内の grep パターン（eval行とenv行の2箇所）
-2. **`scripts/check-env.py`** — `REQUIRED_VARS` または `OPTIONAL_VARS` リスト
+2. **`scripts/setup/check-env.py`** — `REQUIRED_VARS` または `OPTIONAL_VARS` リスト
 3. **`scripts/README.md`** — 環境変数テーブルおよび `source-env` 管理変数リスト
 
 ## 判断基準

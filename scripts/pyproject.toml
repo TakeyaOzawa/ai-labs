@@ -1,0 +1,46 @@
+[project]
+name = "scout-scripts"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=6.0",
+    "pytest-mock>=3.14",
+    "coverage[toml]>=7.6",
+    "ruff>=0.11",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = ["--strict-markers", "--strict-config", "-ra"]
+markers = [
+    "unit: 単体テスト（外部依存なし、高速）",
+    "integration: 結合テスト（ファイルI/O・プロセス連携あり）",
+    "slow: 実行に時間がかかるテスト",
+]
+
+[tool.coverage.run]
+source = ["lib"]
+branch = true
+omit = ["tests/*", "old/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+fail_under = 60
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "C4", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

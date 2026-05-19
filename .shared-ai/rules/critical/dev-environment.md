@@ -9,10 +9,10 @@
 
 ```bash
 # ✅ 正しい
-python3.12 ~/scripts/fetch-rss-feeds.py --category tech --date 2026-05-07
+python3.12 ~/scripts/rss/fetch-rss-feeds.py --category tech --date 2026-05-07
 
 # ❌ 間違い
-python3 ~/scripts/fetch-rss-feeds.py --category tech --date 2026-05-07
+python3 ~/scripts/rss/fetch-rss-feeds.py --category tech --date 2026-05-07
 ```
 
 ## スクリプトファースト原則

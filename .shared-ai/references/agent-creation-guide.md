@@ -258,4 +258,4 @@ scoutパイプラインは「日次で収集 → 週次で集約」の2層構造
 - [ ] `scripts/create-{frequency}-jobs.py` に子ジョブ追加
 - [ ] `scripts/run-{frequency}-pipeline.py` の `AGENTS` 配列に追加
 - [ ] `scripts/run-{frequency}-pipeline.py` の `NOTIFY_FILE_MAP` に追加（通知ONは `NotifyEntry(template)`、通知OFFは `NotifyEntry("", enabled=False)`）
-- [ ] `scripts/fetch-rss-feeds.py` にカテゴリ追加（RSS必要な場合）
+- [ ] `scripts/rss/fetch-rss-feeds.py` にカテゴリ追加（RSS必要な場合）

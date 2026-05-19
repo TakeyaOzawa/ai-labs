@@ -24,7 +24,7 @@
 汎用 `scripts/create-jobs.py` を使用:
 
 ```bash
-python3.12 ~/scripts/create-jobs.py \
+python3.12 ~/scripts/jobs/create-jobs.py \
   --pipeline {pipeline_name} \
   --base-date {YYYY-MM-DD} \
   --jobs-file /path/to/tasks-def.json
@@ -32,7 +32,7 @@ python3.12 ~/scripts/create-jobs.py \
 
 または `--jobs` でインライン指定:
 ```bash
-python3.12 ~/scripts/create-jobs.py \
+python3.12 ~/scripts/jobs/create-jobs.py \
   --pipeline {pipeline_name} \
   --base-date {YYYY-MM-DD} \
   --jobs '[{"job_name": "{agent-name}", "timeout": 300, "retry_delay": 30, "depends_on": null}]'
@@ -89,7 +89,7 @@ NOTIFY_FILE_MAP = {
 
 #### 4. RSS事前取得が必要な場合
 
-- `scripts/fetch-rss-feeds.py` の `FEEDS` にカテゴリ追加
+- `scripts/rss/fetch-rss-feeds.py` の `FEEDS` にカテゴリ追加
 - `run-{frequency}-pipeline.py` の `_rss_fetch_hook()` 関数内にカテゴリ追加
 
 #### 実行スクリプトの実装ルール
@@ -124,7 +124,7 @@ NOTIFY_FILE_MAP = {
 
 | コンポーネント | 役割 | 例 |
 |---|---|---|
-| `scripts/check-directory-freshness.py` | 最終更新日からの経過日数で鮮度判定 | `--type slack --max-age-days 7` |
+| `scripts/setup/check-directory-freshness.py` | 最終更新日からの経過日数で鮮度判定 | `--type slack --max-age-days 7` |
 | `.kiro/agents/{name}-updater.json` | 更新エージェント定義 | `slack-user-directory-updater` |
 | `.shared-ai/prompts/{name}-updater.md` | 更新手順プロンプト | API呼び出し→分類→ファイル出力 |
 | `.kiro/hooks/{name}-update.kiro.hook` | 手動トリガー（`userTriggered`） | 任意のタイミングで手動実行 |
@@ -144,7 +144,7 @@ NOTIFY_FILE_MAP = {
 ### 鮮度チェックの設計
 
 ```bash
-python3.12 ~/scripts/check-directory-freshness.py --type {type} --max-age-days {N}
+python3.12 ~/scripts/setup/check-directory-freshness.py --type {type} --max-age-days {N}
 # 出力: {"stale": true/false, "type": "...", "last_updated": "YYYY-MM-DD", "age_days": N}
 ```
 

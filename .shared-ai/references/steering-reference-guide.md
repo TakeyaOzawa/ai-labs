@@ -87,10 +87,10 @@ inclusion: manual
 
 `fileMatch` はKiroの内部判定に依存するため、期待通りにインクルードされない場合がある。対策として `~/.kiro/steering/filematch-dispatcher.md`（`inclusion: always`）をフォールバックディスパッチャーとして配置している。
 
-ディスパッチャーは `~/scripts/resolve-shared-ai-rules.py` を実行し、ファイルパスに対応するルール/リファレンスのパスを解決する:
+ディスパッチャーは `~/scripts/ai/resolve-shared-ai-rules.py` を実行し、ファイルパスに対応するルール/リファレンスのパスを解決する:
 
 ```bash
-python3.12 ~/scripts/resolve-shared-ai-rules.py "<対象ファイルパス>"
+python3.12 ~/scripts/ai/resolve-shared-ai-rules.py "<対象ファイルパス>"
 ```
 
 出力されたパスのファイルをreadFileで読み込む。出力が空なら何もしない。
@@ -99,7 +99,7 @@ python3.12 ~/scripts/resolve-shared-ai-rules.py "<対象ファイルパス>"
 
 - `always` 側は可能な限り薄くする（「readFileで○○を読め」または「スクリプトを実行せよ」の1行程度）
 - 本体のルール・ガイドは `~/.shared-ai/rules/critical/`、`~/.shared-ai/rules/quality/`、`~/.shared-ai/references/` に配置し、必要時のみ読み込ませる
-- `fileMatch` を新規追加した場合は `~/scripts/resolve-shared-ai-rules.py` のRULESリストにも追記する
+- `fileMatch` を新規追加した場合は `~/scripts/ai/resolve-shared-ai-rules.py` のRULESリストにも追記する
 - `fileMatchPattern` で複数パターンを指定する場合は配列形式 `["pattern1", "pattern2"]` を使用する（カンマ区切り文字列は非推奨）
 - `auto` を使用する場合は `name` と `description` を必ず指定する
 

@@ -96,7 +96,7 @@ gws drive files list --page-all --page-limit 50 --params '{
 #### Step 2-B: フィルタリング（スクリプト実行）
 
 ```bash
-python3.12 ~/scripts/filter-gws-drive-metadata.py \
+python3.12 ~/scripts/gws/filter-gws-drive-metadata.py \
   --input ~/Documents/works/scout_reports/gws_trends/daily/tmp/{種別}_metadata.ndjson \
   --output ~/Documents/works/scout_reports/gws_trends/daily/tmp/{種別}_filtered.json \
   --owner-email takeya_ozawa@nyle.co.jp \
@@ -121,8 +121,8 @@ python3.12 ~/scripts/filter-gws-drive-metadata.py \
 
 | # | 種別 | MIME type | 深掘りコマンド | 上位件数 | メタデータ | 中間出力 |
 |---|------|-----------|---------------|---------|-----------|---------|
-| 2-1 | Docs | `application/vnd.google-apps.document` | `gws docs documents get --params '{"documentId": "{ID}"}' \| python3.12 ~/scripts/extract-gws-doc-text.py` | 3 | `tmp/docs_metadata.ndjson` | `tmp/docs.md` |
-| 2-2 | Slides | `application/vnd.google-apps.presentation` | `gws slides presentations get --params '{"presentationId": "{ID}"}' \| python3.12 ~/scripts/extract-gws-slides-text.py` | 3 | `tmp/slides_metadata.ndjson` | `tmp/slides.md` |
+| 2-1 | Docs | `application/vnd.google-apps.document` | `gws docs documents get --params '{"documentId": "{ID}"}' \| python3.12 ~/scripts/gws/extract-gws-doc-text.py` | 3 | `tmp/docs_metadata.ndjson` | `tmp/docs.md` |
+| 2-2 | Slides | `application/vnd.google-apps.presentation` | `gws slides presentations get --params '{"presentationId": "{ID}"}' \| python3.12 ~/scripts/gws/extract-gws-slides-text.py` | 3 | `tmp/slides_metadata.ndjson` | `tmp/slides.md` |
 | 2-3 | Sheets | `application/vnd.google-apps.spreadsheet` | `gws sheets spreadsheets get --params '{"spreadsheetId": "{ID}"}' \| head -c 8000` | 3 | `tmp/sheets_metadata.ndjson` | `tmp/sheets.md` |
 | 2-4 | Forms | `application/vnd.google-apps.form` | `gws forms forms get --params '{"formId": "{ID}"}' \| head -c 8000` | 2 | `tmp/forms_metadata.ndjson` | `tmp/forms.md` |
 | 2-5 | PDF | `application/pdf` | なし（メタデータのみ） | 0 | `tmp/pdf_metadata.ndjson` | `tmp/pdf.md` |

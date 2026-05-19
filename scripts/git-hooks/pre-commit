@@ -1,55 +1,172 @@
 #!/bin/zsh
-# pre-commit hook: .shared-ai/ 配下の変更時に構造検証を実行する
+# pre-commit hook: コミット前の自動検証
 #
-# .shared-ai/rules/, .shared-ai/lookups/, .shared-ai/references/,
-# .kiro/steering/, scripts/resolve-shared-ai-rules.py 等の変更がある場合、
-# verify-shared-ai-structure.py を実行して全チェック PASS を強制する。
+# 検証内容:
+#   1. .shared-ai/ 変更時 → 構造検証（verify-shared-ai-structure.py）
+#   2. scripts/*.py 変更時 → シンタックスチェック（py_compile）
+#   3. scripts/lib/ 変更時 → 単体テスト（pytest）
+#   4. scripts/*.py 変更時 → import整合性チェック（verify-scripts.py --import）
+#   5. launchd plist 変更時 → plist構文検証（plutil）
+#
+# スキップ: git commit --no-verify
 
-# ステージされたファイルに対象パスが含まれるか確認
-TARGETS=(
+STAGED_FILES=$(git diff --cached --name-only)
+
+# ─── 1. .shared-ai 構造検証 ──────────────────────────────────────
+
+SHARED_AI_TARGETS=(
     ".shared-ai/rules/"
     ".shared-ai/lookups/"
     ".shared-ai/references/"
     ".shared-ai/interfaces/"
     ".kiro/steering/"
-    "scripts/resolve-shared-ai-rules.py"
-    "scripts/setup-symlinks.py"
-    "scripts/verify-shared-ai-structure.py"
-    "scripts/ai-cli-utils.py"
+    "scripts/ai/resolve-shared-ai-rules.py"
+    "scripts/setup/setup-symlinks.py"
+    "scripts/setup/verify-shared-ai-structure.py"
+    "scripts/ai/ai-cli-utils.py"
     ".claude/CLAUDE.md"
     ".gemini/GEMINI.md"
     ".codex/AGENTS.md"
 )
 
-STAGED_FILES=$(git diff --cached --name-only)
-SHOULD_VERIFY=false
-
-for target in "${TARGETS[@]}"; do
+SHOULD_VERIFY_STRUCTURE=false
+for target in "${SHARED_AI_TARGETS[@]}"; do
     if echo "$STAGED_FILES" | grep -q "$target"; then
-        SHOULD_VERIFY=true
+        SHOULD_VERIFY_STRUCTURE=true
         break
     fi
 done
 
-if [ "$SHOULD_VERIFY" = false ]; then
-    exit 0
+if [ "$SHOULD_VERIFY_STRUCTURE" = true ]; then
+    echo "🔍 .shared-ai 構造変更を検出。verify-shared-ai-structure.py を実行します..."
+    echo ""
+
+    python3.12 ~/scripts/setup/verify-shared-ai-structure.py
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "❌ 構造検証に失敗しました。コミットを中断します。"
+        echo "   💡 スキップする場合: git commit --no-verify"
+        exit 1
+    fi
+    echo ""
+    echo "✅ 構造検証 PASS"
 fi
 
-echo "🔍 .shared-ai 構造変更を検出。verify-shared-ai-structure.py を実行します..."
-echo ""
+# ─── 2. Python シンタックスチェック ──────────────────────────────
 
-python3.12 ~/scripts/verify-shared-ai-structure.py
-RESULT=$?
+PYTHON_FILES=$(echo "$STAGED_FILES" | grep -E '^scripts/.*\.py$' | grep -v '__pycache__' | grep -v '/old/')
 
-if [ $RESULT -ne 0 ]; then
+if [ -n "$PYTHON_FILES" ]; then
     echo ""
-    echo "❌ 構造検証に失敗しました。コミットを中断します。"
-    echo "   修正後に再度コミットしてください。"
-    echo ""
-    echo "   💡 スキップする場合: git commit --no-verify"
-    exit 1
+    echo "🐍 Python シンタックスチェック..."
+    SYNTAX_FAIL=false
+
+    while IFS= read -r file; do
+        # ファイルが存在する場合のみ（削除されたファイルはスキップ）
+        if [ -f "$HOME/$file" ]; then
+            python3.12 -m py_compile "$HOME/$file" 2>/dev/null
+            if [ $? -ne 0 ]; then
+                echo "  ❌ $file"
+                SYNTAX_FAIL=true
+            fi
+        fi
+    done <<< "$PYTHON_FILES"
+
+    if [ "$SYNTAX_FAIL" = true ]; then
+        echo ""
+        echo "❌ シンタックスエラーがあります。コミットを中断します。"
+        echo "   💡 スキップする場合: git commit --no-verify"
+        exit 1
+    fi
+    echo "  ✅ シンタックスチェック PASS ($(echo "$PYTHON_FILES" | wc -l | tr -d ' ') files)"
 fi
 
-echo ""
-echo "✅ 構造検証 PASS"
+# ─── 3. scripts/lib/ 変更時の単体テスト ──────────────────────────
+
+LIB_CHANGED=false
+if echo "$STAGED_FILES" | grep -q "scripts/lib/"; then
+    LIB_CHANGED=true
+fi
+if echo "$STAGED_FILES" | grep -q "scripts/tests/"; then
+    LIB_CHANGED=true
+fi
+
+if [ "$LIB_CHANGED" = true ]; then
+    echo ""
+    echo "🧪 scripts/lib/ の変更を検出。単体テストを実行します..."
+    python3.12 -m pytest ~/scripts/tests/unit/ -x -q --tb=short 2>&1 | tail -5
+    if [ ${pipestatus[1]} -ne 0 ]; then
+        echo ""
+        echo "❌ 単体テストに失敗しました。コミットを中断します。"
+        echo "   💡 スキップする場合: git commit --no-verify"
+        exit 1
+    fi
+    echo "✅ 単体テスト PASS"
+fi
+
+# ─── 4. スクリプト変更時のimport整合性チェック ────────────────────
+
+# lib/ またはエントリポイントの変更がある場合、import検証を実行
+IMPORT_CHECK_NEEDED=false
+if echo "$STAGED_FILES" | grep -q "scripts/lib/"; then
+    IMPORT_CHECK_NEEDED=true
+fi
+if echo "$STAGED_FILES" | grep -qE "scripts/(pipelines|jobs|slack|gws|rss|ai|setup|utils|data)/"; then
+    IMPORT_CHECK_NEEDED=true
+fi
+
+if [ "$IMPORT_CHECK_NEEDED" = true ]; then
+    echo ""
+    echo "🔗 import整合性チェック..."
+
+    # 変更されたサブディレクトリを特定
+    CHANGED_DIRS=$(echo "$STAGED_FILES" | grep -oE 'scripts/(pipelines|jobs|slack|gws|rss|ai|setup|utils|data|lib)' | sed 's|scripts/||' | sort -u)
+
+    if [ -n "$CHANGED_DIRS" ]; then
+        DIR_ARGS=""
+        while IFS= read -r dir; do
+            DIR_ARGS="$DIR_ARGS --dir $dir"
+        done <<< "$CHANGED_DIRS"
+
+        eval "python3.12 ~/scripts/setup/verify-scripts.py --import $DIR_ARGS" 2>&1 | tail -5
+        if [ $? -ne 0 ]; then
+            echo ""
+            echo "❌ import整合性チェックに失敗しました。コミットを中断します。"
+            echo "   💡 スキップする場合: git commit --no-verify"
+            exit 1
+        fi
+        echo "✅ import整合性チェック PASS"
+    fi
+fi
+
+# ─── 5. launchd plist 構文検証 ────────────────────────────────────
+
+PLIST_FILES=$(echo "$STAGED_FILES" | grep -E '\.plist$')
+
+if [ -n "$PLIST_FILES" ]; then
+    echo ""
+    echo "📋 plist 構文検証..."
+    PLIST_FAIL=false
+
+    while IFS= read -r file; do
+        if [ -f "$HOME/$file" ]; then
+            plutil -lint "$HOME/$file" > /dev/null 2>&1
+            if [ $? -ne 0 ]; then
+                echo "  ❌ $file"
+                PLIST_FAIL=true
+            fi
+        fi
+    done <<< "$PLIST_FILES"
+
+    if [ "$PLIST_FAIL" = true ]; then
+        echo ""
+        echo "❌ plist構文エラーがあります。コミットを中断します。"
+        echo "   💡 スキップする場合: git commit --no-verify"
+        exit 1
+    fi
+    echo "  ✅ plist構文検証 PASS"
+fi
+
+# ─── 完了 ─────────────────────────────────────────────────────────
+
 exit 0

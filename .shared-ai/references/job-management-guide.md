@@ -6,9 +6,9 @@
 
 | スクリプト | パス | 役割 |
 |---|---|---|
-| create-jobs.py | `python3.12 ~/scripts/create-jobs.py` | 汎用ジョブファイル生成 |
-| find-job.py | `python3.12 ~/scripts/find-job.py` | ジョブ検索・取得 |
-| update-job.py | `python3.12 ~/scripts/update-job.py` | ジョブステータス更新 |
+| create-jobs.py | `python3.12 ~/scripts/jobs/create-jobs.py` | 汎用ジョブファイル生成 |
+| find-job.py | `python3.12 ~/scripts/jobs/find-job.py` | ジョブ検索・取得 |
+| update-job.py | `python3.12 ~/scripts/jobs/update-job.py` | ジョブステータス更新 |
 
 ## ジョブツリー構造
 
@@ -77,11 +77,11 @@ parent (scout_daily)
 
 ```bash
 # GitHub org トレンドスカウトパイプライン
-python3.12 ~/scripts/create-jobs.py --pipeline github-org-trend-scout-pipeline --base-date 2026-05-14 \
+python3.12 ~/scripts/jobs/create-jobs.py --pipeline github-org-trend-scout-pipeline --base-date 2026-05-14 \
   --jobs '[{"job_name":"github-org-repo-collector","timeout":300,"retry_delay":30,"depends_on":null},{"job_name":"github-org-pr-collector","timeout":600,"retry_delay":30,"depends_on":["github-org-repo-collector"]},{"job_name":"github-org-report-generator","timeout":300,"retry_delay":30,"depends_on":["github-org-pr-collector"]}]'
 
 # ネストされたジョブ定義
-python3.12 ~/scripts/create-jobs.py --pipeline scout_daily --base-date 2026-05-10 \
+python3.12 ~/scripts/jobs/create-jobs.py --pipeline scout_daily --base-date 2026-05-10 \
   --jobs '[{"job_name":"agent-a","timeout":300},{"job_name":"sub-pipe","timeout":900,"child_jobs":[{"job_name":"step-1","timeout":300}]}]'
 ```
 
@@ -153,16 +153,16 @@ python3.12 ~/scripts/create-jobs.py --pipeline scout_daily --base-date 2026-05-1
 
 ```bash
 # ツリー表示
-python3.12 ~/scripts/find-job.py --pipeline daily --tree
+python3.12 ~/scripts/jobs/find-job.py --pipeline daily --tree
 
 # grandchildジョブを名前で検索
-python3.12 ~/scripts/find-job.py --pipeline daily --job-name gws-extractor-docs
+python3.12 ~/scripts/jobs/find-job.py --pipeline daily --job-name gws-extractor-docs
 
 # 全failedジョブを取得（第一階層のみ）
-python3.12 ~/scripts/find-job.py --pipeline daily --status failed --limit 10
+python3.12 ~/scripts/jobs/find-job.py --pipeline daily --status failed --limit 10
 
 # 親ジョブの状態確認
-python3.12 ~/scripts/find-job.py --pipeline daily --scope parent
+python3.12 ~/scripts/jobs/find-job.py --pipeline daily --scope parent
 ```
 
 ## update-job.py
@@ -193,7 +193,7 @@ python3.12 ~/scripts/find-job.py --pipeline daily --scope parent
 
 ```bash
 # grandchildジョブを直接更新
-python3.12 ~/scripts/update-job.py --job-file /path/to/file.json \
+python3.12 ~/scripts/jobs/update-job.py --job-file /path/to/file.json \
   --job-id 019746a1b2c6-abcd1234 \
   --set '{"status": "running", "started_at": "2026-05-10T10:00:00+09:00"}'
 ```
@@ -216,17 +216,17 @@ python3.12 ~/scripts/update-job.py --job-file /path/to/file.json \
 
 ```bash
 # 子ジョブをrunningに
-python3.12 ~/scripts/update-job.py --job-file /path/to/file.json \
+python3.12 ~/scripts/jobs/update-job.py --job-file /path/to/file.json \
   --job-id 01KQVFHZKG0M441E2T15MQ0JPV \
   --set '{"status": "running", "started_at": "2026-05-05T16:10:44+09:00"}'
 
 # 親ジョブのstatus_detailを更新
-python3.12 ~/scripts/update-job.py --job-file /path/to/file.json \
+python3.12 ~/scripts/jobs/update-job.py --job-file /path/to/file.json \
   --scope parent \
   --set '{"status_detail": "tech-trend-scout 実行中"}'
 
 # 失敗したジョブをstartingに戻す（リトライ）
-python3.12 ~/scripts/update-job.py --job-file /path/to/file.json \
+python3.12 ~/scripts/jobs/update-job.py --job-file /path/to/file.json \
   --job-id 01KQVFHZKG0M441E2T15MQ0JPV \
   --set '{"status": "starting", "error": null, "started_at": null, "completed_at": null}'
 ```
@@ -254,16 +254,16 @@ python3.12 ~/scripts/update-job.py --job-file /path/to/file.json \
 
 ```bash
 # 1. 失敗ジョブを確認（ツリー表示で全体把握）
-python3.12 ~/scripts/find-job.py --pipeline daily --tree
+python3.12 ~/scripts/jobs/find-job.py --pipeline daily --tree
 
 # 2. 対象ジョブをstartingに戻す（grandchildも直接指定可能）
-JOB_FILE=$(python3.12 ~/scripts/find-job.py --pipeline daily --status failed --limit 1 | jq -r '.job_file')
-JOB_ID=$(python3.12 ~/scripts/find-job.py --pipeline daily --status failed --limit 1 | jq -r '.jobs[0].job_id')
-python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --job-id "$JOB_ID" \
+JOB_FILE=$(python3.12 ~/scripts/jobs/find-job.py --pipeline daily --status failed --limit 1 | jq -r '.job_file')
+JOB_ID=$(python3.12 ~/scripts/jobs/find-job.py --pipeline daily --status failed --limit 1 | jq -r '.jobs[0].job_id')
+python3.12 ~/scripts/jobs/update-job.py --job-file "$JOB_FILE" --job-id "$JOB_ID" \
   --set '{"status": "starting", "error": null, "started_at": null, "completed_at": null}'
 
 # 3. 親ジョブもrunningに戻す（completedやfailedになっている場合）
-python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --scope parent \
+python3.12 ~/scripts/jobs/update-job.py --job-file "$JOB_FILE" --scope parent \
   --set '{"status": "running", "status_detail": "リトライ中"}'
 ```
 
@@ -271,9 +271,9 @@ python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --scope parent \
 
 ```bash
 # grandchildジョブを名前で検索してリセット
-JOB_FILE=$(python3.12 ~/scripts/find-job.py --pipeline daily --scope parent | jq -r '.job_file')
-GC_ID=$(python3.12 ~/scripts/find-job.py --pipeline daily --job-name gws-extractor-sheets | jq -r '.jobs[0].job_id')
-python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --job-id "$GC_ID" \
+JOB_FILE=$(python3.12 ~/scripts/jobs/find-job.py --pipeline daily --scope parent | jq -r '.job_file')
+GC_ID=$(python3.12 ~/scripts/jobs/find-job.py --pipeline daily --job-name gws-extractor-sheets | jq -r '.jobs[0].job_id')
+python3.12 ~/scripts/jobs/update-job.py --job-file "$JOB_FILE" --job-id "$GC_ID" \
   --set '{"status": "starting", "error": null, "started_at": null, "completed_at": null}'
 ```
 
@@ -281,12 +281,12 @@ python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --job-id "$GC_ID" \
 
 ```bash
 # 全子ジョブをstartingに戻す（注意: 全ジョブが再実行される）
-JOB_FILE=$(python3.12 ~/scripts/find-job.py --pipeline daily --scope parent | jq -r '.job_file')
+JOB_FILE=$(python3.12 ~/scripts/jobs/find-job.py --pipeline daily --scope parent | jq -r '.job_file')
 for JOB_ID in $(jq -r '.. | .job_id? // empty' "$JOB_FILE" | tail -n +2); do
-  python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --job-id "$JOB_ID" \
+  python3.12 ~/scripts/jobs/update-job.py --job-file "$JOB_FILE" --job-id "$JOB_ID" \
     --set '{"status": "starting", "error": null, "started_at": null, "completed_at": null}'
 done
-python3.12 ~/scripts/update-job.py --job-file "$JOB_FILE" --scope parent \
+python3.12 ~/scripts/jobs/update-job.py --job-file "$JOB_FILE" --scope parent \
   --set '{"status": "running", "status_detail": null, "completed_at": null, "error": null}'
 ```
 

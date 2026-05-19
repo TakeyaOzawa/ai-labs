@@ -188,7 +188,7 @@ code_analysis_hints:
 パイプラインスクリプトは以下のように機械可読データを抽出する:
 
 ```python
-# scripts/extract-repo-analysis-data.py
+# scripts/data/extract-repo-analysis-data.py
 # 入力: github-repo-analyst の出力ファイルパス
 # 出力: JSON（stdout）
 

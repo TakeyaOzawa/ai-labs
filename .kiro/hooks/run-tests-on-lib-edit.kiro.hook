@@ -1,0 +1,13 @@
+{
+  "name": "Run Unit Tests on Lib Edit",
+  "version": "1.0.0",
+  "description": "scripts/lib/ 配下のファイル編集時に自動で単体テストを実行する",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["scripts/lib/*.py"]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "cd ~/scripts && python3.12 -m pytest tests/unit/ -x -q --tb=short"
+  }
+}

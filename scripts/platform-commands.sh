@@ -58,32 +58,45 @@ case "$COMMAND" in
   launchctl)
     ACTION="${1:-}"
     LABEL="${2:-}"
-    PREFIX="com.takeya"
+    PREFIX="com.user"
     AGENTS_DIR="$HOME/Library/LaunchAgents"
+
+    # ラベルにドットが含まれていればフルラベルとして扱う
+    # 含まれていなければプレフィックスを付与する
+    _resolve_label_and_plist() {
+      local label="$1"
+      if [[ "$label" == *.* ]]; then
+        FULL_LABEL="$label"
+        PLIST="$AGENTS_DIR/${label}.plist"
+      else
+        FULL_LABEL="${PREFIX}.${label}"
+        PLIST="$AGENTS_DIR/${PREFIX}.${label}.plist"
+      fi
+    }
 
     if [[ "$OS" == "Darwin" ]]; then
       case "$ACTION" in
         load)
-          PLIST="$AGENTS_DIR/${PREFIX}.${LABEL}.plist"
+          _resolve_label_and_plist "$LABEL"
           [[ ! -f "$PLIST" ]] && echo "{\"success\": false, \"error\": \"plist not found: $PLIST\"}" && exit 1
           launchctl load "$PLIST" 2>&1
-          echo "{\"success\": true, \"action\": \"load\", \"label\": \"${PREFIX}.${LABEL}\"}"
+          echo "{\"success\": true, \"action\": \"load\", \"label\": \"${FULL_LABEL}\"}"
           ;;
         unload)
-          PLIST="$AGENTS_DIR/${PREFIX}.${LABEL}.plist"
+          _resolve_label_and_plist "$LABEL"
           [[ ! -f "$PLIST" ]] && echo "{\"success\": false, \"error\": \"plist not found: $PLIST\"}" && exit 1
           launchctl unload "$PLIST" 2>&1
-          echo "{\"success\": true, \"action\": \"unload\", \"label\": \"${PREFIX}.${LABEL}\"}"
+          echo "{\"success\": true, \"action\": \"unload\", \"label\": \"${FULL_LABEL}\"}"
           ;;
         reload)
-          PLIST="$AGENTS_DIR/${PREFIX}.${LABEL}.plist"
+          _resolve_label_and_plist "$LABEL"
           [[ ! -f "$PLIST" ]] && echo "{\"success\": false, \"error\": \"plist not found: $PLIST\"}" && exit 1
           launchctl unload "$PLIST" 2>/dev/null || true
           launchctl load "$PLIST" 2>&1
-          echo "{\"success\": true, \"action\": \"reload\", \"label\": \"${PREFIX}.${LABEL}\"}"
+          echo "{\"success\": true, \"action\": \"reload\", \"label\": \"${FULL_LABEL}\"}"
           ;;
         status)
-          FULL_LABEL="${PREFIX}.${LABEL}"
+          _resolve_label_and_plist "$LABEL"
           RESULT=$(launchctl list | grep "$FULL_LABEL" || true)
           if [[ -z "$RESULT" ]]; then
             echo "{\"success\": true, \"label\": \"$FULL_LABEL\", \"loaded\": false}"
@@ -94,7 +107,8 @@ case "$COMMAND" in
           fi
           ;;
         list)
-          JOBS=$(launchctl list | grep "$PREFIX" || true)
+          # com.user プレフィックスのジョブを検索
+          JOBS=$(launchctl list | grep "com\.user" || true)
           if [[ -z "$JOBS" ]]; then
             echo "{\"success\": true, \"jobs\": []}"
           else

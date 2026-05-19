@@ -14,7 +14,7 @@ description: .shared-ai配下の階層構造変更時に、構造検証スクリ
 変更完了後、以下を実行して全チェック PASS を確認すること:
 
 ```bash
-python3.12 ~/scripts/verify-shared-ai-structure.py --quick
+python3.12 ~/scripts/setup/verify-shared-ai-structure.py --quick
 ```
 
 ## 推奨: フル検証（手動実行時）
@@ -22,7 +22,7 @@ python3.12 ~/scripts/verify-shared-ai-structure.py --quick
 コミット前やパス変更を伴う大きな変更の場合は、フル検証を推奨:
 
 ```bash
-python3.12 ~/scripts/verify-shared-ai-structure.py
+python3.12 ~/scripts/setup/verify-shared-ai-structure.py
 ```
 
 ## 推奨: スモークテスト

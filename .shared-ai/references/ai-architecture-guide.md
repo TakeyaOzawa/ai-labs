@@ -53,7 +53,7 @@
 
 - ディレクトリsymlink: skills（全ツール共通）
 - 個別ファイルsymlink: Codex rules
-- clone後は `~/scripts/setup-shared-ai.py` で復元
+- clone後は `~/scripts/setup/setup-shared-ai.py` で復元
 
 ### 7. 新規ツール追加時の手順
 
