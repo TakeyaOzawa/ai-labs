@@ -17,28 +17,23 @@ invoke-agent: 手動実行用CLIラッパー
 出力: エージェント実行結果 + オプショナルなSlack通知
 依存: kiro-cli または claude (AI_COMMAND_TYPE環境変数で切替)
 """
-import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # noqa: E402
+import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))  # noqa: E402
 
 import argparse
 import os
 from datetime import datetime, timedelta, timezone
 
-from _pipeline_common import (
-    HOME,
-    JST,
+from models import (
     AgentExecutor,
     ExecutionContext,
     OutputParams,
-    PipelineLogger,
     SlackParams,
     Step,
     StepParams,
-    execute_steps,
-    load_env,
-    now_jst,
-    start_caffeinate,
-    stop_caffeinate,
 )
+from pipeline_engine import HOME, JST, execute_steps, now_jst, start_caffeinate, stop_caffeinate
+from config import load_env
+from logger import PipelineLogger
 
 
 def main() -> None:
@@ -109,7 +104,7 @@ def main() -> None:
     )
 
     # InputParams
-    from _pipeline_common import InputParams
+    from models import InputParams
     input_params = None
     if args.input_path:
         input_params = InputParams(source_type="file", source_path=args.input_path)

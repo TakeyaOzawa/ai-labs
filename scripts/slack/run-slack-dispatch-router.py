@@ -404,13 +404,13 @@ def _is_pipeline_target(agent_name: str) -> bool:
 
 
 def _pipeline_uses_run_pipeline(script_path: Path) -> bool:
-    """スクリプトが _pipeline_common.run_pipeline() を使用しているか確認する。
+    """スクリプトが pipeline_engine.run_pipeline() を使用しているか確認する。
 
     True の場合、--slack-channel / --slack-thread-ts 引数に対応している。
     """
     try:
         content = script_path.read_text(encoding="utf-8")
-        return "run_pipeline" in content and "_pipeline_common" in content
+        return "run_pipeline" in content and ("from pipeline_engine" in content or "from models" in content)
     except OSError:
         return False
 

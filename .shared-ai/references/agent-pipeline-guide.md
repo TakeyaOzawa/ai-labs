@@ -166,9 +166,11 @@ python3.12 ~/scripts/setup/check-directory-freshness.py --type {type} --max-age-
 
 | パイプライン名 | 実行スクリプト | 対象エージェント | 実行頻度 | 目的 |
 |---------------|---------------|-----------------|----------|------|
-| gws-trend-scout-pipeline | `run-gws-trend-scout-pipeline.py` | gws-trend-extractor | 日次 | GWSドキュメント活動の日次レポート（コンテキスト逼迫対策） |
-| academic-trend-scout-pipeline | `run-academic-trend-scout-pipeline.py` | academic-trend-searcher | 日次 | 学術論文トレンドの日次レポート（月曜日のarXivフィード膨張対策） |
-| github-org-trend-scout-pipeline | `run-github-org-trend-scout-pipeline.py` | github-org-repo-collector, github-org-pr-collector, github-org-report-generator | 日次 | GitHub org PR活動の日次レポート（コンテキスト逼迫対策） |
+| gws-trend-scout-pipeline | `run-gws-trend-scout-pipeline.py` | gws-trend-extractor, gws-trend-scout | 日次 | GWSドキュメント活動の日次レポート |
+| academic-trend-scout-pipeline | `run-academic-trend-scout-pipeline.py` | academic-trend-scout | 日次 | 学術論文トレンドの日次レポート |
+| github-org-trend-scout-pipeline | `run-github-org-trend-scout-pipeline.py` | github-org-repo-collector, github-org-pr-collector, github-org-report-generator | 日次 | GitHub org PR活動の日次レポート |
+
+> **Note**: `gws-trend-scout-pipeline` と `academic-trend-scout-pipeline` は `run-daily-pipeline.py` にもインライン化されている。単体実行したい場合に独立スクリプトを使用する。
 
 ### 新規追加時のチェックリスト
 

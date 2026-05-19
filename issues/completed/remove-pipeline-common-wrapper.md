@@ -148,10 +148,56 @@ README内に `_pipeline_common.py` への言及があれば削除する。
 
 ## テスト計画
 
-- [ ] `python3.12 -m pytest tests/ -q` で116テスト全パス
-- [ ] `python3.12 scripts/setup/verify-scripts.py` で全ファイルOK
-- [ ] `python3.12 scripts/pipelines/run-daily-pipeline.py --no-job-file` で手動実行成功
-- [ ] `grep -rl "_pipeline_common" ~/scripts/ | grep -v __pycache__` で参照残存なし
-- [ ] `manage-scheduler.py reload` 後に `list` で全ジョブ `last_exit_code: 0`
-- [ ] `find ~/scripts -type d -name __pycache__` で古いキャッシュが残っていないこと
-- [ ] DEPRECATEDスクリプト削除後に `ai-cli-utils.py` の `scan_agents()` が正常動作すること
+- [x] `python3.12 -m pytest tests/ -q` で116テスト全パス ✅ 2026-05-19
+- [x] `python3.12 scripts/setup/verify-scripts.py` で全ファイルOK ✅ 2026-05-19（58ファイル）
+- [x] `python3.12 scripts/pipelines/run-daily-pipeline.py --no-job-file` で手動実行成功 ✅ 2026-05-19
+- [x] `grep -rl "_pipeline_common" ~/scripts/ | grep -v __pycache__` で参照残存なし ✅ 2026-05-19（lib/logger.py docstringの歴史的コメントのみ）
+- [x] `manage-scheduler.py reload` 後に `list` で全ジョブ `last_exit_code: 0` ✅ 2026-05-19
+- [x] `find ~/scripts -type d -name __pycache__` で古いキャッシュが残っていないこと ✅ 2026-05-19
+- [x] DEPRECATEDスクリプト削除後に `ai-cli-utils.py` の `scan_agents()` が正常動作すること ✅ 2026-05-19
+
+## 実施結果
+
+### 実施日: 2026-05-19
+
+**Task 1〜4 + 推奨追加事項 全て完了。**
+
+#### 実施内容
+
+| タスク | 状態 | 備考 |
+|---|---|---|
+| Task 1: import文の一括書き換え | ✅ | 8ファイル（DEPRECATED 2ファイルは削除で対応） |
+| Task 2: 文字列参照の修正 | ✅ | 2ファイル |
+| Task 3: 不要ファイルの削除 | ✅ | 7ファイル（issue記載6 + DEPRECATED 2 - 既削除1） |
+| Task 4: 動作検証 | ✅ | 全項目パス |
+| 推奨1: DEPRECATEDスクリプト削除 | ✅ | academic, gws 両方削除 |
+| 推奨2: `__pycache__` 一括削除 | ✅ | |
+| 推奨3: agent-pipeline-run-script-guide.md 更新 | ✅ | |
+| 推奨4: README.md 更新 | ✅ | |
+
+#### 追加で修正したファイル（レビューで検出）
+
+| ファイル | 修正内容 |
+|---|---|
+| `.shared-ai/references/agent-pipeline-guide.md` | DEPRECATEDパイプラインの独立パイプライン一覧から削除 |
+| `.shared-ai/references/job-management-guide.md` | `_pipeline_common.py` → `lib/pipeline_engine.py` 参照更新 |
+| `.shared-ai/interfaces/agent-params-schema.md` | 同上 |
+| `.shared-ai/prompts/agent-pipeline-creator.md` | 同上 |
+| `.shared-ai/prompts/slack-dispatch-router.md` | DEPRECATEDパイプラインをディスパッチ候補から削除 |
+| `scripts/setup/verify-scripts.py` | IMPORT_KNOWN_ISSUES から削除済みファイルを除去 |
+
+#### sys.path 変更方針
+
+issueでは `sys.path.insert(0, str(Path(__file__).resolve().parent.parent))` + `lib/` 追加を想定していたが、
+実装では `sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))` のみに変更した。
+
+理由: `scripts/` をパスに含める必要がなくなったため（`_pipeline_common.py` 削除後は `lib/` 配下のモジュールのみimportすれば十分）。
+
+### 残タスク
+
+| # | 内容 | 状態 | 備考 |
+|---|---|---|---|
+| 1 | launchd経由daily pipeline定期実行確認 | ⬜ | 翌朝2:00 JST（手動実行は成功済み） |
+| 2 | launchd経由weekly pipeline定期実行確認 | ⬜ | 次の土曜3:30 JST |
+
+> 上記は「実施後の経過観察」であり、コード変更は全て完了している。

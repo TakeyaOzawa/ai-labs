@@ -431,7 +431,7 @@ def _rotate_file(log_file: Path, max_lines: int, keep_lines: int) -> None:
 def rotate_log(log_file: Path, max_lines: int, keep_lines: int = 200) -> None:
     """ログファイルが max_lines を超えていたら末尾 keep_lines 行に切り詰める。
 
-    後方互換: _pipeline_common.py の既存 rotate_log() と同一シグネチャ。
+    後方互換: 旧 _pipeline_common.py の既存 rotate_log() と同一シグネチャ。
     PipelineLogger を使用する場合は get_agent_log() / rotate_all() が
     自動でローテーションするため、この関数の呼び出しは不要。
     """
@@ -441,7 +441,7 @@ def rotate_log(log_file: Path, max_lines: int, keep_lines: int = 200) -> None:
 def log_error(pipeline: str, agent: str, message: str) -> None:
     """構造化エラーログを出力する。
 
-    後方互換: _pipeline_common.py の既存 log_error() と同一シグネチャ。
+    後方互換: 旧 _pipeline_common.py の既存 log_error() と同一シグネチャ。
     常に stderr に出力する（launchd StandardErrorPath との互換性維持）。
     """
     timestamp = datetime.now(tz=JST).strftime("%Y-%m-%dT%H:%M:%S+09:00")

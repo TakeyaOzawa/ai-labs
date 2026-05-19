@@ -54,7 +54,6 @@ scripts/
 ├── Makefile                # テスト・lint実行用
 ├── conftest.py             # pytest共通fixture（sys.path設定）
 ├── platform-commands.sh    # シェルユーティリティ
-├── _pipeline_common.py     # 後方互換ラッパー（lib/ へのre-export）
 │
 ├── lib/                    # 共通ライブラリ（Pythonパッケージ）
 ├── pipelines/              # パイプライン実行エントリポイント
@@ -83,8 +82,8 @@ scripts/
 | `run-weekly-pipeline.py` | ウィークリーパイプライン実行 |
 | `run-freshness-pipeline.py` | ディレクトリ鮮度チェックパイプライン |
 | `run-poc-planner-pipeline.py` | PoC プランナーパイプライン |
-| `run-gws-trend-scout-pipeline.py` | Google Workspace トレンドスカウト |
-| `run-academic-trend-scout-pipeline.py` | 学術論文トレンドスカウト |
+| `run-gws-trend-scout-pipeline.py` | GWS トレンドスカウト（単体実行用） |
+| `run-academic-trend-scout-pipeline.py` | 学術論文トレンドスカウト（単体実行用） |
 | `run-github-org-trend-scout-pipeline.py` | GitHub Org トレンドスカウト |
 | `run-github-repo-analysis-pipeline.py` | GitHub リポジトリ分析パイプライン |
 

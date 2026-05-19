@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.12
-import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # noqa: E402
+import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))  # noqa: E402
 """
 run-poc-planner-pipeline: tech-poc-planner を素材シート1件ごとに個別実行するパイプライン
 
@@ -19,9 +19,7 @@ run-poc-planner-pipeline: tech-poc-planner を素材シート1件ごとに個別
 import time
 from datetime import datetime
 
-from _pipeline_common import (
-    HOME,
-    JST,
+from models import (
     AgentExecutor,
     OutputParams,
     PipelineConfig,
@@ -29,8 +27,8 @@ from _pipeline_common import (
     SlackParams,
     Step,
     StepParams,
-    run_pipeline,
 )
+from pipeline_engine import HOME, JST, run_pipeline
 
 
 def _default_base_date() -> str:

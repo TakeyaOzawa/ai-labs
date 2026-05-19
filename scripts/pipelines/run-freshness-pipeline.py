@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.12
-import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # noqa: E402
+import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))  # noqa: E402
 """
 run-freshness-pipeline: 参照データの鮮度チェックと更新パイプライン
 
@@ -20,19 +20,16 @@ import json
 import subprocess
 from datetime import datetime
 
-from _pipeline_common import (
-    HOME,
-    JST,
-    SCRIPTS_DIR,
+from models import (
     AgentExecutor,
     PipelineConfig,
     PipelineContext,
+    ScriptExecutor,
     SlackParams,
     Step,
     StepParams,
-    ScriptExecutor,
-    run_pipeline,
 )
+from pipeline_engine import HOME, JST, SCRIPTS_DIR, run_pipeline
 
 
 def _default_base_date() -> str:

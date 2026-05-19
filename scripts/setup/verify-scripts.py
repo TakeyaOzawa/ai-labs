@@ -36,9 +36,7 @@ EXCLUDE_FILES = {"__init__.py", "conftest.py"}
 EXCLUDE_DIRS = {"old", "tests", "__pycache__", ".pytest_cache", ".venv"}
 
 # import検証で既知の正常エラーを許容するファイル
-IMPORT_KNOWN_ISSUES = {
-    "_pipeline_common_backup.py",  # 削除予定のバックアップ
-}
+IMPORT_KNOWN_ISSUES: set[str] = set()
 
 
 # ─── チェックロジック ─────────────────────────────────────────────
@@ -128,7 +126,7 @@ def collect_files(target_dirs: list[str] | None = None) -> list[Path]:
     """検証対象ファイルを収集する。"""
     files: list[Path] = []
 
-    # ルート直下の .py ファイル（_pipeline_common.py 等）
+    # ルート直下の .py ファイル
     if target_dirs is None:
         for f in SCRIPTS_DIR.glob("*.py"):
             if f.name not in EXCLUDE_FILES and not f.name.startswith("."):

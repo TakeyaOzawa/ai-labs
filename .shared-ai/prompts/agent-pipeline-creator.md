@@ -47,7 +47,7 @@
 #### 3.1 run-{name}-pipeline.py
 
 `~/.shared-ai/references/agent-pipeline-run-script-guide.md` のルールに準拠して作成する。
-`scripts/_pipeline_common.py` の `PipelineConfig` + `run_pipeline()` を使用する。
+`scripts/lib/pipeline_engine.py` の `PipelineConfig` + `run_pipeline()` を使用する。
 
 新規パイプラインファイルに定義すべき要素:
 - `AGENTS` リスト

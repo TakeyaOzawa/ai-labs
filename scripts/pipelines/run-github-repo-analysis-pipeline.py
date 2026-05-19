@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.12
-import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # noqa: E402
+import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))  # noqa: E402
 """
 run-github-repo-analysis-pipeline: GitHubリポジトリ分析パイプライン
 
@@ -24,7 +24,8 @@ import re
 import subprocess
 from datetime import datetime, timedelta, timezone
 
-from _pipeline_common import run_ai_command, run_slack_notify, load_env
+from pipeline_engine import run_ai_command, run_slack_notify
+from config import load_env
 
 # ─── 定数 ────────────────────────────────────────────────────────
 

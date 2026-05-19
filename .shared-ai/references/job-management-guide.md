@@ -17,7 +17,7 @@
 ```
 parent (scout_daily)
 ├── child (tech-trend-scout)
-├── child (run-gws-trend-scout-pipeline)
+├── child (gws-trend-scout-pipeline)
 │   ├── grandchild (gws-extractor-docs)
 │   ├── grandchild (gws-extractor-slides)
 │   ├── grandchild (gws-extractor-sheets)
@@ -139,7 +139,7 @@ python3.12 ~/scripts/jobs/create-jobs.py --pipeline scout_daily --base-date 2026
 ```
 ✅ scout_daily [completed] id=019746a1b2c3...
   ✅ tech-trend-scout [completed] id=019746a1b2c4...
-  ✅ run-gws-trend-scout-pipeline [completed] id=019746a1b2c5...
+  ✅ gws-trend-scout-pipeline [completed] id=019746a1b2c5...
     ✅ gws-extractor-docs [completed] id=019746a1b2c6...
     ✅ gws-extractor-slides [completed] id=019746a1b2c7...
     ❌ gws-extractor-sheets [failed] id=019746a1b2c8... error=kiro-cli exit non-zero
@@ -235,7 +235,7 @@ python3.12 ~/scripts/jobs/update-job.py --job-file /path/to/file.json \
 
 ### 仕組み
 
-親パイプライン（`_pipeline_common.py`）がサブパイプラインを実行する際、以下の環境変数を設定する:
+親パイプライン（`lib/pipeline_engine.py`）がサブパイプラインを実行する際、以下の環境変数を設定する:
 
 | 環境変数 | 内容 |
 |---|---|

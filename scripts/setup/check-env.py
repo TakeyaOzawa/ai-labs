@@ -81,7 +81,7 @@ OPTIONAL_VARS = [
     {
         "name": "AI_COMMAND_TYPE",
         "description": "AI CLIの種類（claude or kiro-cli）",
-        "used_by": "run-slack-dispatch-router.py, _pipeline_common.py, dispatch-agent-wrapper.py, ai-cli-utils.py",
+        "used_by": "run-slack-dispatch-router.py, lib/pipeline_engine.py, dispatch-agent-wrapper.py, ai-cli-utils.py",
     },
 ]
 

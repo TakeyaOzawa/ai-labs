@@ -8,7 +8,6 @@
 
 ```
 scripts/
-├── _pipeline_common.py              # 後方互換ラッパー（lib/ へのre-export）
 ├── lib/
 │   ├── models.py                    # ドメインモデル（Step, Executor, StepParams等）
 │   ├── ports.py                     # Protocol定義
@@ -18,8 +17,7 @@ scripts/
 ├── pipelines/
 │   ├── run-daily-pipeline.py        # daily固有の設定 + フック関数
 │   ├── run-weekly-pipeline.py       # weekly固有の設定 + フック関数
-│   ├── run-gws-trend-scout-pipeline.py  # サブパイプライン
-│   └── run-academic-trend-scout-pipeline.py  # サブパイプライン
+│   └── ...
 ```
 
 ### 設計方針: 設定dict + 共通runner関数
@@ -27,17 +25,18 @@ scripts/
 各パイプラインファイルが `PipelineConfig` を定義し、共通の `run_pipeline()` に渡すフラットな構成。
 クラス継承は使わない（スクリプト規模に対して過剰、デバッグしやすさを優先）。
 
-### _pipeline_common.py が提供するもの
+### lib/ モジュールが提供するもの
 
-| カテゴリ | 内容 |
-|---------|------|
-| 定数 | `JST`, `HOME`, `SCRIPTS_DIR`, `PLATFORM_CMD`, `MAX_LOG_LINES`, `MAX_AGENT_LOG_LINES` |
-| ログ（logger.py経由） | `PipelineLogger`, `rotate_log()`, `log_error()`, `setup_pipeline_logging()` |
-| ユーティリティ | `now_jst()`, `load_env()`, `run_ai_command()`, `run_sub_pipeline()` |
-| 通知 | `run_slack_notify()`, `run_slack_notify_async()` |
-| ヘルパー | `start_caffeinate()`, `stop_caffeinate()`, `get_child_job_id()`, `update_job()` |
-| 設定クラス | `PipelineConfig` dataclass, `NotifyEntry` NamedTuple |
-| runner | `run_pipeline(config)` — パイプライン共通実行フロー |
+| カテゴリ | モジュール | 内容 |
+|---------|-----------|------|
+| 定数 | `pipeline_engine` | `JST`, `HOME`, `SCRIPTS_DIR`, `PLATFORM_CMD`, `MAX_LOG_LINES`, `MAX_AGENT_LOG_LINES` |
+| ログ | `logger` | `PipelineLogger`, `rotate_log()`, `log_error()`, `setup_pipeline_logging()` |
+| ユーティリティ | `pipeline_engine` | `now_jst()`, `run_ai_command()`, `run_sub_pipeline()` |
+| 設定 | `config` | `load_env()`, `ScriptsConfig` |
+| 通知 | `pipeline_engine` | `run_slack_notify()`, `run_slack_notify_async()` |
+| ヘルパー | `pipeline_engine` | `start_caffeinate()`, `stop_caffeinate()`, `get_child_job_id()`, `update_job()` |
+| モデル | `models` | `PipelineConfig`, `Step`, `StepParams`, `Executor` 等 |
+| runner | `pipeline_engine` | `run_pipeline(config)` — パイプライン共通実行フロー |
 
 ### PipelineConfig フィールド
 
@@ -79,11 +78,13 @@ class PipelineConfig:
 
 ```python
 #!/usr/bin/env python3.12
-from pathlib import Path
+import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))  # noqa: E402
 
-from _pipeline_common import (
-    HOME, JST, NotifyEntry, PipelineConfig, now_jst, run_pipeline,
+from models import (
+    AgentExecutor, OutputParams, PipelineConfig, PipelineContext,
+    SlackParams, Step, StepParams,
 )
+from pipeline_engine import HOME, JST, run_pipeline
 
 LOG_DIR = HOME / "logs" / "jobs" / "scout_{name}"
 AGENTS = [...]
@@ -122,15 +123,14 @@ if __name__ == "__main__":
 - `.py` 拡張子を除去
 - `run-` プレフィックスがあれば除去
 
-例: `"run-gws-trend-scout-pipeline.py"` → entry_name: `"gws-trend-scout-pipeline"`
+例: `"run-freshness-pipeline.py"` → entry_name: `"freshness-pipeline"`
 
 このentry_nameがジョブ名、NOTIFY_FILE_MAPキー、ログファイル名として使用される。
 
 ```python
 AGENTS = [
     "tech-trend-scout",                         # kiro-cliエージェント
-    "run-gws-trend-scout-pipeline.py",          # サブパイプライン
-    "run-academic-trend-scout-pipeline.py",     # サブパイプライン
+    "run-freshness-pipeline.py",                # サブパイプライン
 ]
 ```
 
@@ -299,7 +299,7 @@ from logger import get_logger, rotate_log, log_error
 ## 依存関係の解決
 
 `AGENTS` 配列の順序で順次実行。`depends_on` 付きジョブは、依存先が先に実行されるよう配置する。
-ジョブファイル使用時は `_pipeline_common.py` のスケジューラが `depends_on`（配列）を参照し、
+ジョブファイル使用時は `lib/pipeline_engine.py` のスケジューラが `depends_on`（配列）を参照し、
 依存先が全て完了していないジョブを自動スキップする。
 
 `depends_on` の形式: `null`（依存なし）または `["job-name-1", "job-name-2"]`（配列）。

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.12
-import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # noqa: E402
+import sys; from pathlib import Path; sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))  # noqa: E402
 """
 run-weekly-pipeline: 週次scoutパイプラインをAIコマンドで実行する（タスク管理付き）
 
@@ -21,10 +21,7 @@ import json
 import subprocess
 from datetime import datetime
 
-from _pipeline_common import (
-    HOME,
-    JST,
-    SCRIPTS_DIR,
+from models import (
     AgentExecutor,
     OutputParams,
     PipelineConfig,
@@ -33,8 +30,8 @@ from _pipeline_common import (
     SlackParams,
     Step,
     StepParams,
-    run_pipeline,
 )
+from pipeline_engine import HOME, JST, SCRIPTS_DIR, run_pipeline
 
 
 # ─── Weekly固有の関数 ────────────────────────────────────────────
