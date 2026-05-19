@@ -40,7 +40,7 @@ MAX_MESSAGE_LENGTH = 3800
 MAX_RETRIES = 3
 REQUEST_TIMEOUT = 30
 TITLE_BAR_CHAR = "⎯"
-TITLE_BAR_LENGTH = 20
+TITLE_BAR_LENGTH = 18
 
 
 # ─── Markdown → Slack mrkdwn 変換 ────────────────────────────────
