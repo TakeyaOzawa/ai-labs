@@ -6,7 +6,8 @@
 #   2. scripts/*.py 変更時 → シンタックスチェック（py_compile）
 #   3. scripts/lib/ 変更時 → 単体テスト（pytest）
 #   4. scripts/*.py 変更時 → import整合性チェック（verify-scripts.py --import）
-#   5. launchd plist 変更時 → plist構文検証（plutil）
+#   5. scripts/*.py 変更時 → OS依存コマンド直接呼び出し検出（check-platform-commands.py）
+#   6. launchd plist 変更時 → plist構文検証（plutil）
 #
 # スキップ: git commit --no-verify
 
@@ -139,7 +140,35 @@ if [ "$IMPORT_CHECK_NEEDED" = true ]; then
     fi
 fi
 
-# ─── 5. launchd plist 構文検証 ────────────────────────────────────
+# ─── 5. OS依存コマンド直接呼び出し検出 ────────────────────────────
+
+if [ -n "$PYTHON_FILES" ]; then
+    echo ""
+    echo "🖥️  OS依存コマンドチェック..."
+
+    # 変更されたサブディレクトリを特定
+    CHANGED_DIRS_PC=$(echo "$STAGED_FILES" | grep -oE 'scripts/(pipelines|jobs|slack|gws|rss|ai|setup|utils|data|lib)' | sed 's|scripts/||' | sort -u)
+
+    if [ -n "$CHANGED_DIRS_PC" ]; then
+        DIR_ARGS_PC=""
+        while IFS= read -r dir; do
+            DIR_ARGS_PC="$DIR_ARGS_PC --dir $dir"
+        done <<< "$CHANGED_DIRS_PC"
+
+        eval "python3.12 ~/scripts/setup/check-platform-commands.py $DIR_ARGS_PC" 2>&1 | grep -E '(❌|✅.*OK|件の違反)'
+        PC_EXIT=${pipestatus[1]}
+        if [ $PC_EXIT -ne 0 ]; then
+            echo ""
+            echo "❌ OS依存コマンドの直接呼び出しを検出しました。コミットを中断します。"
+            echo "   💡 platform-commands.sh 経由に修正してください"
+            echo "   💡 スキップする場合: git commit --no-verify"
+            exit 1
+        fi
+        echo "  ✅ OS依存コマンドチェック PASS"
+    fi
+fi
+
+# ─── 6. launchd plist 構文検証 ────────────────────────────────────
 
 PLIST_FILES=$(echo "$STAGED_FILES" | grep -E '\.plist$')
 
