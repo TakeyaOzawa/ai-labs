@@ -176,10 +176,13 @@ def build_steps(base_date: str, ctx: PipelineContext) -> list[Step]:
         ),
     ))
 
+    rss_updater_script = str(SCRIPTS_DIR / "rss" / "rss-source-updater.py")
     steps.append(Step(
         name="rss-source-updater",
-        executor=AgentExecutor(agent_name="rss-source-updater", prompt_text=prompt),
-        timeout=600,
+        executor=ScriptExecutor(
+            command=f"python3.12 {rss_updater_script} --date {base_date}",
+        ),
+        timeout=180,
         params=StepParams(slack=SlackParams(enabled=False)),
     ))
 
