@@ -1,0 +1,45 @@
+programs:
+  - name: "佐久間宣行のオールナイトニッポン0(ZERO)"
+    station_id: LFR
+    source: radiko
+    # day_of_week: 0  # 0=月曜（オプション: 特定曜日のみ取得）
+
+  - name: "オードリーのオールナイトニッポン"
+    station_id: LFR
+    source: radiko
+
+  - name: "問わず語りの神田伯山"
+    station_id: TBS
+    source: radiko
+
+  - name: "JUNK おぎやはぎのメガネびいき"
+    station_id: TBS
+    source: radiko
+
+  - name: "JUNK バナナマンのバナナムーンGOLD"
+    station_id: TBS
+    source: radiko
+
+  - name: "JUNK 山里亮太の不毛な議論"
+    station_id: TBS
+    source: radiko
+
+  - name: "安住紳一郎の日曜天国"
+    station_id: TBS
+    source: radiko
+
+  - name: "MILLION BILLION"
+    station_id: FMJ
+    source: radiko
+
+  - name: "From INI"
+    station_id: FMT
+    source: radiko
+
+  - performer_contains: "超特急"
+    source: radiko
+
+  # 今後の拡張
+  # - name: "rebuild.fm"
+  #   source: podcast
+  #   feed_url: "https://feeds.rebuild.fm/rebuildfm"

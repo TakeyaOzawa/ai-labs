@@ -1,0 +1,14 @@
+# ~/.config/systemd/user/radio-pipeline-watcher.service
+[Unit]
+Description=Radio Pipeline File Watcher
+After=docker.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3.12 %h/scripts/jobs/radio-pipeline-watcher.py --watch
+Restart=always
+RestartSec=30
+Environment=HOME=%h
+
+[Install]
+WantedBy=default.target

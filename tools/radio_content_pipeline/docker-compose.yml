@@ -1,0 +1,53 @@
+services:
+  recorder:
+    build:
+      context: .
+      dockerfile: recorder/Dockerfile
+    volumes:
+      - ./config:/app/config:ro
+      - ./state:/app/state
+      - ./data/recordings:/data/recordings
+      - ./data/transcripts:/data/transcripts
+      - ./src:/app/src:ro
+    environment:
+      - TZ=Asia/Tokyo
+      - PYTHONPATH=/app/src
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  transcriber:
+    build:
+      context: .
+      dockerfile: transcriber/Dockerfile
+    volumes:
+      - ./config:/app/config:ro
+      - ./state:/app/state
+      - ./data/recordings:/data/recordings
+      - ./data/transcripts:/data/transcripts
+      - ./data/summaries:/data/summaries
+      - ./src:/app/src:ro
+      - whisper-cache:/root/.cache/huggingface
+    environment:
+      - TZ=Asia/Tokyo
+      - WHISPER_MODEL=small
+      - WHISPER_BEAM_SIZE=1
+      - WHISPER_VAD_FILTER=false
+      - WHISPER_LANGUAGE=ja
+      - WHISPER_COMPUTE_TYPE=int8
+      - PYTHONPATH=/app/src
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  whisper-cache:
+    driver: local

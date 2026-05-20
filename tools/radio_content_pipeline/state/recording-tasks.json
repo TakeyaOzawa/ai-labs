@@ -1,0 +1,182 @@
+[
+  {
+    "file_path": "/data/recordings/LFR_佐久間宣行のオールナイトニッポン0(ZERO)_20260514.m4a",
+    "program_name": "佐久間宣行のオールナイトニッポン0(ZERO)",
+    "station_id": "LFR",
+    "source_url": "https://radiko.jp/#!/ts/LFR/20260514030000",
+    "status": "success",
+    "created_at": "2026-05-20T06:00:04.939422+09:00",
+    "updated_at": "2026-05-20T06:11:29.710372+09:00",
+    "started_at": "2026-05-20T06:00:05.390751+09:00",
+    "completed_at": "2026-05-20T06:11:29.710372+09:00",
+    "error": null,
+    "metadata": {
+      "title": "佐久間宣行のオールナイトニッポン0(ZERO)",
+      "start_time": "20260514030000",
+      "end_time": "20260514043000",
+      "performers": "佐久間宣行"
+    }
+  },
+  {
+    "file_path": "/data/recordings/LFR_オードリーのオールナイトニッポン_20260517.m4a",
+    "program_name": "オードリーのオールナイトニッポン",
+    "station_id": "LFR",
+    "source_url": "https://radiko.jp/#!/ts/LFR/20260517010000",
+    "status": "success",
+    "created_at": "2026-05-20T06:00:04.940713+09:00",
+    "updated_at": "2026-05-20T06:11:33.912257+09:00",
+    "started_at": "2026-05-20T06:00:05.390896+09:00",
+    "completed_at": "2026-05-20T06:11:33.912257+09:00",
+    "error": null,
+    "metadata": {
+      "title": "オードリーのオールナイトニッポン",
+      "start_time": "20260517010000",
+      "end_time": "20260517030000",
+      "performers": "オードリー(若林正恭/春日俊彰)"
+    }
+  },
+  {
+    "file_path": "/data/recordings/TBS_問わず語りの神田伯山_20260515.m4a",
+    "program_name": "問わず語りの神田伯山",
+    "station_id": "TBS",
+    "source_url": "https://radiko.jp/#!/ts/TBS/20260515213000",
+    "status": "success",
+    "created_at": "2026-05-20T06:00:04.941708+09:00",
+    "updated_at": "2026-05-20T06:11:30.538080+09:00",
+    "started_at": "2026-05-20T06:11:29.718452+09:00",
+    "completed_at": "2026-05-20T06:11:30.538080+09:00",
+    "error": null,
+    "metadata": {
+      "title": "問わず語りの神田伯山",
+      "start_time": "20260515213000",
+      "end_time": "20260515220000",
+      "performers": "神田伯山"
+    }
+  },
+  {
+    "file_path": "/data/recordings/TBS_JUNK おぎやはぎのメガネびいき_20260515.m4a",
+    "program_name": "JUNK おぎやはぎのメガネびいき",
+    "station_id": "TBS",
+    "source_url": "https://radiko.jp/#!/ts/TBS/20260515010000",
+    "status": "success",
+    "created_at": "2026-05-20T06:00:04.942412+09:00",
+    "updated_at": "2026-05-20T06:27:16.074241+09:00",
+    "started_at": "2026-05-20T06:11:30.540611+09:00",
+    "completed_at": "2026-05-20T06:27:16.074241+09:00",
+    "error": null,
+    "metadata": {
+      "title": "JUNK おぎやはぎのメガネびいき",
+      "start_time": "20260515010000",
+      "end_time": "20260515030000",
+      "performers": "おぎやはぎ"
+    }
+  },
+  {
+    "file_path": "/data/recordings/TBS_JUNK バナナマンのバナナムーンGOLD_20260516.m4a",
+    "program_name": "JUNK バナナマンのバナナムーンGOLD",
+    "station_id": "TBS",
+    "source_url": "https://radiko.jp/#!/ts/TBS/20260516010000",
+    "status": "success",
+    "created_at": "2026-05-20T06:00:04.943067+09:00",
+    "updated_at": "2026-05-20T06:27:14.128255+09:00",
+    "started_at": "2026-05-20T06:11:33.914975+09:00",
+    "completed_at": "2026-05-20T06:27:14.128255+09:00",
+    "error": null,
+    "metadata": {
+      "title": "JUNK バナナマンのバナナムーンGOLD",
+      "start_time": "20260516010000",
+      "end_time": "20260516030000",
+      "performers": "バナナマン　ゲスト：深澤辰哉（Snow Man）"
+    }
+  },
+  {
+    "file_path": "/data/recordings/TBS_JUNK 山里亮太の不毛な議論_20260514.m4a",
+    "program_name": "JUNK 山里亮太の不毛な議論",
+    "station_id": "TBS",
+    "source_url": "https://radiko.jp/#!/ts/TBS/20260514010000",
+    "status": "success",
+    "created_at": "2026-05-20T06:00:04.943949+09:00",
+    "updated_at": "2026-05-20T06:39:53.927486+09:00",
+    "started_at": "2026-05-20T06:27:14.132749+09:00",
+    "completed_at": "2026-05-20T06:39:53.927486+09:00",
+    "error": null,
+    "metadata": {
+      "title": "JUNK 山里亮太の不毛な議論",
+      "start_time": "20260514010000",
+      "end_time": "20260514030000",
+      "performers": "山里亮太"
+    }
+  },
+  {
+    "file_path": "/data/recordings/TBS_安住紳一郎の日曜天国_20260517.m4a",
+    "program_name": "安住紳一郎の日曜天国",
+    "station_id": "TBS",
+    "source_url": "https://radiko.jp/#!/ts/TBS/20260517100000",
+    "status": "success",
+    "created_at": "2026-05-20T06:00:04.944865+09:00",
+    "updated_at": "2026-05-20T06:41:18.967871+09:00",
+    "started_at": "2026-05-20T06:27:16.077912+09:00",
+    "completed_at": "2026-05-20T06:41:18.967871+09:00",
+    "error": null,
+    "metadata": {
+      "title": "安住紳一郎の日曜天国",
+      "start_time": "20260517100000",
+      "end_time": "20260517115500",
+      "performers": "安住紳一郎（TBSアナウンサー） / 中澤有美子"
+    }
+  },
+  {
+    "file_path": "/data/recordings/FMJ_MILLION BILLION_20260517.m4a",
+    "program_name": "MILLION BILLION",
+    "station_id": "FMJ",
+    "source_url": "https://radiko.jp/#!/ts/FMJ/20260517000000",
+    "status": "success",
+    "created_at": "2026-05-20T06:00:04.945629+09:00",
+    "updated_at": "2026-05-20T06:50:06.387212+09:00",
+    "started_at": "2026-05-20T06:39:53.932335+09:00",
+    "completed_at": "2026-05-20T06:50:06.387212+09:00",
+    "error": null,
+    "metadata": {
+      "title": "MILLION BILLION",
+      "start_time": "20260517000000",
+      "end_time": "20260517010000",
+      "performers": "BE:FIRST"
+    }
+  },
+  {
+    "file_path": "/data/recordings/FMT_From INI_20260516.m4a",
+    "program_name": "From INI",
+    "station_id": "FMT",
+    "source_url": "https://radiko.jp/#!/ts/FMT/20260516010000",
+    "status": "success",
+    "created_at": "2026-05-20T06:00:04.946278+09:00",
+    "updated_at": "2026-05-20T06:56:24.390465+09:00",
+    "started_at": "2026-05-20T06:41:18.971892+09:00",
+    "completed_at": "2026-05-20T06:56:24.390465+09:00",
+    "error": null,
+    "metadata": {
+      "title": "From INI",
+      "start_time": "20260516010000",
+      "end_time": "20260516030000",
+      "performers": "INI"
+    }
+  },
+  {
+    "file_path": "/data/recordings/QRR_稜海しました！超特急QR_20260519.m4a",
+    "program_name": "稜海しました！超特急QR",
+    "station_id": "QRR",
+    "source_url": "https://radiko.jp/#!/ts/QRR/20260519013000",
+    "status": "success",
+    "created_at": "2026-05-20T06:00:04.946904+09:00",
+    "updated_at": "2026-05-20T06:54:02.055584+09:00",
+    "started_at": "2026-05-20T06:50:06.392187+09:00",
+    "completed_at": "2026-05-20T06:54:02.055584+09:00",
+    "error": null,
+    "metadata": {
+      "title": "稜海しました！超特急QR",
+      "start_time": "20260519013000",
+      "end_time": "20260519020000",
+      "performers": "カイ（超特急）, リョウガ（超特急）"
+    }
+  }
+]

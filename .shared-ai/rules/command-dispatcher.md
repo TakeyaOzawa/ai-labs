@@ -15,3 +15,4 @@
 | Slack操作（メッセージ送信、チャンネル操作、ユーザー検索等） | `~/.shared-ai/lookups/slack-user-lookup.md`, `~/.shared-ai/lookups/slack-channel-mapping.md` |
 | Notion操作（ページ作成、DB操作、ユーザー検索等） | `~/.shared-ai/lookups/notion-user-lookup.md` |
 | .shared-ai/配下へのファイル追加・移動 | `~/.shared-ai/references/shared-ai-directory-guide.md` |
+| スケジューラ操作（launchctl, systemctl, crontab, LaunchAgent等） | `~/.shared-ai/references/scheduler-management-guide.md` |

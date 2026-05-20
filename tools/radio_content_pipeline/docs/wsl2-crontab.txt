@@ -1,0 +1,2 @@
+# Radio Pipeline - 毎朝6時に録音トリガー
+0 6 * * * /usr/bin/python3.12 /home/$USER/scripts/pipelines/run-radio-content-pipeline.py >> /home/$USER/logs/jobs/radio_content_pipeline/cron.log 2>&1

@@ -1,0 +1,22 @@
+{
+  "name": "radio-transcript-summarizer",
+  "description": "faster-whisperで文字起こしされたラジオ番組のJSON（transcripts）を読み込み、内容を要約してMarkdownファイルとして出力するエージェント。",
+  "prompt": "file://../../.shared-ai/prompts/radio-transcript-summarizer.md",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "allowedTools": [
+    "shell",
+    "write"
+  ],
+  "toolsSettings": {
+    "write": {
+      "allowedPaths": [
+        "~/tools/radio_content_pipeline/data/summaries/**"
+      ]
+    }
+  },
+  "resources": []
+}

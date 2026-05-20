@@ -1,0 +1,34 @@
+schedule:
+  cron: "0 6 * * *"  # 毎朝6時
+
+recording:
+  max_concurrent: 2          # 同時ダウンロード数
+  timeout_hours: 6           # processingタイムアウト
+  output_dir: /data/recordings
+
+transcription:
+  max_concurrent: 1          # 同時文字起こし数（CPU負荷が高いため1推奨）
+  timeout_hours: 6           # processingタイムアウト
+  model: small
+  beam_size: 1
+  vad_filter: false
+  language: ja
+  output_dir: /data/transcripts
+
+notification:
+  slack_webhook_url: ${SLACK_WEBHOOK_URL}
+  notify_on:
+    - recording_complete
+    - transcription_complete
+    - error
+
+summarization:
+  enabled: true
+  model: claude-sonnet-4-20250514
+  api_key: ${ANTHROPIC_API_KEY}
+  output_dir: /data/summaries
+
+retention:
+  recordings_days: 30      # M4Aファイルの保持日数（0=無期限）
+  transcripts_days: 0      # 文字起こしは無期限保持
+  summaries_days: 0        # 要約は無期限保持
