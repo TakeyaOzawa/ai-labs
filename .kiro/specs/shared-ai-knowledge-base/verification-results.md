@@ -56,7 +56,7 @@
   - Kiroソースコード（`resolvePromptFileUri`）を解析し、`vscode.Uri.joinPath` が `..` を含む相対パスを正常に解決することを確認
   - baseDir = `~/.kiro/agents/` → `joinPath(baseDir, "../../.shared-ai/prompts/xxx.md")` → `~/.shared-ai/prompts/xxx.md`
   - セキュリティ制限・パスバリデーションなし。ファイルウォッチャーも正常に設定される
-  - 絶対パス（`file:///Users/takeya_ozawa/.shared-ai/prompts/xxx.md`）も動作する
+  - 絶対パス（`file://~/.shared-ai/prompts/xxx.md`）も動作する
 - **結論:** file://相対パス方式でprompts参照が可能。ラッパー方式は不要
 
 ### 検証5: Codex rules/ ディレクトリの個別ファイルsymlink対応

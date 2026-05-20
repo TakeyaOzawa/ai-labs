@@ -89,7 +89,7 @@ related_domain: []
     - Kiroソースコード（`resolvePromptFileUri`）を解析し、`vscode.Uri.joinPath` が `..` を含む相対パスを正常に解決することを確認
     - baseDir = `~/.kiro/agents/` → `joinPath(baseDir, "../../.shared-ai/prompts/test-agent.md")` → `~/.shared-ai/prompts/test-agent.md`
     - セキュリティ制限・パスバリデーションなし。ファイルウォッチャーも正常に設定される
-  - [x] 4.3 絶対パス（`file:///Users/takeya_ozawa/.shared-ai/prompts/test-agent.md`）でテスト
+  - [x] 4.3 絶対パス（`file://~/.shared-ai/prompts/test-agent.md`）でテスト
     - 検証結果: **合格 ✅**（相対パスが合格のため代替テストとしての実施だが、コード解析で動作確認済み）
     - `path.startsWith("/")` → `vscode.Uri.file(path)` で直接解決。制限なし
     - 結論: 相対パス・絶対パスの**両方が動作する**
@@ -264,21 +264,21 @@ related_domain: []
   - **変更内容:** 元ディレクトリを削除し、`~/.shared-ai/skills/` へのsymlinkに置換
   - **対応要件:** REQ-3
   - **追加理由:** 計画時
-  - **実行結果:** `rm -rf && ln -s` 一括実行完了。`ls -la` で `~/.kiro/skills -> /Users/takeya_ozawa/.shared-ai/skills` 確認済み。`gws gmail --help` 正常動作確認済み
+  - **実行結果:** `rm -rf && ln -s` 一括実行完了。`ls -la` で `~/.kiro/skills -> ~/.shared-ai/skills` 確認済み。`gws gmail --help` 正常動作確認済み
 
 - [x] 19. Claude Code skills のsymlink化
   - **対象ファイル:** `~/.claude/skills/`
   - **変更内容:** 元ディレクトリを削除し、`~/.shared-ai/skills/` へのsymlinkに置換
   - **対応要件:** REQ-3
   - **追加理由:** 計画時
-  - **実行結果:** `rm -rf && ln -s` 実行完了。`ls -la` で `~/.claude/skills -> /Users/takeya_ozawa/.shared-ai/skills` 確認済み。SKILL.md読み込み正常
+  - **実行結果:** `rm -rf && ln -s` 実行完了。`ls -la` で `~/.claude/skills -> ~/.shared-ai/skills` 確認済み。SKILL.md読み込み正常
 
 - [x] 20. .agents skills のsymlink化
   - **対象ファイル:** `~/.agents/skills/`
   - **変更内容:** 元ディレクトリを削除し、`~/.shared-ai/skills/` へのsymlinkに置換
   - **対応要件:** REQ-3
   - **追加理由:** 計画時
-  - **実行結果:** `rm -rf && ln -s` 実行完了。`ls -la` で `~/.agents/skills -> /Users/takeya_ozawa/.shared-ai/skills` 確認済み。SKILL.md読み込み正常
+  - **実行結果:** `rm -rf && ln -s` 実行完了。`ls -la` で `~/.agents/skills -> ~/.shared-ai/skills` 確認済み。SKILL.md読み込み正常
 
 - [x] 21. symlink化後の動作確認
   - **対象ファイル:** `~/.kiro/skills/`, `~/.claude/skills/`, `~/.agents/skills/`
@@ -298,7 +298,7 @@ related_domain: []
 
 - [x] 22. チェックポイント — Phase 2完了確認
   - ✅ 3箇所のskillsディレクトリがsymlinkになっていること（`ls -la` で確認）
-  - ✅ symlink先が `~/.shared-ai/skills/` を指していること（3箇所とも `/Users/takeya_ozawa/.shared-ai/skills` を指している）
+  - ✅ symlink先が `~/.shared-ai/skills/` を指していること（3箇所とも `~/.shared-ai/skills` を指している）
   - ✅ 各ツールでスキルが正常に動作すること（gws gmail --help 成功、SKILL.md読み込み成功）
   - ✅ バックアップ（*.bak）が存在すること（`~/.kiro/skills.bak`, `~/.claude/skills.bak`, `~/.agents/skills.bak` 全て存在）
 
@@ -459,7 +459,7 @@ related_domain: []
   - [x] 37.1 Claude Codeセッションでルール反映確認
     - 実行結果: `~/.claude/CLAUDE.md` に「共通ナレッジベース参照」セクションが追記されていることを確認（shared-ai参照8箇所）
   - [x] 37.2 Codex CLIセッションでルール反映確認
-    - 実行結果: `~/.codex/rules/` に5つのsymlinkが存在し、全て正しいターゲット（`/Users/takeya_ozawa/.shared-ai/rules/`配下）を指していることを確認
+    - 実行結果: `~/.codex/rules/` に5つのsymlinkが存在し、全て正しいターゲット（`~/.shared-ai/rules/`配下）を指していることを確認
 
 - [x] 38. チェックポイント — Phase 5完了確認
   - ✅ CLAUDE.md に参照パスが追記されていること → 「共通ナレッジベース参照」セクション追記済み（shared-ai参照8箇所）

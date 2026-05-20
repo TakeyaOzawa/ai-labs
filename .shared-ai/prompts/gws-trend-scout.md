@@ -99,7 +99,7 @@ gws drive files list --page-all --page-limit 50 --params '{
 python3.12 ~/scripts/gws/filter-gws-drive-metadata.py \
   --input ~/Documents/works/scout_reports/gws_trends/daily/tmp/{種別}_metadata.ndjson \
   --output ~/Documents/works/scout_reports/gws_trends/daily/tmp/{種別}_filtered.json \
-  --owner-email takeya_ozawa@nyle.co.jp \
+  --owner-email user_name@example.co.jp \
   --top {上位件数}
 ```
 

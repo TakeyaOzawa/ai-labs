@@ -165,8 +165,8 @@ class TestCreatingPattern:
                 "Documents/works/tech_poc_plans/2026-05-17_openclaw-personal-ai-assistant.md",
             ),
             (
-                "Creating: /Users/takeya_ozawa/Documents/works/research_materials/2026-05-17_open-clew-engineer-guide.md",
-                "/Users/takeya_ozawa/Documents/works/research_materials/2026-05-17_open-clew-engineer-guide.md",
+                "Creating: ~/Documents/works/research_materials/2026-05-17_open-clew-engineer-guide.md",
+                "~/Documents/works/research_materials/2026-05-17_open-clew-engineer-guide.md",
             ),
             (
                 "Creating: ~/Documents/works/research_materials/test.md",
@@ -177,16 +177,16 @@ class TestCreatingPattern:
                 "Documents/works/tech_poc_plans/test.md",
             ),
             (
-                "Creating: \x1b[38;5;141m/Users/takeya_ozawa/Documents/works/tech_poc_plans/test.md\x1b[0m",
-                "/Users/takeya_ozawa/Documents/works/tech_poc_plans/test.md",
+                "Creating: \x1b[38;5;141m~/Documents/works/tech_poc_plans/test.md\x1b[0m",
+                "~/Documents/works/tech_poc_plans/test.md",
             ),
             (
                 "Updating: Documents/works/tech_poc_plans/2026-05-18_rfriends3-radio-recording-tool.md",
                 "Documents/works/tech_poc_plans/2026-05-18_rfriends3-radio-recording-tool.md",
             ),
             (
-                "Updating: /Users/takeya_ozawa/Documents/works/tech_poc_plans/2026-05-18_rfriends3-radio-recording-tool.md",
-                "/Users/takeya_ozawa/Documents/works/tech_poc_plans/2026-05-18_rfriends3-radio-recording-tool.md",
+                "Updating: ~/Documents/works/tech_poc_plans/2026-05-18_rfriends3-radio-recording-tool.md",
+                "~/Documents/works/tech_poc_plans/2026-05-18_rfriends3-radio-recording-tool.md",
             ),
         ],
     )
@@ -204,7 +204,7 @@ class TestExcludedPaths:
         "text",
         [
             "Creating: Documents/works/tmp/raw_results.md",
-            "Creating: /Users/takeya_ozawa/Documents/works/research_materials/tmp/raw_results.md",
+            "Creating: ~/Documents/works/research_materials/tmp/raw_results.md",
             "Creating: Documents/works/scout_reports/daily/2026-05-17_report.md",
         ],
     )
@@ -298,8 +298,8 @@ class TestResolvePath:
                 lambda home: home / "Documents/works/tech_poc_plans/test.md",
             ),
             (
-                "/Users/takeya_ozawa/Documents/works/test.md",
-                lambda _: Path("/Users/takeya_ozawa/Documents/works/test.md"),
+                "~/Documents/works/test.md",
+                lambda _: Path("~/Documents/works/test.md").expanduser(),
             ),
             ("works/test.md", lambda _: None),
         ],

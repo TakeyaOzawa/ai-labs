@@ -27,7 +27,7 @@ ${HOME}/Documents/works/notion_users/
 {notion_user_id}:
   name: "姓 名ローマ字"
   type: "person" | "bot"
-  email: "xxx@nyle.co.jp" | "-"
+  email: "xxx@example.co.jp" | "-"
 ```
 
 ## 探索手順

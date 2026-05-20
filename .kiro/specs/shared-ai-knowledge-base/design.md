@@ -33,8 +33,8 @@ related_domain: []
 
 ### 1.3 参照文書
 
-- 要件定義書: `/Users/takeya_ozawa/.kiro/specs/shared-ai-knowledge-base/requirements.md`
-- Issue: `/Users/takeya_ozawa/issues/shared-ai-knowledge-base.md`
+- 要件定義書: `~/.kiro/specs/shared-ai-knowledge-base/requirements.md`
+- Issue: `~/issues/shared-ai-knowledge-base.md`
 
 ## 2. アーキテクチャ
 

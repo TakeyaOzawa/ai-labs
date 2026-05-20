@@ -56,10 +56,10 @@ MASK_RULES = {
     "商談希望者_携帯電話番号": lambda n: str(n).zfill(11),
     "その他_電話番号": lambda n: str(n).zfill(11),
     "その他_携帯電話番号": lambda n: str(n).zfill(11),
-    # メール系: CONCAT(LPAD(stable_key, 13, '0'), '@nyle.co.jp')
-    "契約者_メールアドレス": lambda n: f"{str(n).zfill(13)}@nyle.co.jp",
-    "商談希望者_メールアドレス": lambda n: f"{str(n).zfill(13)}@nyle.co.jp",
-    "その他_メールアドレス": lambda n: f"{str(n).zfill(13)}@nyle.co.jp",
+    # メール系: CONCAT(LPAD(stable_key, 13, '0'), '@example.co.jp')
+    "契約者_メールアドレス": lambda n: f"{str(n).zfill(13)}@example.co.jp",
+    "商談希望者_メールアドレス": lambda n: f"{str(n).zfill(13)}@example.co.jp",
+    "その他_メールアドレス": lambda n: f"{str(n).zfill(13)}@example.co.jp",
     # --- SQL式に含まれないカラム（独自マスク） ---
     "郵便番号": lambda n: "9999999",
     "町名・番地": lambda n: f"マスク住所_{n}",
@@ -101,7 +101,7 @@ PREFIXED_PII_FIELDS: dict[str, type(lambda n: "")] = {
     "フルネーム": lambda n: f"かるもーん{n} 検証{n}",
     "電話番号": lambda n: str(n).zfill(11),
     "携帯電話番号": lambda n: str(n).zfill(11),
-    "メールアドレス": lambda n: f"{str(n).zfill(13)}@nyle.co.jp",
+    "メールアドレス": lambda n: f"{str(n).zfill(13)}@example.co.jp",
     "郵便番号": lambda n: "9999999",
     "町名・番地": lambda n: f"マスク住所_{n}",
     "LINE連絡先": lambda n: (

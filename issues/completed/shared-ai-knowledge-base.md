@@ -210,7 +210,7 @@ EOF
 
 # 4. 不合格の場合、相対パスのバリエーションを試す:
 #    - file://../../../.shared-ai/prompts/test-agent.md
-#    - file:///Users/takeya_ozawa/.shared-ai/prompts/test-agent.md（絶対パス）
+#    - file://~/.shared-ai/prompts/test-agent.md（絶対パス）
 
 # 5. クリーンアップ
 rm ~/.kiro/agents/test-shared-ai.json

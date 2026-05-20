@@ -20,7 +20,7 @@ set -eu -o pipefail
 # 出力: JSON形式
 
 AGENTS_DIR="$HOME/Library/LaunchAgents"
-PREFIX="com.takeya"
+PREFIX="com.user"
 
 usage() {
   echo '{"success": false, "error": "Usage: manage-launchd.sh <load|unload|reload|status|list> [label]"}'
