@@ -5,17 +5,24 @@
     mask_private_csv.py <input.csv> [<existing_mapping.csv>] [--key COLUMN]
 
 挙動:
-- input.csv の各行を読み、MASK_RULES に定義された PII カラムを顧客IDベースの
-  安定キー（stable_key）でマスク値に置き換えて出力する。
-  顧客IDカラムがない場合は連番をフォールバックとして使用する。
+- input.csv の各行を読み、MASK_RULES に定義された PII カラムを stable_key ベースの
+  マスク値に置き換えて出力する。
+- stable_key の導出優先順位:
+  1. 顧客ID（CUS形式: CUS0001 → 1）
+  2. 顧客一覧レコード番号（非空の場合）→ 30 * 10^桁数 + 値
+  3. レコード番号（各CSVの一意キー）→ CSV種別プレフィックス + 値
+     - 顧客一覧: 20 * 10^桁数 + 値
+     - 買取顧客一覧: 40 * 10^桁数 + 値
+     - 保険顧客一覧: 50 * 10^桁数 + 値
+  4. seq（連番フォールバック）
 - existing_mapping.csv が指定された場合、同じ一意キーを持つレコードは既存の
-  マスク値を再利用する。新規にマスクが発生した分（新規キー、または既存キーで
-  新たにマスクされたカラム）のみを差分マッピングとして別ファイルで出力。
+  マスク値を再利用する。新規にマスクが発生した分のみを差分マッピングとして出力。
 - --key は input.csv 側の一意キーカラム名。既定値は「レコード番号」。
-- 後続CSV（コンタクト履歴など）では --key で参照カラムを切り替える。
-  （例: --key 顧客一覧レコード番号）
+- マッピングCSVにはID系カラム（顧客ID、レコード番号等）を全て出力する。
 
 マスク対象カラムや生成パターンは MASK_RULES を直接編集する。
+プレフィックス付きカラム（例: リース契約者_姓）は PREFIXED_PII_FIELDS と
+PII_PREFIXES の組み合わせで自動展開される。
 """
 
 from __future__ import annotations
@@ -68,24 +75,237 @@ MASK_RULES = {
 }
 
 # ---------------------------------------------------------------------------
+# プレフィックス付きPIIカラムの自動展開
+# ---------------------------------------------------------------------------
+# 買取顧客一覧等では「リース契約者_姓」「買取申込者_姓」のようにプレフィックス付き
+# で同じPIIフィールドが複数人分存在する。以下の定義で自動展開する。
+
+# プレフィックス一覧（末尾の _ は自動付与）
+PII_PREFIXES: list[str] = [
+    "リース契約者_",
+    "買取申込者_",
+    "車両所有者_",
+    "保険契約者_",
+    "契約者_",
+    "商談希望者_",
+    "その他_",
+]
+
+# プレフィックス付きで展開するフィールド名 → マスク生成関数
+# （プレフィックスなしのベース名で定義）
+PREFIXED_PII_FIELDS: dict[str, type(lambda n: "")] = {
+    "姓": lambda n: f"かるもーん{n}",
+    "名": lambda n: f"検証{n}",
+    "姓（カナ）": lambda n: f"カルモーン{n}",
+    "名（カナ）": lambda n: f"ケンショウ{n}",
+    "フルネーム": lambda n: f"かるもーん{n} 検証{n}",
+    "電話番号": lambda n: str(n).zfill(11),
+    "携帯電話番号": lambda n: str(n).zfill(11),
+    "メールアドレス": lambda n: f"{str(n).zfill(13)}@nyle.co.jp",
+    "郵便番号": lambda n: "9999999",
+    "町名・番地": lambda n: f"マスク住所_{n}",
+    "LINE連絡先": lambda n: (
+        f"https://chat.line.biz/U{'0' * 31}{str(n % 10).zfill(1)}"
+        f"/chat/U{str(n).zfill(32)}"
+    ),
+    "LINE_ID": lambda n: f"U{str(n).zfill(32)}",
+}
+
+# 車両所在地用プレフィックス（電話番号等はないが郵便番号・住所がある）
+LOCATION_PREFIXES: list[str] = [
+    "車両所在地_",
+]
+
+LOCATION_PII_FIELDS: dict[str, type(lambda n: "")] = {
+    "郵便番号": lambda n: "9999999",
+    "町名・番地": lambda n: f"マスク住所_{n}",
+}
+
+
+def _build_expanded_mask_rules(
+    fieldnames: list[str],
+) -> dict[str, type(lambda n: "")]:
+    """入力CSVのカラム名に基づき、プレフィックス付きルールを展開して返す。
+
+    MASK_RULES（既存の固定ルール）に加え、CSVに実在するプレフィックス付き
+    カラムのルールを動的に追加する。
+    """
+    rules: dict[str, type(lambda n: "")] = dict(MASK_RULES)
+
+    # プレフィックス付きPIIフィールドの展開
+    for prefix in PII_PREFIXES:
+        for field, func in PREFIXED_PII_FIELDS.items():
+            col_name = f"{prefix}{field}"
+            if col_name in fieldnames and col_name not in rules:
+                rules[col_name] = func
+
+    # LINE_IDはプレフィックスと結合時に _ がない形式もある
+    # 例: "リース契約者LINE_ID", "買取申込者LINE_ID"
+    # また _ 付き形式もある: "保険契約者_LINE_ID", "商談希望者_LINE_ID"
+    for prefix in PII_PREFIXES:
+        # パターン1: "リース契約者LINE_ID" (末尾_除去 + LINE_ID)
+        bare_prefix = prefix.rstrip("_")
+        col_name = f"{bare_prefix}LINE_ID"
+        if col_name in fieldnames and col_name not in rules:
+            rules[col_name] = PREFIXED_PII_FIELDS["LINE_ID"]
+
+        # パターン2: "保険契約者_LINE_ID" (prefix + LINE_ID)
+        col_name2 = f"{prefix}LINE_ID"
+        if col_name2 in fieldnames and col_name2 not in rules:
+            rules[col_name2] = PREFIXED_PII_FIELDS["LINE_ID"]
+
+    # 車両所在地プレフィックス
+    for prefix in LOCATION_PREFIXES:
+        for field, func in LOCATION_PII_FIELDS.items():
+            col_name = f"{prefix}{field}"
+            if col_name in fieldnames and col_name not in rules:
+                rules[col_name] = func
+
+    return rules
+
+
+# ---------------------------------------------------------------------------
+# 免許証番号（プレフィックスなし固定カラム）
+# ---------------------------------------------------------------------------
+# MASK_RULES に含まれない追加の固定カラムがあればここに追記
+
+# ---------------------------------------------------------------------------
 # 顧客IDカラム名（stable_key 導出元）
 # ---------------------------------------------------------------------------
-CUSTOMER_ID_COL = "顧客ID"
+# CUS形式（CUS0001等）の顧客IDカラム候補
+CUSTOMER_ID_COLS: list[str] = [
+    "顧客ID",
+    "リース契約者_顧客ID",
+    "買取申込者_顧客ID",
+    "保険契約者_顧客ID",
+    "商談希望者_顧客ID",
+]
+
+# ---------------------------------------------------------------------------
+# stable_key 導出: プレフィックス番号方式
+# ---------------------------------------------------------------------------
+# 顧客一覧レコード番号 → 30 * 10^桁数 + 値
+# 各CSVのレコード番号 → CSV種別プレフィックス * 10^桁数 + 値
+#   顧客一覧: 20, 買取顧客一覧: 40, 保険顧客一覧: 50
+STABLE_KEY_PREFIX_CUSTOMER_LIST_REC = 30  # 顧客一覧レコード番号
+STABLE_KEY_PREFIX_CUSTOMER_CSV = 20      # 顧客一覧のレコード番号
+STABLE_KEY_PREFIX_PURCHASE_CSV = 40      # 買取顧客一覧のレコード番号
+STABLE_KEY_PREFIX_INSURANCE_CSV = 50     # 保険顧客一覧のレコード番号
+
+# CSV種別判定用カラム
+_CSV_TYPE_MARKERS = {
+    "purchase": ["買取申込者_姓", "買取_ヨミ", "買取_車種"],
+    "insurance": ["保険契約者_姓", "保険_ヨミ", "保険_流入経路"],
+}
+
+# マッピングCSVに出力するID系カラム（CSVに存在するもののみ出力）
+ID_COLS_TO_EXPORT: list[str] = [
+    "顧客一覧レコード番号",
+    "買取顧客一覧レコード番号",
+    "保険顧客一覧レコード番号",
+    "顧客管理レコード番号",
+    "顧客ID",
+    "リース契約者_顧客ID",
+    "買取申込者_顧客ID",
+    "保険契約者_顧客ID",
+    "商談希望者_顧客ID",
+    "契約ID",
+    "会員No",
+]
 
 
-def _extract_stable_key(customer_id: str) -> int:
-    """顧客IDから stable_key を導出する。
+def _detect_csv_type(fieldnames: list[str]) -> str:
+    """CSVのカラム名からCSV種別を判定する。
+
+    Returns:
+        "purchase" | "insurance" | "customer"
+    """
+    for csv_type, markers in _CSV_TYPE_MARKERS.items():
+        if any(m in fieldnames for m in markers):
+            return csv_type
+    return "customer"
+
+
+def _compute_prefixed_stable_key(prefix: int, value: int) -> int:
+    """プレフィックス番号付きの stable_key を計算する。
+
+    例: prefix=30, value=154375 → 30154375
+        prefix=40, value=3148   → 403148
+    """
+    if value == 0:
+        return 0
+    digits = len(str(value))
+    return prefix * (10 ** digits) + value
+
+
+def _extract_stable_key_from_cus(customer_id: str) -> int | None:
+    """CUS形式の顧客IDから stable_key を導出する。
 
     SQL: CAST(SUBSTRING(顧客ID, 4) AS UNSIGNED)
     → Python: 4文字目以降（0-indexed で [3:]）を整数変換。
     例: "CUS0001" → 1, "CUS12345" → 12345
+
+    MID_形式（ULID）の場合は数値変換できないため None を返す。
     """
+    if not customer_id:
+        return None
     suffix = customer_id[3:]  # SUBSTRING(顧客ID, 4) は1-indexed → Python [3:]
     try:
         return int(suffix)
     except ValueError:
-        # 数値変換できない場合はハッシュベースのフォールバック
-        return abs(hash(suffix)) % 10_000_000
+        return None
+
+
+def _derive_stable_key(
+    row: dict[str, str],
+    customer_id_col: str | None,
+    csv_type: str,
+    key_col: str,
+    fallback_seq: int,
+) -> int:
+    """行データから stable_key を導出する。
+
+    優先順位:
+    1. 顧客ID（CUS形式で数値変換可能な場合）
+    2. 顧客一覧レコード番号（非空の場合）→ prefix=30
+    3. レコード番号（--key カラム）→ CSV種別に応じたprefix
+    4. fallback_seq（連番）
+    """
+    # 1. CUS形式の顧客ID
+    if customer_id_col:
+        cid = row.get(customer_id_col, "")
+        sk = _extract_stable_key_from_cus(cid)
+        if sk is not None:
+            return sk
+
+    # 2. 顧客一覧レコード番号
+    kichi_rec = row.get("顧客一覧レコード番号", "")
+    if kichi_rec:
+        try:
+            val = int(kichi_rec)
+            return _compute_prefixed_stable_key(
+                STABLE_KEY_PREFIX_CUSTOMER_LIST_REC, val,
+            )
+        except ValueError:
+            pass
+
+    # 3. レコード番号（各CSVの一意キー）
+    rec_val = row.get(key_col, "")
+    if rec_val:
+        try:
+            val = int(rec_val)
+            prefix_map = {
+                "customer": STABLE_KEY_PREFIX_CUSTOMER_CSV,
+                "purchase": STABLE_KEY_PREFIX_PURCHASE_CSV,
+                "insurance": STABLE_KEY_PREFIX_INSURANCE_CSV,
+            }
+            prefix = prefix_map.get(csv_type, STABLE_KEY_PREFIX_CUSTOMER_CSV)
+            return _compute_prefixed_stable_key(prefix, val)
+        except ValueError:
+            pass
+
+    # 4. フォールバック
+    return fallback_seq
 
 # ---------------------------------------------------------------------------
 # フリーテキスト系カラム用: 部分一致で置換するルール
@@ -187,7 +407,8 @@ def _mask_template_field(text: str, seq_n: int) -> tuple[str, dict[str, list[tup
         nonlocal phone_counter
         phone_counter += 1
         orig = m.group(0)
-        masked = f"0900000{seq_n:03d}{phone_counter:02d}"
+        # stable_keyが大きい場合でも11桁に収める
+        masked = f"0{str(seq_n).zfill(9)}{phone_counter % 10}"
         replacements["phone"].append((orig, masked))
         return masked
 
@@ -277,6 +498,7 @@ def _mask_template_field(text: str, seq_n: int) -> tuple[str, dict[str, list[tup
 # ---------------------------------------------------------------------------
 MAP_KEY_COL = "key"
 MAP_SEQ_COL = "seq"
+MAP_STABLE_KEY_COL = "stable_key"
 
 # ---------------------------------------------------------------------------
 # 部分置換対象カラム（テンプレ・コメント等のフリーテキスト系）
@@ -297,10 +519,11 @@ def load_mapping(path: Path) -> tuple[dict[str, dict[str, str]], list[str], int]
     mapping: dict[str, dict[str, str]] = {}
     existing_cols: list[str] = []
     max_seq = 0
+    meta_cols = {MAP_KEY_COL, MAP_SEQ_COL, MAP_STABLE_KEY_COL}
     with path.open(encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         existing_cols = [
-            c for c in (reader.fieldnames or []) if c not in (MAP_KEY_COL, MAP_SEQ_COL)
+            c for c in (reader.fieldnames or []) if c not in meta_cols
         ]
         for row in reader:
             key = row.get(MAP_KEY_COL, "")
@@ -334,9 +557,12 @@ def main() -> None:
     args = parser.parse_args()
 
     input_path = Path(args.input)
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    output_path = input_path.with_name(f"{input_path.stem}_masked_{timestamp}.csv")
-    delta_path = input_path.with_name(f"{input_path.stem}_mapping_{timestamp}.csv")
+    # timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    # output_path = input_path.with_name(f"{input_path.stem}_masked_{timestamp}.csv")
+    # delta_path = input_path.with_name(f"{input_path.stem}_mapping_{timestamp}.csv")
+    output_path = input_path.with_name(f"{input_path.stem}_masked.csv")
+    delta_path = input_path.with_name(f"{input_path.stem}_mapping.csv")
+
 
     existing: dict[str, dict[str, str]] = {}
     existing_cols: list[str] = []
@@ -351,20 +577,41 @@ def main() -> None:
 
     if args.key not in fieldnames:
         raise SystemExit(
-            f"キー列 '{args.key}' が input.csv に存在しません。--key で指定し直してください。"
+            f"キー列 '{args.key}' が input.csv に存在しません。"
+            f"--key で指定し直してください。"
         )
 
-    # 入力CSVに含まれる且つMASK_RULESに定義されたカラムのみ処理対象
-    target_cols = [c for c in MASK_RULES if c in fieldnames]
+    # 入力CSVのカラムに基づきマスクルールを動的展開
+    expanded_rules = _build_expanded_mask_rules(fieldnames)
 
-    # 顧客IDカラムが存在するか確認（stable_key導出用）
-    has_customer_id = CUSTOMER_ID_COL in fieldnames
+    # 入力CSVに含まれる且つ展開済みルールに定義されたカラムのみ処理対象
+    target_cols = [c for c in expanded_rules if c in fieldnames]
+
+    # CSV種別を自動判定
+    csv_type = _detect_csv_type(fieldnames)
+
+    # 顧客IDカラムが存在するか確認（CUS形式のstable_key導出用）
+    customer_id_col: str | None = None
+    for cid_col in CUSTOMER_ID_COLS:
+        if cid_col in fieldnames:
+            customer_id_col = cid_col
+            break
 
     # 部分置換対象カラムのうち、入力CSVに存在するもの
     active_partial_cols = [c for c in PARTIAL_MASK_COLS if c in fieldnames]
 
-    # マッピングCSVの列順: 既存列を先頭に保持 + 今回新たに増える列
-    map_cols = [MAP_KEY_COL, MAP_SEQ_COL] + existing_cols[:]
+    # マッピングCSVに出力するID系カラム（CSVに存在するもののみ）
+    active_id_cols = [c for c in ID_COLS_TO_EXPORT if c in fieldnames]
+
+    # マッピングCSVの列順:
+    # key, seq, stable_key, ID系カラム, 既存列, マスク対象カラム
+    map_cols = [MAP_KEY_COL, MAP_SEQ_COL, MAP_STABLE_KEY_COL]
+    for col in active_id_cols:
+        if col not in map_cols:
+            map_cols.append(col)
+    for col in existing_cols:
+        if col not in map_cols:
+            map_cols.append(col)
     for col in target_cols:
         if col not in map_cols:
             map_cols.append(col)
@@ -389,12 +636,19 @@ def main() -> None:
                 except ValueError:
                     seq_n = 0
 
-                # stable_key を導出（顧客IDがあればそちらを優先）
-                if has_customer_id:
-                    customer_id = row.get(CUSTOMER_ID_COL, "")
-                    stable_key = _extract_stable_key(customer_id) if customer_id else seq_n
-                else:
-                    stable_key = seq_n
+                # stable_key を導出
+                stable_key = _derive_stable_key(
+                    row, customer_id_col, csv_type, args.key, seq_n,
+                )
+
+                # stable_key をエントリに記録
+                entry[MAP_STABLE_KEY_COL] = str(stable_key)
+
+                # ID系カラムの値をエントリに記録
+                for id_col in active_id_cols:
+                    val = row.get(id_col, "")
+                    if val and not entry.get(id_col):
+                        entry[id_col] = val
 
                 has_new = False
 
@@ -405,7 +659,7 @@ def main() -> None:
                         continue
                     masked = entry.get(col)
                     if not masked:
-                        masked = MASK_RULES[col](stable_key)
+                        masked = expanded_rules[col](stable_key)
                         entry[col] = masked
                         has_new = True
                     row[col] = masked
@@ -414,7 +668,9 @@ def main() -> None:
                 for col in active_partial_cols:
                     text = row.get(col, "")
                     if text:
-                        masked_text, repls = _mask_template_field(text, stable_key)
+                        masked_text, repls = _mask_template_field(
+                            text, stable_key,
+                        )
                         if any(repls.values()):
                             row[col] = masked_text
                             has_new = True
@@ -426,18 +682,22 @@ def main() -> None:
                 seq += 1
                 entry = {MAP_KEY_COL: key, MAP_SEQ_COL: str(seq)}
 
-                # stable_key を導出（顧客IDがあればそちらを優先）
-                if has_customer_id:
-                    customer_id = row.get(CUSTOMER_ID_COL, "")
-                    stable_key = _extract_stable_key(customer_id) if customer_id else seq
-                else:
-                    stable_key = seq
+                # stable_key を導出
+                stable_key = _derive_stable_key(
+                    row, customer_id_col, csv_type, args.key, seq,
+                )
+                entry[MAP_STABLE_KEY_COL] = str(stable_key)
+
+                # ID系カラムの値をエントリに記録
+                for id_col in active_id_cols:
+                    val = row.get(id_col, "")
+                    entry[id_col] = val
 
                 # --- カラム全体マスク ---
                 for col in target_cols:
                     original = row.get(col, "")
                     if original:
-                        masked = MASK_RULES[col](stable_key)
+                        masked = expanded_rules[col](stable_key)
                         row[col] = masked
                         entry[col] = masked
                     else:
@@ -447,7 +707,9 @@ def main() -> None:
                 for col in active_partial_cols:
                     text = row.get(col, "")
                     if text:
-                        masked_text, repls = _mask_template_field(text, stable_key)
+                        masked_text, repls = _mask_template_field(
+                            text, stable_key,
+                        )
                         if any(repls.values()):
                             row[col] = masked_text
 
@@ -459,7 +721,9 @@ def main() -> None:
 
     if delta_keys:
         with delta_path.open("w", encoding="utf-8-sig", newline="") as fmap:
-            mw = csv.DictWriter(fmap, fieldnames=map_cols, extrasaction="ignore")
+            mw = csv.DictWriter(
+                fmap, fieldnames=map_cols, extrasaction="ignore",
+            )
             mw.writeheader()
             for k in delta_keys:
                 mw.writerow(existing[k])
